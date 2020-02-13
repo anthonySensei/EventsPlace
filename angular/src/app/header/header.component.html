@@ -1,0 +1,38 @@
+<mat-toolbar class="navbar">
+  <img src="assets/main.png" alt="logo" style="width:40px">
+  <a [routerLink]="'/'" class="navbar-name">EventsPlace
+    <span *ngIf="role !== 'user'">
+        <span
+          style="color: #02a9ff"
+        >| {{role === 'admin' ? 'Admin' : 'Manager'}}
+        </span>
+      </span>
+  </a>
+  <mat-divider [vertical]="true" style="height:80%; background-color: black; margin: 0 0.3% 0 0.3%"></mat-divider>
+  <ul class="main-header-item-list">
+    <li class="main-header-item" routerLinkActive="active">
+      <a [routerLink]="'/posts'" class="navbar-link">Posts</a>
+    </li>
+    <li *ngIf="role === 'manager' || role === 'admin'" class="main-header-item" routerLinkActive="active">
+      <a [routerLink]="'/post-managing'" class="navbar-link">Managing</a>
+    </li>
+    <li class="main-header-item" routerLinkActive="active" *ngIf="isLoggedIn">
+      <a [routerLink]="'/my-account'" class="navbar-link">Profile</a>
+    </li>
+  </ul>
+
+  <span class="fill-remaining-space"></span>
+
+  <ul class="main-header-item-list">
+    <li *ngIf="!isLoggedIn else logout">
+      <a [routerLink]="'/login'" class="navbar-link">Login</a>
+    </li>
+    <ng-template #logout>
+      <li>
+        <button type="submit" class="navbar-logout" (click)="onLogoutUser()">Logout</button>
+      </li>
+    </ng-template>
+
+  </ul>
+
+</mat-toolbar>

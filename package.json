@@ -1,0 +1,27 @@
+{
+  "name": "eventsplace",
+  "version": "1.0.0",
+  "description": "This is a site when you can place post about events",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "*",
+    "body-parser": "*",
+    "express": "*",
+    "express-session": "*",
+    "jsonwebtoken": "^8.5.1",
+    "passport": "*",
+    "passport-jwt": "*",
+    "pg": "^7.18.1",
+    "pg-hstore": "^2.3.3",
+    "sequelize": "^5.21.3"
+  },
+  "author": "Anthony",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^2.0.2"
+  }
+}

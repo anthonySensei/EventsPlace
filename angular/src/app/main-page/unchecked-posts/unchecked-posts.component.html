@@ -1,0 +1,33 @@
+<div class="header">
+  <h1>Unverified posts</h1>
+</div>
+<div class="posts-container" *ngIf="posts.length > 0; else noPosts">
+  <div class="flex-container" *ngIf="!isLoading">
+    <div class="card" style="width:100%" *ngFor="let card of posts">
+      <div class="image-container">
+        <img
+          src="https://images.pexels.com/photos/3558597/pexels-photo-3558597.jpeg"
+          alt="post"
+          class="card-image">
+        <div class="data-on-image">
+          <a [routerLink]="['/posts', card.postId]" class="card-details-link">Details</a>
+        </div>
+      </div>
+      <div class="card-container">
+        <mat-grid-list cols="2" rowHeight="4:1">
+          <mat-grid-tile>
+            <i class="material-icons">location_on</i>
+            {{card.eventLocation}}
+          </mat-grid-tile>
+          <mat-grid-tile style="color: #02a9ff"><i>#{{card.hashtag.name}}</i></mat-grid-tile>
+        </mat-grid-list>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #noPosts>
+  <div style="text-align: center; font-size: 3rem; margin-top: 20px">
+    <span>There are no posts to check</span>
+  </div>
+</ng-template>

@@ -1,0 +1,95 @@
+.image{
+  float: left;
+  margin: 10px 10px 0 10px;
+  width: 350px;
+  height: 450px;
+}
+
+.form-content {
+  width: 60%;
+}
+
+
+.post-detail-image {
+  float: left;
+  margin: 10px;
+  width: 350px;
+  height: 450px;
+}
+
+.description-container {
+  text-align: justify;
+  height: 450px;
+  max-height: 450px;
+  overflow: auto;
+}
+.post-description {
+  padding-right: 10px;
+}
+.row {
+  padding: 10px;
+  text-align: left;
+}
+.event-location {
+  display: inline-block;
+  color: rgba(0,0,0,0.4);
+}
+.post-hashtag {
+  display: inline-block;
+  float: right;
+  color: rgb(2,169,255);
+}
+
+.btn {
+  margin-right: 5px;
+  background-color: rgb(255,255,255);
+  outline: none;
+  cursor: pointer;
+}
+
+.btn:hover{
+  color: rgb(255,255,255);
+}
+
+.btn.active {
+  color: rgb(255,255,255);
+}
+
+.btn-green {
+  color: rgb(10,172,0);
+  border: 1px solid  rgb(10,172,0);
+}
+
+.btn-green:hover{
+  background-color:  rgb(10,172,0);
+}
+
+.btn-green.active {
+  background-color:  rgb(10,172,0);
+}
+
+.btn-yellow {
+  color: rgb(241,128,0);
+  border: 1px solid rgb(241,128,0);
+}
+
+.btn-yellow:hover{
+  background-color: rgb(241,128,0);
+}
+
+.btn-yellow.active {
+  background-color: rgb(241,128,0);
+}
+
+.btn-red {
+  color: rgb(234,4,21);
+  border: 1px solid rgb(234,4,21);
+}
+
+.btn-red:hover{
+  background-color: rgb(234,4,21);
+}
+
+.btn-red.active {
+  background-color: rgb(234,4,21);
+}

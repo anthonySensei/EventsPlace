@@ -1,0 +1,70 @@
+<div class="wrapper fadeInDown" >
+  <div class="form-content">
+    <span class="page-title">Registration</span>
+    <hr style="background-color: #0d0d0d">
+  <form
+    (submit)="onRegisterUser(email, password, password2)"
+    #regForm='ngForm'>
+    <mat-form-field
+      class="form-input">
+      <mat-label>Email</mat-label>
+      <input
+        matInput
+        type="email"
+        name="email"
+        #email="ngModel"
+        ngModel
+        placeholder="Ex. example@mail.com"
+        required
+      >
+    </mat-form-field>
+    <span
+      class="help-block"
+      *ngIf="(!email.valid && email.touched) || isEmailError">
+      {{ isEmailError ? error : 'Please fill in email' }}
+    </span>
+    <mat-form-field
+      class="form-input">
+      <mat-label>Password</mat-label>
+      <input
+        matInput
+        type="password"
+        name="password"
+        #password="ngModel"
+        ngModel
+        placeholder="Ex. hello"
+        required
+      >
+    </mat-form-field>
+    <span
+      class="help-block"
+      *ngIf="(!password.valid && password.touched) && (!isPasswordError && !isEmailError)">Please fill in password</span>
+    <mat-form-field
+      class="form-input">
+      <mat-label>input password again</mat-label>
+      <input
+        matInput
+        type="password"
+        name="password2"
+        #password2="ngModel"
+        ngModel
+        required
+      >
+    </mat-form-field>
+    <span
+      class="help-block"
+      *ngIf="(!password2.valid && password2.touched && password.valid) || isPasswordError">
+      {{ isPasswordError ? error : ' Please retype password ' }}
+    </span>
+    <button
+      class="form-button"
+      type="submit"
+      [disabled]="regForm.invalid">Submit</button>
+  </form>
+  <div class="form-footer">
+    <a class="underlineHover" routerLink="/login">
+      Already have account?
+    </a>
+  </div>
+</div>
+</div>

@@ -1,0 +1,122 @@
+<button
+  *ngIf="posts.length > 0"
+  mat-fab
+  class="filter-button"
+  (click)="drawer.toggle(); toggleFilterButton()"
+  [style.display]="showFilterButton ? 'block' : 'none'">
+  <i class="material-icons">arrow_forward_ios</i>
+</button>
+<mat-drawer-container
+  class="page-container"
+  autosize>
+  <mat-drawer
+    #drawer
+    [disableClose]="true"
+    class="sidenav"
+    mode="over"
+  >
+    <button class="close-sidenav"
+            (click)="toggleFilterButton(); drawer.toggle()"
+    >
+      <i class="material-icons">close</i>
+    </button>
+    <h2>Choose filter</h2>
+    <div class="display-b">
+      <mat-form-field
+        class="display-b"
+        style="margin: 0 1% 0 1%">
+        <mat-label>Select an option</mat-label>
+        <mat-select required>
+          <mat-option value="hashtag">#Hashtag</mat-option>
+          <mat-option value="location">Location</mat-option>
+          <mat-option value="username">User name</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field
+        class="display-b">
+        <mat-label>Filter</mat-label>
+        <input
+          matInput
+          name="filter"
+          placeholder="Ex. #hello">
+      </mat-form-field>
+      <button
+        mat-button
+        class="btn"
+        (click)="search(); drawer.toggle(); toggleFilterButton()">
+        <i class="material-icons">search</i>
+      </button>
+    </div>
+  </mat-drawer>
+
+  <div class="header">
+    <h1>Post Board</h1>
+  </div>
+
+  <div class="post-features-container">
+    <button
+      *ngIf="posts.length > 0"
+      mat-button
+      class="btn"
+      (click)="changeGrid()"
+      style="position: absolute"
+      matTooltip="Change column quantity"
+      [matTooltipPosition]="position.value">
+      <i class="material-icons">list</i>
+    </button>
+    <div style="overflow:hidden">
+      <a *ngIf="user; else noUser"
+         mat-button
+         class="btn"
+         style="float: right"
+         matTooltip="Create post"
+         [routerLink]="'/create-post'"
+      >
+        <i class="material-icons">add</i> Create
+      </a>
+      <ng-template #noUser>
+        <button
+          mat-button
+          class="btn"
+          style="float: right"
+          matTooltip="Create post"
+          (click)="openSnackBar()"
+        >
+          <i class="material-icons">add</i> Create
+        </button>
+      </ng-template>
+    </div>
+    <mat-divider style="margin: 1% 0 1% 0"></mat-divider>
+  </div>
+
+  <div class="posts-container" *ngIf="posts.length > 0; else noPosts">
+    <div class="flex-container" *ngIf="!isLoading">
+      <div class="card" style="width:100%" *ngFor="let card of posts">
+        <div class="image-container">
+          <img
+            src="https://images.pexels.com/photos/3558597/pexels-photo-3558597.jpeg"
+            alt="post"
+            class="card-image">
+          <div class="data-on-image">
+            <a [routerLink]="['/posts', card.postId]" class="card-details-link">Details</a>
+          </div>
+        </div>
+        <div class="card-container">
+          <mat-grid-list cols="2" rowHeight="4:1">
+            <mat-grid-tile>
+              <i class="material-icons">location_on</i>
+              {{card.eventLocation}}
+            </mat-grid-tile>
+            <mat-grid-tile style="color: #02a9ff"><i>#{{card.hashtag.name}}</i></mat-grid-tile>
+          </mat-grid-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</mat-drawer-container>
+
+<ng-template #noPosts>
+  <div style="text-align: center; font-size: 3rem; margin-top: 20px">
+    <span>There are no posts</span>
+  </div>
+</ng-template>

@@ -1,0 +1,77 @@
+.help-block{
+  display: block;
+  color: rgb(255,0,0);
+}
+
+.login-body{
+  position: absolute;
+  width: 100%;
+  height: 91.8%;
+  max-width: 100%;
+  background-image: url('https://images.pexels.com/photos/466685/pexels-photo-466685.jpeg');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+}
+
+/* BASIC */
+
+
+a {
+  color: rgb(2,169,255);
+  text-decoration: none;
+  display: inline-block;
+  font-weight: 400;
+}
+
+.form-input{
+  display: block;
+  margin: 10px auto 0 auto;
+  width: 60%;
+}
+
+form.ng-valid .form-button{
+  background-color: rgb(2,169,255);
+  -webkit-box-shadow: 0 5px 15px 0 rgba(2, 169, 255, 0.3);
+  box-shadow: 0 5px 15px 0 rgba(2, 169, 255, 0.3);
+}
+
+.form-button:disabled{
+  cursor: not-allowed;
+}
+
+form.ng-valid .form-button:hover {
+  background-color: rgb(2,169,255);
+}
+
+/* ANIMATIONS */
+
+@media screen and (max-width: 480px) {
+  .formContent {
+    -webkit-border-radius: 10px 10px 10px 10px;
+    border-radius: 10px 10px 10px 10px;
+  }
+
+}
+
+@media screen and (max-width: 768px) {
+  .formContent {
+    width: 80%;
+  }
+}
+
+@media screen and (max-width: 968px) {
+  .formContent {
+    width: 60%;
+  }
+}
+
+@media screen and (max-width: 1280px) {
+  .formContent {
+    min-width: 50%;
+  }
+}
+
+.text-area-container {
+  width: 60%;
+}

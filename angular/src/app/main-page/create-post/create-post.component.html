@@ -1,0 +1,57 @@
+  <div class="wrapper">
+    <div class="form-content">
+      <span class="page-title">New post</span>
+      <hr style="background-color: #0d0d0d">
+      <form
+        (submit)="onCreatePost(eventName, postDescription, eventLocation, createPostForm)"
+        #createPostForm="ngForm">
+        <mat-form-field
+          class="d-block form-input">
+          <mat-label>Event name</mat-label>
+          <input
+            matInput
+            name="event-name"
+            #eventName="ngModel"
+            ngModel
+            placeholder="Ex. Graduation"
+            required
+          >
+        </mat-form-field>
+        <span class="help-block" *ngIf="!eventName.valid && eventName.touched">Please fill in event name</span>
+        <mat-form-field class="text-area-container">
+          <mat-label>Post description</mat-label>
+          <textarea
+            matInput
+            rows="1"
+            cdkTextareaAutosize
+            cdkAutosizeMinRows="1"
+            cdkAutosizeMaxRows="5"
+            #postDescription
+            placeholder="Ex. This post describes event..."
+            maxlength="255"
+            required
+          ></textarea>
+          <mat-hint align="end">{{postDescription.value?.length || 0}}/255</mat-hint>
+        </mat-form-field>
+          <mat-form-field
+            class="d-block form-input">
+            <mat-label>Event location</mat-label>
+            <input
+              matInput
+              type="text"
+              name="event-location"
+              #eventLocation="ngModel"
+              ngModel
+              placeholder="Ex. New York"
+              required
+            >
+          </mat-form-field>
+        <span class="help-block" *ngIf="!eventLocation.valid && eventLocation.touched">Please fill in event location</span>
+        <button
+          type="create"
+          class="form-button"
+          [disabled]="createPostForm.invalid"
+        >Create</button>
+      </form>
+    </div>
+  </div>

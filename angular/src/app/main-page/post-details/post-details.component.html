@@ -1,0 +1,50 @@
+<div class="wrapper">
+  <div class="form-content">
+    <img
+      class="post-detail-image"
+      src="https://images.pexels.com/photos/3363116/pexels-photo-3363116.jpeg"
+      alt="img"
+    >
+    <div class="description-container">
+      <p class="post-description">{{post.description}}</p>
+    </div>
+    <div class="row">
+      <p>Name: {{post.user.name}}</p>
+      <p>Email: {{post.user.email}}</p>
+      <p class="event-location">
+        <i class="material-icons">location_on</i>
+        {{post.eventLocation}}
+      </p>
+      <p class="post-hashtag">#{{post.hashtag.name}}</p>
+      <br>
+      <div class="btn-group" *ngIf="userRole === 'admin' ||userRole === 'manager'">
+        <button
+          *ngIf="post.postStatus !== 'approved'"
+          mat-button
+          class="btn btn-green"
+          matTooltip="Approve post"
+          (click)="onSetStatus('approved', post)"
+        >
+          Approve
+        </button>
+        <button
+          mat-button
+          class="btn btn-yellow"
+          matTooltip="Reject post"
+          (click)="onSetStatus('rejected', post)"
+        >
+          Reject
+        </button>
+        <button
+          mat-button
+          class="btn btn-red"
+          matTooltip="Delete post"
+          (click)="onSetStatus('deleted', post)"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

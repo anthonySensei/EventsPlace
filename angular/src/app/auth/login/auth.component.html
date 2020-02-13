@@ -1,0 +1,59 @@
+<div class="login-body">
+<div class="wrapper fadeInDown">
+  <div class="form-content">
+    <span class="page-title">Login</span>
+    <hr style="background-color: #0d0d0d">
+    <form
+      (submit)="onLoginUser(email, password)"
+      #loginForm="ngForm">
+      <div class="input-group form-group">
+        <mat-form-field
+          class="fadeIn second form-input">
+          <mat-label>Email</mat-label>
+          <input
+            matInput
+            name="email"
+            #email="ngModel"
+            ngModel
+            placeholder="Ex. #hello"
+            required
+          >
+        </mat-form-field>
+      </div>
+      <span class="help-block" *ngIf="!email.valid && email.touched">Please fill in email</span>
+      <div class="input-group form-group">
+        <mat-form-field
+          class="fadeIn third form-input">
+          <mat-label>Password</mat-label>
+          <input
+            matInput
+            type="password"
+            name="password"
+            #password="ngModel"
+            ngModel
+            placeholder="Ex. hello"
+            required
+          >
+        </mat-form-field>
+      </div>
+      <span
+        class="help-block"
+        *ngIf="(!password.valid && password.touched) || error">
+        {{ error ? error : 'Fill in password' }}
+      </span>
+      <button
+        type="submit"
+        class="fadeIn fourth form-button"
+      >Log In</button>
+    </form>
+
+    <div class="form-footer">
+      <a class="underlineHover" routerLink="/password-recovery">
+        Forgot Password?
+      </a> / <a class="underlineHover" routerLink="/registration">
+      Don't have account?
+    </a>
+    </div>
+  </div>
+</div>
+</div>
