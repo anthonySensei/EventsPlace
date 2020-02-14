@@ -51,7 +51,6 @@ export class MainPageComponent implements OnInit, OnDestroy {
     this.loggedInSubscription = this.authService.loggedChange
       .subscribe(isLoggedIn => {
         this.isLoggedIn = isLoggedIn;
-        console.log(isLoggedIn);
       });
     this.isLoggedIn = this.authService.getIsLoggedIn();
     this.cards = document.getElementsByClassName('card');

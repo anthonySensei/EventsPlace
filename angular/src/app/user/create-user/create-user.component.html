@@ -3,20 +3,8 @@
     <span class="page-title">Add user</span>
     <hr style="background-color: #0d0d0d">
     <form
-      (submit)="onCreateUser(email, name)"
+      (submit)="onCreateUser(email, userRole)"
       #createUserForm='ngForm'>
-      <mat-form-field
-        class="form-input d-block">
-        <mat-label>Name</mat-label>
-        <input
-          matInput
-          type="text"
-          name="name"
-          #name="ngModel"
-          ngModel
-          placeholder="Ex. Anthony"
-        >
-      </mat-form-field>
       <mat-form-field
         class="form-input d-block">
         <mat-label>Email</mat-label>
@@ -36,6 +24,7 @@
       >
       {{ isEmailError ? error : 'Please fill in email' }}
       </span>
+      <br>
       <mat-radio-group
         class="d-block"
         name="userRole"
@@ -47,7 +36,7 @@
       <button
         class="form-button"
         type="submit"
-        [disabled]="createUserForm.invalid">Create
+        >Create
       </button>
     </form>
   </div>

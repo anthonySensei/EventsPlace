@@ -150,6 +150,10 @@
   min-height: 91%;
 }
 
+.d-block{
+  display: block;
+}
+
 ::ng-deep snack-bar-container.main-page-snackbar {
   background: rgb(255, 255, 255);
   border: 2px solid rgb(2,169,255);

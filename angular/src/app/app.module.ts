@@ -6,15 +6,14 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import {AuthModule} from './auth/auth.module';
 import {PostsModule} from './main-page/posts.module';
+import {UsersModule} from './user/users.module';
 import {SharedModule} from './shared/shared.module';
 
 import { AppRoutingModule } from './app-routing.module';
 
 import { AppComponent } from './app.component';
-import {ModalDialogComponent, UserComponent} from './user/user.component';
 import { HeaderComponent } from './header/header.component';
-import { UserDetailsComponent } from './user/user-details/user-details.component';
-import { CreateUserComponent } from './user/create-user/create-user.component';
+import { ErrorPageComponent } from './error-page/error-page.component';
 
 
 
@@ -23,10 +22,7 @@ import { CreateUserComponent } from './user/create-user/create-user.component';
   declarations: [
     AppComponent,
     HeaderComponent,
-    UserComponent,
-    UserDetailsComponent,
-    ModalDialogComponent,
-    CreateUserComponent
+    ErrorPageComponent
   ],
     imports: [
         BrowserModule,
@@ -36,10 +32,10 @@ import { CreateUserComponent } from './user/create-user/create-user.component';
         FormsModule,
         SharedModule,
         PostsModule,
+        UsersModule,
         AppRoutingModule
     ],
   providers: [],
-  bootstrap: [AppComponent],
-  entryComponents: [ ModalDialogComponent ]
+  bootstrap: [AppComponent]
 })
 export class AppModule { }

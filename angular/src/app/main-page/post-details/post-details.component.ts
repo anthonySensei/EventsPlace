@@ -5,6 +5,7 @@ import {StorageService} from '../../storage.service';
 import {Subscription} from 'rxjs';
 import {AuthService} from '../../auth/auth.service';
 import {User} from '../../user/user.model';
+import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
 
 
 @Component({
@@ -27,10 +28,13 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
   user: User;
   userRole: string;
 
+  snackbarDuration = 5000;
+
   constructor(private route: ActivatedRoute,
               private router: Router,
               private storageService: StorageService,
-              private authService: AuthService) { }
+              private authService: AuthService,
+              private snackBar: MatSnackBar) { }
 
   ngOnInit() {
     this.isLoading = true;
@@ -63,13 +67,21 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
     this.storageService.setPostStatus(post)
       .subscribe(() => {
         if (this.isUpdatedPostStatus) {
-          this.message = this.response.data.message;
+          this.message = this.response.data.message + ' to ' + '\'' + status.toUpperCase() + '\'';
           this.router.navigate(['/posts']);
+          this.openSnackBar(this.message, null);
         } else  {
           this.error = this.response.data.message;
           return false;
         }
       });
+  }
+
+  openSnackBar(message: string, action: string) {
+    const config = new MatSnackBarConfig();
+    config.panelClass = ['snackbar'];
+    config.duration = this.snackbarDuration;
+    this.snackBar.open(message, action, config);
   }
 
   ngOnDestroy(): void {

@@ -97,12 +97,12 @@ exports.setPostStatus = (req, res) => {
              status: newPostStatus
          })
          .then(result => {
-             console.log('Post status was updated successfully');
+             console.log('Post status was set successfully');
              res.send({
                 responseCode: 500,
                 data: {
                     postUpdated: true,
-                    message: 'Post status was updated successfully!'
+                    message: 'Post status was set successfully'
                 }
             });
          })

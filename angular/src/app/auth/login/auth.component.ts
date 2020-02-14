@@ -55,7 +55,6 @@ export class AuthComponent implements OnInit, OnDestroy {
     this.authService
       .login(user)
       .subscribe(() => {
-        console.log(this.loggedIn);
         if (!this.loggedIn) {
           this.error = this.message;
           this.loginForm.setValue({

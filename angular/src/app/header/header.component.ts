@@ -30,7 +30,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.user = user;
         if (this.user) {
           this.role = this.user.role.role;
-          console.log(this.role);
         } else {
           this.role = 'user';
         }
@@ -43,7 +42,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         if (this.isLoggedIn) {
           this.authService.setIsLoggedIn(false);
-          console.log('You successfully logged out');
           this.router.navigate(['login']);
         }
       });

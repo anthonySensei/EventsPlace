@@ -10,10 +10,17 @@ const secret_key = require('../config/secret_key');
 
 
 exports.postCreateUser =  (req, res, next) => {
-    console.log('Registration!');
+    let password;
+    if (req.body.password) {
+        password = req.body.password;
+    } else {
+        password = generatePassword();
+    }
+    console.log(password);
+    console.log('User creation!');
     let newUser = new User({
         email: req.body.email,
-        password: req.body.password
+        password: password
     });
     bcrypt.genSalt(10, (err, salt) => {
         bcrypt.hash(newUser.password, salt, (err, hash) => {
@@ -23,9 +30,15 @@ exports.postCreateUser =  (req, res, next) => {
                 email: newUser.email,
                 password: newUser.password
             }).then(user => {
+                let userRole;
+                if (req.body.userRole) {
+                    userRole = req.body.userRole;
+                } else {
+                    userRole = roles.USER;
+                }
                 Role.create({
                   id: user.dataValues.id,
-                  role: roles.USER
+                  role: userRole
                 })
                 .then(result => {
                     console.log('User was successfully created!');
@@ -217,4 +230,14 @@ module.exports.postUpdateUserData = (req, res) => {
     }) 
     .catch(err => console.log(err));
 
+}
+
+function generatePassword() {
+    var length = 8,
+        charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+        retVal = "";
+    for (var i = 0, n = charset.length; i < length; ++i) {
+        retVal += charset.charAt(Math.floor(Math.random() * n));
+    }
+    return retVal;
 }

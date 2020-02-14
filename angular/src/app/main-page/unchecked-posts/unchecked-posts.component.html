@@ -19,13 +19,17 @@
     class="btn"
     matTooltip="Choose posts by status"
     (click)="changePostsByStatus()"
-  >Ok</button>
+  >Search</button>
 </div>
 <br>
 <div class="posts-container" *ngIf="posts.length > 0; else noPosts">
   <div class="flex-container" *ngIf="!isLoading">
     <div class="card" style="width:100%" *ngFor="let card of posts">
-      <div class="image-container status-tape unconfirmed">
+      <div
+        class="image-container status-tape"
+        [ngClass]="{'unconfirmed': card.postStatus === 'unconfirmed', 'deleted': card.postStatus === 'deleted',
+                    'rejected': card.postStatus === 'rejected', 'approved': card.postStatus === 'approved'}"
+        >
         <img
           src="https://images.pexels.com/photos/3558597/pexels-photo-3558597.jpeg"
           alt="post"

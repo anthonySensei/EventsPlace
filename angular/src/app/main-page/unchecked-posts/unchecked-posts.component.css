@@ -192,7 +192,16 @@
 }
 
 .status-tape.unconfirmed:after {
-  background: rgb(253, 255, 0);
+  background: rgba(253, 255, 0, 0.8);
+}
+.status-tape.deleted:after {
+  background: rgba(234,4,21, 0.8);
+}
+.status-tape.rejected:after {
+  background: rgba(241,128,0, 0.8);
+}
+.status-tape.approved:after {
+  background: rgba(10,172,0, 0.8);
 }
 
 
