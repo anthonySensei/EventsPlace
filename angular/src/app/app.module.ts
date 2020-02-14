@@ -14,6 +14,7 @@ import { AppComponent } from './app.component';
 import {ModalDialogComponent, UserComponent} from './user/user.component';
 import { HeaderComponent } from './header/header.component';
 import { UserDetailsComponent } from './user/user-details/user-details.component';
+import { CreateUserComponent } from './user/create-user/create-user.component';
 
 
 
@@ -24,18 +25,19 @@ import { UserDetailsComponent } from './user/user-details/user-details.component
     HeaderComponent,
     UserComponent,
     UserDetailsComponent,
-    ModalDialogComponent
+    ModalDialogComponent,
+    CreateUserComponent
   ],
-  imports: [
-    BrowserModule,
-    BrowserAnimationsModule,
-    HttpClientModule,
-    AuthModule,
-    FormsModule,
-    SharedModule,
-    PostsModule,
-    AppRoutingModule
-  ],
+    imports: [
+        BrowserModule,
+        BrowserAnimationsModule,
+        HttpClientModule,
+        AuthModule,
+        FormsModule,
+        SharedModule,
+        PostsModule,
+        AppRoutingModule
+    ],
   providers: [],
   bootstrap: [AppComponent],
   entryComponents: [ ModalDialogComponent ]

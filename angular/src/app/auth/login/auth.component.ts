@@ -4,6 +4,7 @@ import {Router} from '@angular/router';
 import {NgForm, NgModel} from '@angular/forms';
 import {Subscription} from 'rxjs';
 import {AuthService} from '../auth.service';
+import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
 
 @Component({
   selector: 'app-auth',
@@ -17,9 +18,12 @@ export class AuthComponent implements OnInit, OnDestroy {
   loggedIn = false;
   JSONSubscription: Subscription;
 
+  snackbarDuration = 5000;
+
   constructor(private checkFormService: CheckFormService,
               private authService: AuthService,
-              private router: Router) { }
+              private router: Router,
+              private snackBar: MatSnackBar) { }
 
   ngOnInit() {
     this.JSONSubscription = this.authService.authJSONResponseChanged
@@ -63,8 +67,17 @@ export class AuthComponent implements OnInit, OnDestroy {
           this.authService.setIsLoggedIn(this.loggedIn);
           this.router.navigate(['posts']);
           this.loginForm.reset();
+          this.message = 'You was logged in successfully';
+          this.openSnackBar(this.message, null);
         }
       });
+  }
+
+  openSnackBar(message: string, action: string) {
+    const config = new MatSnackBarConfig();
+    config.panelClass = ['snackbar'];
+    config.duration = this.snackbarDuration;
+    this.snackBar.open(message, action, config);
   }
 
   ngOnDestroy(): void {

@@ -6,6 +6,9 @@ import {Hashtag} from '../hashtag.model';
 import {Subscription} from 'rxjs';
 import {Router} from '@angular/router';
 import {Role} from '../../user/role.model';
+import {AuthService} from '../../auth/auth.service';
+import {MainPageSnackbarComponent} from '../main-page.component';
+import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
 
 @Component({
   selector: 'app-create-post',
@@ -18,9 +21,16 @@ export class CreatePostComponent implements OnInit, OnDestroy {
   error: string;
   response;
   responseSubscription: Subscription;
+  userSubscription: Subscription;
+  user: User;
+
+  snackbarDuration = 5000;
+  snackBarMessage = 'Post was created successfully';
 
   constructor(private postService: PostService,
-              private router: Router) {}
+              private authService: AuthService,
+              private router: Router,
+              public snackBar: MatSnackBar) {}
 
   ngOnInit() {
     this.responseSubscription = this.postService.responseChanged
@@ -37,6 +47,11 @@ export class CreatePostComponent implements OnInit, OnDestroy {
          this.isCreated = this.response.data.postCreated;
         }
       });
+    this.userSubscription = this.authService.userChanged
+      .subscribe(user => {
+        this.user = user;
+      });
+    this.user = this.authService.getUser();
   }
 
   onCreatePost(eventName: NgModel,
@@ -48,9 +63,10 @@ export class CreatePostComponent implements OnInit, OnDestroy {
       postImage: null,
       eventName: eventName.value,
       eventLocation: eventLocation.value,
-      user: new User(1, 'admin', 'admin', 'admin', new Date(), new Role(1, 'admin')),
+      user: this.user,
       hashtag: new Hashtag(1, 'test')
     };
+    console.log(post);
     this.postService
       .createPost(post)
       .subscribe( () => {
@@ -59,6 +75,7 @@ export class CreatePostComponent implements OnInit, OnDestroy {
           this.message = this.response.data.message;
           createPostForm.reset();
           this.router.navigate(['/posts']);
+          this.openSnackBar(this.snackBarMessage);
         } else {
           this.error = this.response.data.message;
           console.log('Error! ' + this.error);
@@ -67,7 +84,15 @@ export class CreatePostComponent implements OnInit, OnDestroy {
       });
   }
 
+  openSnackBar(message: string) {
+    const config = new MatSnackBarConfig();
+    config.panelClass = ['snackbar'];
+    config.duration = this.snackbarDuration;
+    this.snackBar.open(message, null, config);
+  }
+
   ngOnDestroy(): void {
     this.responseSubscription.unsubscribe();
+    this.userSubscription.unsubscribe();
   }
 }

@@ -5,6 +5,7 @@ import {Subscription} from 'rxjs';
 import {StorageService} from '../../storage.service';
 
 import {Post} from '../post.model';
+import {element} from 'protractor';
 
 
 @Component({
@@ -17,18 +18,25 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
   postsFetchSubscription: Subscription;
   postsChangedSubscription: Subscription;
   isLoading: boolean;
+  allPosts: Post[];
 
-  constructor(private storageService: StorageService) { }
+  selected = 'unconfirmed';
+
+  constructor(private storageService: StorageService) {
+  }
 
   ngOnInit() {
+    console.log(this.selected);
     this.isLoading = true;
     this.postsFetchSubscription = this.storageService.fetchAllPosts().subscribe();
     this.postsChangedSubscription = this.storageService.postsChanged
       .subscribe((posts: Post[]) => {
-        this.posts = posts.filter((currentValue) => currentValue.postStatus === 'unconfirmed');
+        this.allPosts = posts;
+        this.posts = this.allPosts.filter((currentValue) => currentValue.postStatus === this.selected);
         this.isLoading = false;
       });
-    this.posts = this.storageService.getPosts();
+    this.allPosts = this.storageService.getPosts();
+    this.posts = this.allPosts.filter((currentValue) => currentValue.postStatus === this.selected);
   }
 
   ngOnDestroy(): void {
@@ -36,4 +44,11 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
     this.postsChangedSubscription.unsubscribe();
   }
 
+  changePostsByStatus() {
+    if (this.selected === 'all') {
+      this.posts = this.allPosts;
+    } else {
+      this.posts = this.allPosts.filter((currentValue) => currentValue.postStatus === this.selected);
+    }
+  }
 }

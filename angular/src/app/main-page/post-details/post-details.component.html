@@ -28,6 +28,7 @@
           Approve
         </button>
         <button
+          *ngIf="post.postStatus !== 'rejected'"
           mat-button
           class="btn btn-yellow"
           matTooltip="Reject post"
@@ -36,6 +37,7 @@
           Reject
         </button>
         <button
+          *ngIf="post.postStatus !== 'deleted'"
           mat-button
           class="btn btn-red"
           matTooltip="Delete post"

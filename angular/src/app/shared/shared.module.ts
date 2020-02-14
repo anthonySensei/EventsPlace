@@ -12,7 +12,7 @@ import {MatInputModule} from '@angular/material/input';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatSelectModule} from '@angular/material/select';
 import {MatTooltipModule} from '@angular/material/tooltip';
-import {MatSnackBarModule} from '@angular/material';
+import {MatRadioModule, MatSnackBarModule} from '@angular/material';
 import {MatSidenavModule} from '@angular/material/sidenav';
 
 @NgModule({
@@ -34,7 +34,8 @@ import {MatSidenavModule} from '@angular/material/sidenav';
     MatSelectModule,
     MatTooltipModule,
     MatSnackBarModule,
-    MatSidenavModule
+    MatSidenavModule,
+    MatRadioModule
   ]
 })
 

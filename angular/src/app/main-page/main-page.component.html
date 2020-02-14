@@ -65,7 +65,8 @@
       <i class="material-icons">list</i>
     </button>
     <div style="overflow:hidden">
-      <a *ngIf="user; else noUser"
+      <a
+        *ngIf="isLoggedIn; else isNotLoggedIn"
          mat-button
          class="btn"
          style="float: right"
@@ -74,7 +75,7 @@
       >
         <i class="material-icons">add</i> Create
       </a>
-      <ng-template #noUser>
+      <ng-template #isNotLoggedIn>
         <button
           mat-button
           class="btn"

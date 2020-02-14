@@ -12,7 +12,6 @@ export class AuthService {
   loggedChange = new Subject<boolean>();
   user: User;
   userChanged = new Subject<User>();
-  roleChange = new Subject<string>();
   authJSONResponseChanged = new Subject<{}>();
   authJSONResponse = {};
   REGISTRATION_URL = 'http://localhost:3000/registration';
@@ -37,6 +36,10 @@ export class AuthService {
 
   getUser() {
     return this.user;
+  }
+
+  getIsLoggedIn() {
+    return this.isLoggedIn;
   }
 
   setIsLoggedIn(isLoggedIn: boolean) {
@@ -91,6 +94,7 @@ export class AuthService {
         {headers})
       .pipe(map((response: any) => {
         this.setAuthJSONResponse(response);
+        this.setUser(null);
       }));
   }
 

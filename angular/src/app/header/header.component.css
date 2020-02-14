@@ -49,3 +49,22 @@
   background-color: rgb(2,169,255);
   color: rgb(255,255,255);
 }
+
+.image-cropper {
+  width: 40px;
+  height: 40px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.navbar-profile-image{
+  display: inline;
+  margin: 0 auto;
+  height: 100%;
+  width: 100%;
+}
+.mat-menu-item:hover {
+  background-color: rgb(2, 169,255);
+  color: white;
+}

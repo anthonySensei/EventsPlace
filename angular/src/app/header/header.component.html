@@ -16,8 +16,8 @@
     <li *ngIf="role === 'manager' || role === 'admin'" class="main-header-item" routerLinkActive="active">
       <a [routerLink]="'/post-managing'" class="navbar-link">Managing</a>
     </li>
-    <li class="main-header-item" routerLinkActive="active" *ngIf="isLoggedIn">
-      <a [routerLink]="'/my-account'" class="navbar-link">Profile</a>
+    <li *ngIf="role === 'admin'" class="main-header-item" routerLinkActive="active">
+      <a [routerLink]="'/create-user'" class="navbar-link">Add user</a>
     </li>
   </ul>
 
@@ -28,9 +28,32 @@
       <a [routerLink]="'/login'" class="navbar-link">Login</a>
     </li>
     <ng-template #logout>
-      <li>
-        <button type="submit" class="navbar-logout" (click)="onLogoutUser()">Logout</button>
-      </li>
+      <mat-menu #appMenu="matMenu">
+        <a
+          mat-menu-item
+          [routerLink]="'/my-account'"
+          class="mat-menu-item"
+        >
+          Profile
+        </a>
+        <button
+          mat-menu-item
+          (click)="onLogoutUser()"
+          class="mat-menu-item"
+        >
+          Logout
+        </button>
+      </mat-menu>
+
+      <button mat-icon-button [matMenuTriggerFor]="appMenu">
+        <div class="image-cropper">
+          <img
+            class="navbar-profile-image"
+            src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg"
+            alt="profile_image"
+          >
+        </div>
+      </button>
     </ng-template>
 
   </ul>

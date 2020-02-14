@@ -1,10 +1,31 @@
 <div class="header">
   <h1>Unverified posts</h1>
 </div>
+<mat-divider style="margin: 1% auto 1% auto; width: 80%"></mat-divider>
+<div class="posts-select-filter-container">
+<mat-form-field class="posts-select-filter">
+  <mat-label>Select an option</mat-label>
+  <mat-select [(value)]="selected">
+    <mat-option value="all">All</mat-option>
+    <mat-option value="approved">Approved</mat-option>
+    <mat-option value="unconfirmed">Unconfirmed</mat-option>
+    <mat-option value="rejected">Rejected</mat-option>
+    <mat-option value="deleted">Deleted</mat-option>
+  </mat-select>
+</mat-form-field>
+  <button
+    mat-button
+    type="button"
+    class="btn"
+    matTooltip="Choose posts by status"
+    (click)="changePostsByStatus()"
+  >Ok</button>
+</div>
+<br>
 <div class="posts-container" *ngIf="posts.length > 0; else noPosts">
   <div class="flex-container" *ngIf="!isLoading">
     <div class="card" style="width:100%" *ngFor="let card of posts">
-      <div class="image-container">
+      <div class="image-container status-tape unconfirmed">
         <img
           src="https://images.pexels.com/photos/3558597/pexels-photo-3558597.jpeg"
           alt="post"

@@ -92,6 +92,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   transform: scale(0.95);
 }
 
+.help-block{
+  display: block;
+  color: rgb(255, 0, 0);
+}
+
 /*  */
 
 .d-block {
@@ -220,4 +225,3 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 ::-webkit-scrollbar-thumb:hover {
   background: rgb(2,101,182);
 }
-

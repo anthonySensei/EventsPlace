@@ -9,6 +9,7 @@ import {Subscription} from 'rxjs';
 import {MAT_SNACK_BAR_DATA, MatSnackBar, MatSnackBarConfig, MatSnackBarRef} from '@angular/material';
 import {User} from '../user/user.model';
 import {Role} from '../user/role.model';
+import {AuthService} from '../auth/auth.service';
 
 
 @Component({
@@ -27,37 +28,37 @@ export class MainPageComponent implements OnInit, OnDestroy {
   posts: Post[] = [];
   cards;
   cardsContent;
-  subscription: Subscription;
+  postsSubscription: Subscription;
+  loggedInSubscription: Subscription;
   isLoading = false;
+  isLoggedIn;
   grid = 'FOUR';
   filterContainer;
   showFilterButton = true;
-  user: User;
 
   constructor(private storageService: StorageService,
+              private authService: AuthService,
               public snackBar: MatSnackBar) {
   }
 
   ngOnInit() {
     this.isLoading = true;
-    this.subscription = this.storageService.postsChanged
+    this.postsSubscription = this.storageService.postsChanged
       .subscribe((posts: Post[]) => {
         this.posts = posts.filter((current) => current.postStatus === 'approved');
         this.isLoading = false;
       });
+    this.loggedInSubscription = this.authService.loggedChange
+      .subscribe(isLoggedIn => {
+        this.isLoggedIn = isLoggedIn;
+        console.log(isLoggedIn);
+      });
+    this.isLoggedIn = this.authService.getIsLoggedIn();
     this.cards = document.getElementsByClassName('card');
     this.cardsContent = document.getElementsByClassName('container');
     this.filterContainer = document.getElementsByClassName('filter-container')[0];
     this.storageService.fetchAllPosts().subscribe();
     this.posts = this.storageService.getPosts();
-    this.user = {
-      userId: 1,
-      name: '',
-      email: '',
-      password: '',
-      createdAt: new Date(),
-      role: new Role(1, 'admin')
-    };
   }
 
   openSnackBar() {
@@ -95,7 +96,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+    this.postsSubscription.unsubscribe();
   }
 
   search() {}

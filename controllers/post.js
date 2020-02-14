@@ -59,7 +59,7 @@ module.exports.createPost = (req, res) => {
         post_image: req.body.postImage,
         event_name: req.body.eventName,
         event_location: req.body.eventLocation,
-        userId: req.body.user.userId,
+        userId: req.body.user.id,
         hashtagId: req.body.hashtag.hashtagId
     });
 
