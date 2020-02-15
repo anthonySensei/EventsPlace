@@ -1,5 +1,5 @@
-import {Component, Inject, Input, OnDestroy, OnInit} from '@angular/core';
-import {FormControl} from '@angular/forms';
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
+import {FormControl, NgModel} from '@angular/forms';
 
 import {StorageService} from '../storage.service';
 
@@ -7,8 +7,6 @@ import {Post} from './post.model';
 
 import {Subscription} from 'rxjs';
 import {MAT_SNACK_BAR_DATA, MatSnackBar, MatSnackBarConfig, MatSnackBarRef} from '@angular/material';
-import {User} from '../user/user.model';
-import {Role} from '../user/role.model';
 import {AuthService} from '../auth/auth.service';
 
 
@@ -25,6 +23,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
   snackBarMessage = 'Please login to continue';
 
   position = new FormControl('above');
+  allPosts: Post[] = [];
   posts: Post[] = [];
   cards;
   cardsContent;
@@ -35,6 +34,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
   grid = 'FOUR';
   filterContainer;
   showFilterButton = true;
+  selected: string;
 
   constructor(private storageService: StorageService,
               private authService: AuthService,
@@ -45,7 +45,8 @@ export class MainPageComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.postsSubscription = this.storageService.postsChanged
       .subscribe((posts: Post[]) => {
-        this.posts = posts.filter((current) => current.postStatus === 'approved');
+        this.allPosts = posts.filter((current) => current.postStatus === 'approved');
+        this.posts = this.allPosts;
         this.isLoading = false;
       });
     this.loggedInSubscription = this.authService.loggedChange
@@ -57,7 +58,8 @@ export class MainPageComponent implements OnInit, OnDestroy {
     this.cardsContent = document.getElementsByClassName('container');
     this.filterContainer = document.getElementsByClassName('filter-container')[0];
     this.storageService.fetchAllPosts().subscribe();
-    this.posts = this.storageService.getPosts();
+    this.allPosts = this.storageService.getPosts();
+    this.posts = this.allPosts;
   }
 
   openSnackBar() {
@@ -98,7 +100,19 @@ export class MainPageComponent implements OnInit, OnDestroy {
     this.postsSubscription.unsubscribe();
   }
 
-  search() {}
+  search(filter: NgModel) {
+    if (this.selected === 'email') {
+      this.posts = this.allPosts.filter(current => current.user.email === filter.value);
+    } else if (this.selected === 'hashtag') {
+      this.posts = this.allPosts.filter(current => current.hashtag.name === filter.value);
+    } else if (this.selected === 'location') {
+      this.posts = this.allPosts.filter(current => current.eventLocation === filter.value);
+    } else if (this.selected === 'username') {
+      this.posts = this.allPosts.filter(current => current.user.name === filter.value);
+    } else if (this.selected === 'all') {
+      this.posts = this.allPosts;
+    }
+  }
 
   toggleFilterButton() {
     this.showFilterButton = !this.showFilterButton;

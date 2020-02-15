@@ -2,17 +2,34 @@ const Post = require('../models/post');
 const User = require('../models/user');
 const Hashtag = require('../models/hashtag');
 
+const nodemailer = require('nodemailer');
+const sendGridTransport = require('nodemailer-sendgrid-transport');
+
+const ITEMS_PER_PAGE = 8;
+
+const transporter = nodemailer.createTransport(sendGridTransport({
+    auth: {
+        api_key: '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'
+    }
+}));
+
 const statuses = require('../enums/status.enum');
 
+
 exports.getAllPosts = (req, res) => {
+    page = req.query.page;
+    console.log(page);
     Post
         .findAll({
+            where: { status: 'approved' },
             include: [{
                 model: User
             },
             {
                 model: Hashtag
-            }]
+            }],
+            limit: 8,
+            offset: (page - 1) * ITEMS_PER_PAGE
         })
         .then(result => {
             let posts = [];
@@ -87,9 +104,10 @@ module.exports.createPost = (req, res) => {
 }
 
 exports.setPostStatus = (req, res) => {
-    console.log(req.body);
     const postId = req.body.postId;
     const newPostStatus = req.body.postStatus;
+    const userEmail = req.body.user.email;
+    let reason = req.body.reason;
     Post
      .findOne({ where: { id: postId } })
      .then(post => {
@@ -97,14 +115,31 @@ exports.setPostStatus = (req, res) => {
              status: newPostStatus
          })
          .then(result => {
-             console.log('Post status was set successfully');
-             res.send({
-                responseCode: 500,
-                data: {
-                    postUpdated: true,
-                    message: 'Post status was set successfully'
-                }
-            });
+            console.log('Post status was set successfully');
+            res.send({
+               responseCode: 500,
+               data: {
+                   postUpdated: true,
+                   message: 'Post status was set successfully'
+               }
+           });
+           if (!reason) {
+               reason = 'Thanks for your post!';
+           } else {
+               reason = 'Reason: ' + reason;
+           }
+        //    transporter.sendMail({
+        //        to: userEmail,
+        //        from: 'noreply@eventsplace.com',
+        //        subject: 'Post decision',
+        //        html: `Hello! Your post was ${newPostStatus}. ${reason}`
+        //    })
+        //    .then(result => {
+        //        console.log(result);
+        //    })
+        //    .catch(err => {
+        //        console.log(err);
+        //    });
          })
          .catch(err => {
              console.log(err.errors[0].message);
@@ -128,7 +163,6 @@ exports.setPostStatus = (req, res) => {
 }
 
 function compareObjectsById(a, b) {
-    // Use toUpperCase() to ignore character casing
     const idA = a.postId;
     const idB = b.postId;
   

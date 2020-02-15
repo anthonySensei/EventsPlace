@@ -1,4 +1,4 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Post} from '../post.model';
 import {ActivatedRoute, Params, Router} from '@angular/router';
 import {StorageService} from '../../storage.service';
@@ -64,6 +64,9 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
 
   onSetStatus(status: string, post: Post) {
     post.postStatus = status;
+    if (status === 'rejected' || status === 'deleted') {
+      post.reason = prompt('Input reason: ', '');
+    }
     this.storageService.setPostStatus(post)
       .subscribe(() => {
         if (this.isUpdatedPostStatus) {

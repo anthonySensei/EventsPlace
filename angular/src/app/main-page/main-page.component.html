@@ -1,5 +1,4 @@
 <button
-  *ngIf="posts.length > 0"
   mat-fab
   class="filter-button"
   (click)="drawer.toggle(); toggleFilterButton()"
@@ -26,7 +25,9 @@
         class="d-block"
         style="margin: 0 1% 0 1%">
         <mat-label>Select an option</mat-label>
-        <mat-select required>
+        <mat-select [(value)]="selected" required>
+          <mat-option value="all">All</mat-option>
+          <mat-option value="email">Email</mat-option>
           <mat-option value="hashtag">#Hashtag</mat-option>
           <mat-option value="location">Location</mat-option>
           <mat-option value="username">User name</mat-option>
@@ -38,12 +39,16 @@
         <input
           matInput
           name="filter"
-          placeholder="Ex. #hello">
+          #filter='ngModel'
+          ngModel
+          placeholder="Ex. #hello"
+          [disabled]="selected === 'all'"
+        >
       </mat-form-field>
       <button
         mat-button
         class="btn"
-        (click)="search(); drawer.toggle(); toggleFilterButton()">
+        (click)="search(filter); drawer.toggle(); toggleFilterButton()">
         <i class="material-icons">search</i>
       </button>
     </div>

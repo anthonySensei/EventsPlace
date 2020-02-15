@@ -12,9 +12,11 @@ export class Post {
   postUpdatedAt: Date;
   user: User;
   hashtag: Hashtag;
+  reason?: string;
 
   constructor(id: number, description: string, status: string, image: string, createdAt: Date,
-              updatedAt: Date, eventLocation: string, eventName, user: User, hashtag: Hashtag) {
+              updatedAt: Date, eventLocation: string, eventName, user: User, hashtag: Hashtag,
+              reason?: string) {
     this.postId = id;
     this.description = description;
     this.postStatus = status;
@@ -25,5 +27,6 @@ export class Post {
     this.postUpdatedAt = updatedAt;
     this.user = user;
     this.hashtag = hashtag;
+    this.reason = reason;
   }
 }

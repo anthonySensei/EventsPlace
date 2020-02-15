@@ -23,6 +23,7 @@ export class StorageService {
   }
 
   getPosts() {
+    console.log(this.posts);
     return this.posts;
   }
 
@@ -42,13 +43,13 @@ export class StorageService {
     headers.append('Content-type', 'application/json');
     return this
       .http
-      .get(this.GET_POSTS_URL, {headers})
+      .get(this.GET_POSTS_URL + '?page=1', {headers})
       .pipe(map((response: any) => {
         this.setPosts(response.data.posts);
       }));
   }
 
-  setPostStatus(post: Post) {
+  setPostStatus(post: Post, reason?: string) {
     console.log(post);
     const headers = new HttpHeaders();
     headers.append('Content-type', 'application/json');

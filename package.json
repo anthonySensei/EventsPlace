@@ -8,11 +8,14 @@
     "start": "nodemon index.js"
   },
   "dependencies": {
+    "@sendgrid/mail": "^6.5.2",
     "bcryptjs": "*",
     "body-parser": "*",
     "express": "*",
     "express-session": "*",
     "jsonwebtoken": "^8.5.1",
+    "nodemailer": "^6.4.2",
+    "nodemailer-sendgrid-transport": "^0.2.0",
     "passport": "*",
     "passport-jwt": "*",
     "pg": "^7.18.1",
