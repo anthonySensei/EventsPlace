@@ -7,6 +7,8 @@ const bodyParser = require('body-parser');
 const passport = require('passport');
 const passportJWT = require('passport-jwt');
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
+
 
 const postRoutes = require('./routes/post');
 const userRoutes = require('./routes/user');
@@ -22,15 +24,37 @@ const app = express();
 
 const port = 3000;
 
+const uuidv4 = require('uuid/v4')
+
 
 app.use(passport.initialize());
 app.use(passport.session());
 
 require('./config/passport')(passport);
 
+const imageStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'angular/src/assets/images');
+    },
+    filename: (req, file, cb) => {
+        cb(null, uuidv4());
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg' ) {
+        cb(null, true);
+    } else {
+        cb(null, false);
+    }
+};
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(multer({storage: imageStorage, fileFilter: fileFilter}).single('image'));
+
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('angular/src/assets/images', express.static(path.join(__dirname, 'angular/src/assets/images')));
 
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "http://localhost:4200"); // update to match the domain you will make the request from

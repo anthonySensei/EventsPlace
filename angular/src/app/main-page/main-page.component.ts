@@ -36,6 +36,8 @@ export class MainPageComponent implements OnInit, OnDestroy {
   showFilterButton = true;
   selected: string;
 
+  page = 1;
+
   constructor(private storageService: StorageService,
               private authService: AuthService,
               public snackBar: MatSnackBar) {
@@ -46,6 +48,13 @@ export class MainPageComponent implements OnInit, OnDestroy {
     this.postsSubscription = this.storageService.postsChanged
       .subscribe((posts: Post[]) => {
         this.allPosts = posts.filter((current) => current.postStatus === 'approved');
+        for (const post of this.allPosts) {
+          if (!post.postImage) {
+            post.postImage = 'https://images.pexels.com/photos/3558597/pexels-photo-3558597.jpeg';
+          } else {
+            post.postImage = 'assets/images/' + post.postImage;
+          }
+        }
         this.posts = this.allPosts;
         this.isLoading = false;
       });
@@ -58,8 +67,16 @@ export class MainPageComponent implements OnInit, OnDestroy {
     this.cardsContent = document.getElementsByClassName('container');
     this.filterContainer = document.getElementsByClassName('filter-container')[0];
     this.storageService.fetchAllPosts().subscribe();
+    for (const post of this.allPosts) {
+      if (!post.postImage) {
+        post.postImage = 'https://images.pexels.com/photos/3558597/pexels-photo-3558597.jpeg';
+      } else {
+        post.postImage = 'localhost:3000/' + post.postImage;
+      }
+    }
     this.allPosts = this.storageService.getPosts();
     this.posts = this.allPosts;
+
   }
 
   openSnackBar() {

@@ -20,6 +20,8 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
   isLoading: boolean;
   allPosts: Post[];
 
+  page = 1;
+
   selected = 'unconfirmed';
 
   constructor(private storageService: StorageService) {

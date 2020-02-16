@@ -24,7 +24,7 @@
 <br>
 <div class="posts-container" *ngIf="posts.length > 0; else noPosts">
   <div class="flex-container" *ngIf="!isLoading">
-    <div class="card" style="width:100%" *ngFor="let card of posts">
+    <div class="card" style="width:100%" *ngFor="let card of posts | paginate: {itemsPerPage: 8, currentPage: page}">
       <div
         class="image-container status-tape"
         [ngClass]="{'unconfirmed': card.postStatus === 'unconfirmed', 'deleted': card.postStatus === 'deleted',
@@ -48,6 +48,9 @@
         </mat-grid-list>
       </div>
     </div>
+  </div>
+  <div class="pagination-container">
+    <pagination-controls (pageChange)="page = $event"></pagination-controls>
   </div>
 </div>
 

@@ -5,8 +5,6 @@ const Hashtag = require('../models/hashtag');
 const nodemailer = require('nodemailer');
 const sendGridTransport = require('nodemailer-sendgrid-transport');
 
-const ITEMS_PER_PAGE = 8;
-
 const transporter = nodemailer.createTransport(sendGridTransport({
     auth: {
         api_key: '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'
@@ -17,19 +15,14 @@ const statuses = require('../enums/status.enum');
 
 
 exports.getAllPosts = (req, res) => {
-    page = req.query.page;
-    console.log(page);
     Post
         .findAll({
-            where: { status: 'approved' },
             include: [{
                 model: User
             },
             {
                 model: Hashtag
             }],
-            limit: 8,
-            offset: (page - 1) * ITEMS_PER_PAGE
         })
         .then(result => {
             let posts = [];
@@ -70,14 +63,32 @@ exports.getAllPosts = (req, res) => {
 }
 
 module.exports.createPost = (req, res) => {
+    const image = req.file;
+    if (!image) {
+        res.send({
+            responseCode: 500,
+            data: {
+                postCreated: false,
+                message: 'Incorrect type of file.'
+            }
+        });
+    }
+
+    const imageFileName = image.filename;
+    console.log(image);
+    // console.log(imageUrl);
+    postData = JSON.parse(req.body.post_data);
+    // console.log(postData);
+    // console.log(req.file);  
+
     let newPost = new Post({
-        description: req.body.description,
+        description: postData.description,
         status: statuses.UNCONFIRMED,
-        post_image: req.body.postImage,
-        event_name: req.body.eventName,
-        event_location: req.body.eventLocation,
-        userId: req.body.user.id,
-        hashtagId: req.body.hashtag.hashtagId
+        post_image:imageFileName,
+        event_name: postData.eventName,
+        event_location: postData.eventLocation,
+        userId: postData.user.id,
+        hashtagId: postData.hashtag.hashtagId
     });
 
     newPost

@@ -5,9 +5,7 @@ import {User} from '../../user/user.model';
 import {Hashtag} from '../hashtag.model';
 import {Subscription} from 'rxjs';
 import {Router} from '@angular/router';
-import {Role} from '../../user/role.model';
 import {AuthService} from '../../auth/auth.service';
-import {MainPageSnackbarComponent} from '../main-page.component';
 import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
 
 @Component({
@@ -26,6 +24,8 @@ export class CreatePostComponent implements OnInit, OnDestroy {
 
   snackbarDuration = 5000;
   snackBarMessage = 'Post was created successfully';
+
+  fileToUpload: File = null;
 
   constructor(private postService: PostService,
               private authService: AuthService,
@@ -54,21 +54,24 @@ export class CreatePostComponent implements OnInit, OnDestroy {
     this.user = this.authService.getUser();
   }
 
+  onHandleFileInput(event) {
+    this.fileToUpload = event.target.files[0];
+  }
+
   onCreatePost(eventName: NgModel,
                postDescription: HTMLTextAreaElement,
                eventLocation: NgModel,
                createPostForm: NgForm) {
     const post = {
       description: postDescription.value,
-      postImage: null,
       eventName: eventName.value,
       eventLocation: eventLocation.value,
       user: this.user,
       hashtag: new Hashtag(1, 'test')
     };
-    console.log(post);
+    console.log(this.fileToUpload);
     this.postService
-      .createPost(post)
+      .createPost(post, this.fileToUpload)
       .subscribe( () => {
         if (this.isCreated) {
           console.log('Created');

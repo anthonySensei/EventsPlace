@@ -135,6 +135,31 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   width: 100%;
 }
 
+/*  */
+
+.pagination-container {
+  margin-left: 40%;
+}
+
+.ngx-pagination {
+  padding-left: 0 !important;
+  background: inherit;
+}
+
+.ngx-pagination .current{
+  /*background: rgb(2,169,255) !important;*/
+  background: rgb(255, 255, 255) !important;
+  color: rgb(2,169,255) !important;
+  border: 1px solid rgb(2,169,255) !important;
+}
+
+.ngx-pagination .current:hover {
+  background: rgb(2,169,255) !important;
+  color: rgb(255,255,255) !important;
+}
+
+
+
 /* Animation */
 
 @-webkit-keyframes fadeInDown {

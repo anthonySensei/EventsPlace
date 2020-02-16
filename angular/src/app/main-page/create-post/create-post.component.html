@@ -4,7 +4,13 @@
       <hr style="background-color: #0d0d0d">
       <form
         (submit)="onCreatePost(eventName, postDescription, eventLocation, createPostForm)"
+        enctype="multipart/form-data"
         #createPostForm="ngForm">
+        <input
+          type="file"
+          name="image"
+          (change)="onHandleFileInput($event)"
+        >
         <mat-form-field
           class="d-block form-input">
           <mat-label>Event name</mat-label>

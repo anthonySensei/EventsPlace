@@ -11,7 +11,6 @@ import { CreatePostComponent } from './create-post/create-post.component';
 import { UncheckedPostsComponent } from './unchecked-posts/unchecked-posts.component';
 
 
-
 @NgModule({
   declarations: [
     MainPageComponent,

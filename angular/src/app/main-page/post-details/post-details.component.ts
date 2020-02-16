@@ -17,7 +17,6 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
   post: Post;
   postId: number;
   isLoading = false;
-  postsSubscription: Subscription;
   paramsSubscription: Subscription;
   responseSubscription: Subscription;
   userSubscription: Subscription;
@@ -38,7 +37,6 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.isLoading = true;
-    this.postsSubscription = this.storageService.fetchAllPosts().subscribe();
     this.paramsSubscription = this.route.params
       .subscribe((params: Params) => {
           this.postId = +params.id;
@@ -88,7 +86,6 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.postsSubscription.unsubscribe();
     this.paramsSubscription.unsubscribe();
   }
 }

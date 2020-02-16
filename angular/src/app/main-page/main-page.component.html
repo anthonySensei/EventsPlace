@@ -72,11 +72,11 @@
     <div style="overflow:hidden">
       <a
         *ngIf="isLoggedIn; else isNotLoggedIn"
-         mat-button
-         class="btn"
-         style="float: right"
-         matTooltip="Create post"
-         [routerLink]="'/create-post'"
+        mat-button
+        class="btn"
+        style="float: right"
+        matTooltip="Create post"
+        [routerLink]="'/create-post'"
       >
         <i class="material-icons">add</i> Create
       </a>
@@ -97,10 +97,10 @@
 
   <div class="posts-container" *ngIf="posts.length > 0; else noPosts">
     <div class="flex-container" *ngIf="!isLoading">
-      <div class="card" style="width:100%" *ngFor="let card of posts">
+      <div class="card" style="width:100%" *ngFor="let card of posts | paginate: {itemsPerPage: 8, currentPage: page}">
         <div class="image-container">
           <img
-            src="https://images.pexels.com/photos/3558597/pexels-photo-3558597.jpeg"
+            src="{{card.postImage}}"
             alt="post"
             class="card-image">
           <div class="data-on-image">
@@ -117,6 +117,9 @@
           </mat-grid-list>
         </div>
       </div>
+    </div>
+    <div class="pagination-container">
+      <pagination-controls (pageChange)="page = $event"></pagination-controls>
     </div>
   </div>
 </mat-drawer-container>

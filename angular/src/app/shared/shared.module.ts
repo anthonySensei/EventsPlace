@@ -14,6 +14,7 @@ import {MatSelectModule} from '@angular/material/select';
 import {MatTooltipModule} from '@angular/material/tooltip';
 import {MatRadioModule, MatSnackBarModule} from '@angular/material';
 import {MatSidenavModule} from '@angular/material/sidenav';
+import {NgxPaginationModule} from 'ngx-pagination';
 
 @NgModule({
   declarations: [],
@@ -35,7 +36,8 @@ import {MatSidenavModule} from '@angular/material/sidenav';
     MatTooltipModule,
     MatSnackBarModule,
     MatSidenavModule,
-    MatRadioModule
+    MatRadioModule,
+    NgxPaginationModule
   ]
 })
 
