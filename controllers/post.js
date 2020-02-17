@@ -2,6 +2,8 @@ const Post = require('../models/post');
 const User = require('../models/user');
 const Hashtag = require('../models/hashtag');
 
+const base64Img = require('base64-img');
+
 const nodemailer = require('nodemailer');
 const sendGridTransport = require('nodemailer-sendgrid-transport');
 
@@ -28,6 +30,7 @@ exports.getAllPosts = (req, res) => {
             let posts = [];
             console.log(posts);
             for(let post of result){
+                post.dataValues.post_image = base64Img.base64Sync(post.dataValues.post_image);
                 posts.push({
                     postId: post.dataValues.id,
                     description: post.dataValues.description,
@@ -41,6 +44,15 @@ exports.getAllPosts = (req, res) => {
                     hashtag: post.dataValues.hashtag_.dataValues
                 });
             }
+
+            //*Important
+
+            // base64 = posts[0].postImage;
+            // const filepath = base64Img.imgSync(base64, '../images/', 'hello');
+            // console.log('Filepath: ' + filepath);
+
+            //*
+
             posts.sort(compareObjectsById);
             res.send({
                 responseCode: 500,
@@ -74,17 +86,20 @@ module.exports.createPost = (req, res) => {
         });
     }
 
-    const imageFileName = image.filename;
     console.log(image);
-    // console.log(imageUrl);
+    const imagePath = image.path;
     postData = JSON.parse(req.body.post_data);
-    // console.log(postData);
-    // console.log(req.file);  
+
+    
+
+
+
+
 
     let newPost = new Post({
         description: postData.description,
         status: statuses.UNCONFIRMED,
-        post_image:imageFileName,
+        post_image:image.path,
         event_name: postData.eventName,
         event_location: postData.eventLocation,
         userId: postData.user.id,

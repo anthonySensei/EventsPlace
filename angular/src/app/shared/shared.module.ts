@@ -1,6 +1,7 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 
+import {MatRadioModule, MatSnackBarModule} from '@angular/material';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatListModule} from '@angular/material/list';
 import {MatIconModule} from '@angular/material/icon';
@@ -12,9 +13,10 @@ import {MatInputModule} from '@angular/material/input';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatSelectModule} from '@angular/material/select';
 import {MatTooltipModule} from '@angular/material/tooltip';
-import {MatRadioModule, MatSnackBarModule} from '@angular/material';
 import {MatSidenavModule} from '@angular/material/sidenav';
+
 import {NgxPaginationModule} from 'ngx-pagination';
+import {ImageCropperModule} from 'ngx-image-cropper';
 
 @NgModule({
   declarations: [],
@@ -37,7 +39,8 @@ import {NgxPaginationModule} from 'ngx-pagination';
     MatSnackBarModule,
     MatSidenavModule,
     MatRadioModule,
-    NgxPaginationModule
+    NgxPaginationModule,
+    ImageCropperModule
   ]
 })
 

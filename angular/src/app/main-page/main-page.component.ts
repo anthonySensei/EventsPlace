@@ -48,13 +48,6 @@ export class MainPageComponent implements OnInit, OnDestroy {
     this.postsSubscription = this.storageService.postsChanged
       .subscribe((posts: Post[]) => {
         this.allPosts = posts.filter((current) => current.postStatus === 'approved');
-        for (const post of this.allPosts) {
-          if (!post.postImage) {
-            post.postImage = 'https://images.pexels.com/photos/3558597/pexels-photo-3558597.jpeg';
-          } else {
-            post.postImage = 'assets/images/' + post.postImage;
-          }
-        }
         this.posts = this.allPosts;
         this.isLoading = false;
       });

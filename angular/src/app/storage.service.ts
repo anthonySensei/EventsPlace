@@ -51,6 +51,7 @@ export class StorageService {
 
   setPostStatus(post: Post, reason?: string) {
     console.log(post);
+    post.postImage = '';
     const headers = new HttpHeaders();
     headers.append('Content-type', 'application/json');
     return this

@@ -97,12 +97,16 @@
 
   <div class="posts-container" *ngIf="posts.length > 0; else noPosts">
     <div class="flex-container" *ngIf="!isLoading">
-      <div class="card" style="width:100%" *ngFor="let card of posts | paginate: {itemsPerPage: 8, currentPage: page}">
+      <div
+        class="card"
+        style="width:100%"
+        *ngFor="let card of posts | paginate: {itemsPerPage: 8, currentPage: page}">
         <div class="image-container">
           <img
             src="{{card.postImage}}"
             alt="post"
-            class="card-image">
+            class="card-image"
+          >
           <div class="data-on-image">
             <a [routerLink]="['/posts', card.postId]" class="card-details-link">Details</a>
           </div>

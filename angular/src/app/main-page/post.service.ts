@@ -3,7 +3,6 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {map} from 'rxjs/operators';
 import {Subject} from 'rxjs';
-import {json} from 'sequelize';
 
 @Injectable({
   providedIn: 'root'
@@ -41,4 +40,21 @@ export class PostService {
         this.setResponse(response);
       }));
   }
+
+  // createPost(post, ImageBase64ToUpload: string) {
+  //   const headers = new HttpHeaders();
+  //   const formData: FormData = new FormData();
+  //   headers.append('Content-Type', 'multipart/form-data');
+  //   formData.append('base64', ImageBase64ToUpload);
+  //   formData.append('post_data', JSON.stringify(post));
+  //   return this
+  //     .http
+  //     .post(
+  //       this.CREATING_POST_URL,
+  //       formData,
+  //       {headers})
+  //     .pipe(map((response: any) => {
+  //       this.setResponse(response);
+  //     }));
+  // }
 }

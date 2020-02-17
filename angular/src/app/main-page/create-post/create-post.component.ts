@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {NgForm, NgModel} from '@angular/forms';
 import {PostService} from '../post.service';
 import {User} from '../../user/user.model';
@@ -7,7 +7,12 @@ import {Subscription} from 'rxjs';
 import {Router} from '@angular/router';
 import {AuthService} from '../../auth/auth.service';
 import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
+import {ImageCroppedEvent} from 'ngx-image-cropper';
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
 
+export interface DialogData {
+  imageBase64: string;
+}
 @Component({
   selector: 'app-create-post',
   templateUrl: './create-post.component.html',
@@ -26,11 +31,18 @@ export class CreatePostComponent implements OnInit, OnDestroy {
   snackBarMessage = 'Post was created successfully';
 
   fileToUpload: File = null;
+  // imageToUploadBase64: string = null;
+
+  oldPassword: string;
+  newPassword: string;
+  retypeNewPassword: string;
 
   constructor(private postService: PostService,
               private authService: AuthService,
               private router: Router,
-              public snackBar: MatSnackBar) {}
+              public snackBar: MatSnackBar,
+              public dialog: MatDialog) {
+  }
 
   ngOnInit() {
     this.responseSubscription = this.postService.responseChanged
@@ -43,8 +55,8 @@ export class CreatePostComponent implements OnInit, OnDestroy {
       }) => {
         console.log(response.data);
         if (response.data) {
-         this.response = response;
-         this.isCreated = this.response.data.postCreated;
+          this.response = response;
+          this.isCreated = this.response.data.postCreated;
         }
       });
     this.userSubscription = this.authService.userChanged
@@ -58,6 +70,19 @@ export class CreatePostComponent implements OnInit, OnDestroy {
     this.fileToUpload = event.target.files[0];
   }
 
+  // openDialog(): void {
+  //   const dialogRef = this.dialog.open(ModalPostCreateDialogComponent, {
+  //     width: '70%',
+  //     data: {
+  //       imageBase64: ''
+  //     }
+  //   });
+  //
+  //   dialogRef.afterClosed().subscribe(result => {
+  //     this.imageToUploadBase64 = result;
+  //   });
+  // }
+
   onCreatePost(eventName: NgModel,
                postDescription: HTMLTextAreaElement,
                eventLocation: NgModel,
@@ -69,7 +94,7 @@ export class CreatePostComponent implements OnInit, OnDestroy {
       user: this.user,
       hashtag: new Hashtag(1, 'test')
     };
-    console.log(this.fileToUpload);
+    // console.log(this.imageToUploadBase64);
     this.postService
       .createPost(post, this.fileToUpload)
       .subscribe( () => {
@@ -98,4 +123,44 @@ export class CreatePostComponent implements OnInit, OnDestroy {
     this.responseSubscription.unsubscribe();
     this.userSubscription.unsubscribe();
   }
+}
+
+@Component({
+  selector: 'app-dialog',
+  templateUrl: './choose-image-modal.component.html',
+  styleUrls: ['../../auth/login/auth.component.css']
+})
+export class ModalPostCreateDialogComponent {
+  imageChangedEvent: any = '';
+  croppedImage: any = '';
+
+
+  constructor(
+    public dialogRef: MatDialogRef<ModalPostCreateDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: DialogData) {
+    dialogRef.disableClose = true;
+  }
+
+  fileChangeEvent(event: any): void {
+    this.imageChangedEvent = event;
+  }
+  imageCropped(event: ImageCroppedEvent) {
+    this.croppedImage = event.base64;
+    this.data.imageBase64 = this.croppedImage;
+  }
+  imageLoaded() {
+    // show cropper
+  }
+  cropperReady() {
+    // cropper ready
+  }
+  loadImageFailed() {
+    // show message
+  }
+
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
+
+
 }
