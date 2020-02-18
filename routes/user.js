@@ -19,4 +19,6 @@ router.get('/my-account', passport.authenticate('jwt', {session: false}), (req, 
 
 router.post('/my-account', userController.postUpdateUserData);
 
+router.post('/my-account/update-profile-image', userController.postUpdateProfileImage);
+
 module.exports = router;

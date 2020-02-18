@@ -6,6 +6,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const secret_key = require('../config/secret_key');
 
+const uuidv4 = require('uuid/v4');
+
+const base64Img = require('base64-img');
+
 
 
 
@@ -100,6 +104,8 @@ exports.postLoginUser = (req, res, next) => {
                 Role
                  .findOne({ where: {user_id : user.dataValues.id} })
                  .then(role => {
+                    // console.log(user);
+                    user.dataValues.profile_image = base64Img.base64Sync(user.dataValues.profile_image);
                     user.dataValues.role = role.dataValues; 
                     res.send({
                         responseCode: 400,
@@ -217,18 +223,56 @@ module.exports.postUpdateUserData = (req, res) => {
                      message: 'Info successfully changed!'
                 }
             });
-        } else if (req.body.changeData.changeImage) {
-            console.log('Changing image!');
-            return res.send({
-                responseCod: 400,
-                data: {
-                     changedImage: true,
-                     message: 'Image successfully changed!'
-                }
-            });
         }
     }) 
     .catch(err => console.log(err));
+
+}
+
+module.exports.postUpdateProfileImage = (req, res) => {
+    const profileImageBase64 = req.body.base64;
+    const user = JSON.parse(req.body.user);
+    // console.log(user);
+    const profileImagePath = base64Img.imgSync(profileImageBase64, '../images/profile', uuidv4());
+
+    User
+      .findOne({ where: { user_id: user.id } })
+      .then(user => {
+          user
+            .update({
+                profile_image: profileImagePath
+            })
+            .then(result => {
+                console.log('Profile image successfully changed!');
+                return res.send({
+                    responseCod: 400,
+                    data: {
+                         changedUserInfo: true,
+                         message: 'Info successfully changed!'
+                    }
+                });
+            })
+            .catch(err => {
+                console.log(err.errors[0].message);
+                res.send({
+                    responseCod: 400,
+                    data: {
+                         passwordChanged: false,
+                         message: err.errors[0].message
+                    }
+                }); 
+            });
+      })
+      .catch(err => {
+        console.log(err.errors[0].message);
+        res.send({
+            responseCod: 400,
+            data: {
+                 passwordChanged: false,
+                 message: err.errors[0].message
+            }
+        });
+      });
 
 }
 

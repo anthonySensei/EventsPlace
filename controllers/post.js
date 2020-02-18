@@ -2,6 +2,9 @@ const Post = require('../models/post');
 const User = require('../models/user');
 const Hashtag = require('../models/hashtag');
 
+
+const uuidv4 = require('uuid/v4')
+
 const base64Img = require('base64-img');
 
 const nodemailer = require('nodemailer');
@@ -28,7 +31,6 @@ exports.getAllPosts = (req, res) => {
         })
         .then(result => {
             let posts = [];
-            console.log(posts);
             for(let post of result){
                 post.dataValues.post_image = base64Img.base64Sync(post.dataValues.post_image);
                 posts.push({
@@ -44,14 +46,6 @@ exports.getAllPosts = (req, res) => {
                     hashtag: post.dataValues.hashtag_.dataValues
                 });
             }
-
-            //*Important
-
-            // base64 = posts[0].postImage;
-            // const filepath = base64Img.imgSync(base64, '../images/', 'hello');
-            // console.log('Filepath: ' + filepath);
-
-            //*
 
             posts.sort(compareObjectsById);
             res.send({
@@ -75,31 +69,14 @@ exports.getAllPosts = (req, res) => {
 }
 
 module.exports.createPost = (req, res) => {
-    const image = req.file;
-    if (!image) {
-        res.send({
-            responseCode: 500,
-            data: {
-                postCreated: false,
-                message: 'Incorrect type of file.'
-            }
-        });
-    }
-
-    console.log(image);
-    const imagePath = image.path;
+    const imageBase64 = req.body.base64;
     postData = JSON.parse(req.body.post_data);
-
-    
-
-
-
-
+    const filepath = base64Img.imgSync(imageBase64, '../images/', uuidv4());
 
     let newPost = new Post({
         description: postData.description,
         status: statuses.UNCONFIRMED,
-        post_image:image.path,
+        post_image: filepath,
         event_name: postData.eventName,
         event_location: postData.eventLocation,
         userId: postData.user.id,
