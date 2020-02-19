@@ -6,12 +6,12 @@
     <image-cropper
       [imageChangedEvent]="imageChangedEvent"
       [maintainAspectRatio]="true"
-      [aspectRatio]="3 / 4"
+      [aspectRatio]="1"
       [resizeToWidth]="0"
-      [resizeToHeight]="0"
-      [cropperMinWidth]="350"
-      [cropperMinHeight]="450"
+      [cropperMinWidth]="250"
+      [cropperMinHeight]="250"
       [onlyScaleDown]="true"
+      [roundCropper]="true"
       (imageCropped)="imageCropped($event)"
       (imageLoaded)="imageLoaded()"
       (cropperReady)="cropperReady()"
@@ -25,9 +25,10 @@
       (click)="onNoClick()">
       Cancel
     </button>
+
     <button
-      style="display: inline-block"
       class="form-button modal-form-submit"
+      style="display: inline-block"
       type="submit"
       [disabled]="imageForm.invalid"
       [mat-dialog-close]="data.imageBase64"

@@ -6,15 +6,10 @@
         (submit)="onCreatePost(eventName, postDescription, eventLocation, createPostForm)"
         enctype="multipart/form-data"
         #createPostForm="ngForm">
-        <input
-          type="file"
-          name="image"
-          (change)="onHandleFileInput($event)"
-        >
-<!--        <button-->
-<!--          type="button"-->
-<!--          mat-raised-button-->
-<!--          (click)="openDialog()">Choose image</button>-->
+        <button
+          type="button"
+          mat-raised-button
+          (click)="openDialog()">Choose image</button>
         <mat-form-field
           class="d-block form-input">
           <mat-label>Event name</mat-label>

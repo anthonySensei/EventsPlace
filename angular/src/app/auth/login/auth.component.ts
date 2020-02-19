@@ -43,7 +43,7 @@ export class AuthComponent implements OnInit, OnDestroy {
 
 
   onLoginUser(email: NgModel, password: NgModel) {
-    if (email.value === '' && password.value === '') {
+    if (email.value === '' || password.value === '') {
       this.error = 'Please fill in fields';
       this.loginForm.reset();
       return false;

@@ -30,8 +30,7 @@ export class CreatePostComponent implements OnInit, OnDestroy {
   snackbarDuration = 5000;
   snackBarMessage = 'Post was created successfully';
 
-  fileToUpload: File = null;
-  // imageToUploadBase64: string = null;
+  imageToUploadBase64: string = null;
 
   oldPassword: string;
   newPassword: string;
@@ -66,22 +65,18 @@ export class CreatePostComponent implements OnInit, OnDestroy {
     this.user = this.authService.getUser();
   }
 
-  onHandleFileInput(event) {
-    this.fileToUpload = event.target.files[0];
-  }
+  openDialog(): void {
+    const dialogRef = this.dialog.open(ModalPostCreateDialogComponent, {
+      width: '70%',
+      data: {
+        imageBase64: ''
+      }
+    });
 
-  // openDialog(): void {
-  //   const dialogRef = this.dialog.open(ModalPostCreateDialogComponent, {
-  //     width: '70%',
-  //     data: {
-  //       imageBase64: ''
-  //     }
-  //   });
-  //
-  //   dialogRef.afterClosed().subscribe(result => {
-  //     this.imageToUploadBase64 = result;
-  //   });
-  // }
+    dialogRef.afterClosed().subscribe(result => {
+      this.imageToUploadBase64 = result;
+    });
+  }
 
   onCreatePost(eventName: NgModel,
                postDescription: HTMLTextAreaElement,
@@ -94,9 +89,9 @@ export class CreatePostComponent implements OnInit, OnDestroy {
       user: this.user,
       hashtag: new Hashtag(1, 'test')
     };
-    // console.log(this.imageToUploadBase64);
+    console.log(this.imageToUploadBase64);
     this.postService
-      .createPost(post, this.fileToUpload)
+      .createPost(post, this.imageToUploadBase64)
       .subscribe( () => {
         if (this.isCreated) {
           console.log('Created');

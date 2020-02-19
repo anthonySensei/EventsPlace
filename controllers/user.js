@@ -3,6 +3,7 @@ const Role = require('../models/role');
 const roles = require('../enums/role.enum');
 
 const bcrypt = require('bcryptjs');
+
 const jwt = require('jsonwebtoken');
 const secret_key = require('../config/secret_key');
 
@@ -10,10 +11,10 @@ const uuidv4 = require('uuid/v4');
 
 const base64Img = require('base64-img');
 
-
-
+sessionDuration = 3600 * 12;
 
 exports.postCreateUser =  (req, res, next) => {
+    let email = req.body.email;
     let password;
     if (req.body.password) {
         password = req.body.password;
@@ -22,8 +23,17 @@ exports.postCreateUser =  (req, res, next) => {
     }
     console.log(password);
     console.log('User creation!');
+    if (!email || !password) {
+        return res.send({              
+            responseCode: 400,
+            data: {
+                 loggedIn: false,
+                 message: 'Please fill in fields'
+            }
+        });  
+    }
     let newUser = new User({
-        email: req.body.email,
+        email: email,
         password: password
     });
     bcrypt.genSalt(10, (err, salt) => {
@@ -46,7 +56,7 @@ exports.postCreateUser =  (req, res, next) => {
                 })
                 .then(result => {
                     console.log('User was successfully created!');
-                    res.send({
+                    return res.send({
                         responseCod: 200,
                         data: {
                              created: true,
@@ -56,7 +66,7 @@ exports.postCreateUser =  (req, res, next) => {
                 })
                 .catch(err => {
                     console.log(err.errors[0].message);
-                    res.send({
+                    return res.send({
                         responseCod: 400,
                         data: {
                              created: false,
@@ -66,7 +76,7 @@ exports.postCreateUser =  (req, res, next) => {
                 });
             }).catch(err => {
                 console.log(err.errors[0].message);
-                res.send({
+                return res.send({
                     responseCod: 400,
                     data: {
                          created: false,
@@ -83,12 +93,22 @@ exports.postLoginUser = (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
 
+    if (!email || !password) {
+        return res.send({              
+            responseCode: 400,
+            data: {
+                 loggedIn: false,
+                 message: 'Please fill in fields'
+            }
+        });  
+    }
+
     User
     .findOne({where: {email: email}})
     .then(user => {
         if (!user) {
             console.log('Bad credentials');
-            res.send({              
+            return res.send({              
                 responseCode: 400,
                 data: {
                      loggedIn: false,
@@ -98,31 +118,37 @@ exports.postLoginUser = (req, res, next) => {
             console.log('User was found');
             if(bcrypt.compareSync(password, user.dataValues.password)){
                 console.log('Match');
-                jwt.sign(user.toJSON(), secret_key, {
-                    expiresIn: 3600 * 12
-                });
                 Role
                  .findOne({ where: {user_id : user.dataValues.id} })
                  .then(role => {
                     // console.log(user);
                     user.dataValues.profile_image = base64Img.base64Sync(user.dataValues.profile_image);
-                    user.dataValues.role = role.dataValues; 
+                    userData = {
+                        email: user.dataValues.email,
+                        profileImage: user.dataValues.profile_image,
+                        role: role.dataValues
+                    };
+                     const token = jwt.sign(user.toJSON(), secret_key, {
+                         expiresIn: sessionDuration
+                     });
+                    //  console.log(token);
                     res.send({
                         responseCode: 400,
                         data: {
                              loggedIn: true,
                              message: 'User successfully logged in!',
-                             user: user.dataValues
+                             user: userData,
+                             token: 'JWT ' + token
                         }
                     }); 
                  })
                  .catch(err => {
-                    console.log(err.errors[0].message);
+                    console.log(err);
                     return res.send({
                         responseCod: 400,
                         data: {
                              loggedIn: false,
-                             message: err.errors[0].message
+                             message: err
                         }
                     });
                  });
@@ -154,16 +180,104 @@ module.exports.getLogout = (req, res) => {
         }});
 };
 
+module.exports.getUser = (req, res) => {
+    const email = req.query.email;
+    
+    if (!email) {
+        return res.send({
+            responseCod: 400,
+            data: {
+                 message: err
+            }
+        });
+    }
+
+    User
+        .findOne({ where: {email: email} })
+        .then(user => {
+            Role
+                .findOne({ where: { user_id: user.dataValues.id }})
+                .then(role => {
+                    user.dataValues.profile_image = base64Img.base64Sync(user.dataValues.profile_image);
+                    userData = {
+                        id: user.dataValues.id,
+                        name: user.dataValues.name,
+                        email: user.dataValues.email,
+                        profileImage: user.dataValues.profile_image,
+                        role: role.dataValues
+                    }
+                    res.send({
+                        responseCode: 400,
+                        data: {
+                             message: 'User was successfully fetched!',
+                             user: userData
+                        }
+                    }); 
+                })
+                .catch(err => {
+                        console.log(err);
+                        return res.send({
+                            responseCod: 400,
+                            data: {
+                                 message: err
+                            }
+                        });
+                });
+        })
+        .catch(err => {
+            console.log(err);
+            return res.send({
+                responseCod: 400,
+                data: {
+                     message: err
+                }
+            });
+        });
+}
+
 module.exports.postUpdateUserData = (req, res) => {
     console.log('Updating data');
+    const userId = req.body.user.id;
+    if (!userId) {
+        console.log('Error');
+        return res.send({
+            responseCod: 400,
+            data: {
+                 message: 'Error'
+            }
+        });
+    }
     User
-    .findOne({ where: { user_id: req.body.user.id }})
+    .findOne({ where: { user_id: userId}})
     .then(user => {
         if(req.body.changeData.changePassword) {
             console.log('Changing password');
-            if(bcrypt.compareSync(req.body.passwordObject.oldPassword, user.dataValues.password)){
+            const oldPassword = req.body.passwordObject.oldPassword;
+            if (!oldPassword) {
+                console.log('Old password is empty');
+                return res.send({
+                    responseCod: 400,
+                    data: {
+                         passwordChanged: false,
+                         message: 'Old password is empty'
+                    }
+                });
+            }
+            if(bcrypt.compareSync(oldPassword, user.dataValues.password)) {
                 console.log('Match');
-                if (req.body.passwordObject.newPassword === req.body.passwordObject.retypeNewPassword) {
+                const newPassword = req.body.passwordObject.newPassword;
+                const retypeNewPassword = req.body.passwordObject.retypeNewPassword;
+                if (!newPassword || !retypeNewPassword) {
+                    console.log('New password is empty')
+                    return res.send({
+                        responseCod: 400,
+                        data: {
+                             passwordChanged: false,
+                             message: 'New password is empty'
+                        }
+                    });
+                }
+                if (newPassword === retypeNewPassword) {
                     let newPassword = req.body.passwordObject.newPassword;
                     bcrypt.genSalt(10, (err, salt) => {
                         bcrypt.hash(newPassword, salt, (err, hash) => {
@@ -180,12 +294,12 @@ module.exports.postUpdateUserData = (req, res) => {
                                     }
                                 });
                             }).catch(err => {
-                                console.log(err.errors[0].message);
-                                res.send({
+                                console.log('Password was not saved');
+                                return res.send({
                                     responseCod: 400,
                                     data: {
                                          passwordChanged: false,
-                                         message: err.errors[0].message
+                                         message: 'Password was not saved'
                                     }
                                 });
                             });
@@ -212,9 +326,20 @@ module.exports.postUpdateUserData = (req, res) => {
                 });
             }
         } else if (req.body.changeData.changeInfo) {
+            const email = req.body.user.email;
+            const name = req.body.user.name;
+            if (!email || !name) {
+                return res.send({
+                    responseCod: 400,
+                    data: {
+                         changedUserInfo: false,
+                         message: 'Error'
+                    }
+                });
+            }
             user.update({
-                email: req.body.user.email,
-                name: req.body.user.name
+                email: email,
+                name: name
             });
             return res.send({
                 responseCod: 400,
@@ -232,6 +357,15 @@ module.exports.postUpdateUserData = (req, res) => {
 module.exports.postUpdateProfileImage = (req, res) => {
     const profileImageBase64 = req.body.base64;
     const user = JSON.parse(req.body.user);
+    if (!profileImageBase64 || !user) {
+        return res.send({
+            responseCod: 400,
+            data: {
+                 passwordChanged: false,
+                 message: 'Error'
+            }
+        }); 
+    }
     // console.log(user);
     const profileImagePath = base64Img.imgSync(profileImageBase64, '../images/profile', uuidv4());
 
@@ -254,7 +388,7 @@ module.exports.postUpdateProfileImage = (req, res) => {
             })
             .catch(err => {
                 console.log(err.errors[0].message);
-                res.send({
+                return res.send({
                     responseCod: 400,
                     data: {
                          passwordChanged: false,
@@ -265,7 +399,7 @@ module.exports.postUpdateProfileImage = (req, res) => {
       })
       .catch(err => {
         console.log(err.errors[0].message);
-        res.send({
+        return res.send({
             responseCod: 400,
             data: {
                  passwordChanged: false,

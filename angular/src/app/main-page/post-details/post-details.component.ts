@@ -6,6 +6,7 @@ import {Subscription} from 'rxjs';
 import {AuthService} from '../../auth/auth.service';
 import {User} from '../../user/user.model';
 import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
+import {PostService} from '../post.service';
 
 
 @Component({
@@ -19,7 +20,7 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
   isLoading = false;
   paramsSubscription: Subscription;
   responseSubscription: Subscription;
-  userSubscription: Subscription;
+  postSubscription: Subscription;
   isUpdatedPostStatus: boolean;
   message: string;
   error: string;
@@ -32,6 +33,7 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
   constructor(private route: ActivatedRoute,
               private router: Router,
               private storageService: StorageService,
+              private postService: PostService,
               private authService: AuthService,
               private snackBar: MatSnackBar) { }
 
@@ -40,17 +42,18 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
     this.paramsSubscription = this.route.params
       .subscribe((params: Params) => {
           this.postId = +params.id;
-          this.post = this.storageService.getPost(this.postId);
-          this.isLoading = false;
       });
+    this.postService.getPostHttp(this.postId).subscribe();
+    this.postSubscription = this.postService.postChanged
+      .subscribe(post => {
+        this.post = post;
+        this.isLoading = false;
+      });
+    this.post = this.postService.getPost();
     this.responseSubscription = this.storageService.responseChanged
       .subscribe(response => {
          this.response = response;
          this.isUpdatedPostStatus = this.response.data.postUpdated;
-      });
-    this.userSubscription = this.authService.userChanged
-      .subscribe(user => {
-        this.user = user;
       });
     this.user = this.authService.getUser();
     if (this.user) {

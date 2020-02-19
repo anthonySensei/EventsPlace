@@ -94,7 +94,9 @@
     </div>
     <mat-divider style="margin: 1% 0 1% 0"></mat-divider>
   </div>
-
+  <div *ngIf="isLoading" style="text-align: center">
+    <app-loading-spinner></app-loading-spinner>
+  </div>
   <div class="posts-container" *ngIf="posts.length > 0; else noPosts">
     <div class="flex-container" *ngIf="!isLoading">
       <div
@@ -122,14 +124,14 @@
         </div>
       </div>
     </div>
-    <div class="pagination-container">
+    <div class="pagination-container" *ngIf="!isLoading">
       <pagination-controls (pageChange)="page = $event"></pagination-controls>
     </div>
   </div>
 </mat-drawer-container>
 
 <ng-template #noPosts>
-  <div style="text-align: center; font-size: 3rem; margin-top: 20px">
+  <div style="text-align: center; font-size: 3rem; margin-top: 20px" *ngIf="!isLoading">
     <span>There are no posts</span>
   </div>
 </ng-template>

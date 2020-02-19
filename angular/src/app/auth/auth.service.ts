@@ -81,6 +81,7 @@ export class AuthService {
       .pipe(map((response: any) => {
         this.setAuthJSONResponse(response);
         this.setUser(response.data.user);
+        console.log(response);
       }));
   }
 

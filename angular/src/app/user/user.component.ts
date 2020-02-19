@@ -1,6 +1,6 @@
-import {NgModel, Validators} from '@angular/forms';
-import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {NgModel} from '@angular/forms';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {MatDialog} from '@angular/material/dialog';
 
 import {UserService} from './user.service';
 import {AuthService} from '../auth/auth.service';
@@ -9,14 +9,8 @@ import {User} from './user.model';
 
 import {Subscription} from 'rxjs';
 import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
-
-
-export interface DialogData {
-  name: string;
-  oldPassword: string;
-  newPassword: string;
-  retypeNewPassword: string;
-}
+import {ChangePasswordModalComponent} from './change-password-modal/change-password-modal.component';
+import {ChangeProfileImageModalComponent} from './change-profile-image/change-profile-image-modal.component';
 
 @Component({
   selector: 'app-user',
@@ -27,6 +21,7 @@ export class UserComponent implements OnInit, OnDestroy {
   isLoading: boolean;
   user: User;
   userSubscription: Subscription;
+  getUserSubscription: Subscription;
   responseSubscription: Subscription;
   error: string;
   response;
@@ -36,6 +31,8 @@ export class UserComponent implements OnInit, OnDestroy {
   oldPassword: string;
   newPassword: string;
   retypeNewPassword: string;
+
+  profileImageBase64;
 
   snackbarDuration = 5000;
 
@@ -50,10 +47,13 @@ export class UserComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.userSubscription = this.authService.userChanged
       .subscribe(user => {
+        // console.log(this.user);
         this.user = user;
         this.isLoading = false;
       });
     this.user = this.authService.getUser();
+    this.getUserSubscription = this.userService.getUserHttp(this.user.email).subscribe();
+    // console.log(this.user.profile_image);
     this.responseSubscription = this.userService.responseChanged
       .subscribe(response => {
         this.response = response;
@@ -62,8 +62,24 @@ export class UserComponent implements OnInit, OnDestroy {
     this.name = this.user.name;
   }
 
-  openDialog(): void {
-    const dialogRef = this.dialog.open(ModalDialogComponent, {
+  openChangeProfileImageDialog() {
+    const dialogRef = this.dialog.open(ChangeProfileImageModalComponent, {
+      width: '70%',
+      data: {
+        imageBase64: ''
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      this.profileImageBase64 = result;
+      if (this.profileImageBase64) {
+        this.onChangeProfileImage(this.profileImageBase64);
+      }
+    });
+  }
+
+  openChangePasswordDialog(): void {
+    const dialogRef = this.dialog.open(ChangePasswordModalComponent, {
       width: '35%',
       data: {
         name: this.name,
@@ -73,6 +89,9 @@ export class UserComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(result => {
+      if (!result) {
+        return false;
+      }
       this.onChangeUserPassword(
         result.oldPassword,
         result.newPassword,
@@ -98,7 +117,7 @@ export class UserComponent implements OnInit, OnDestroy {
     newPassword: string,
     retypeNewPassword: string) {
     const passwordsObject = {
-      user_id: this.user.userId,
+      user_id: this.user.id,
       oldPassword,
       newPassword,
       retypeNewPassword
@@ -114,6 +133,12 @@ export class UserComponent implements OnInit, OnDestroy {
       });
   }
 
+  onChangeProfileImage(base64Image: string) {
+    // console.log(base64Image);
+    this.userService.updateProfileImage(base64Image, this.user)
+      .subscribe();
+  }
+
   openSnackBar(message: string, action: string) {
     const config = new MatSnackBarConfig();
     config.panelClass = ['snackbar'];
@@ -124,37 +149,4 @@ export class UserComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.userSubscription.unsubscribe();
   }
-}
-
-@Component({
-  selector: 'app-dialog',
-  templateUrl: 'change-password-modal.html',
-  styleUrls: ['./user.component.css']
-})
-export class ModalDialogComponent {
-  hideOldPassword = true;
-  hideNewPassword = true;
-  hideRetypePassword = true;
-
-  constructor(
-    public dialogRef: MatDialogRef<ModalDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData) {
-    dialogRef.disableClose = true;
-  }
-
-  checkIcon(password: string, hide: boolean) {
-    if (password == null || password === '') {
-      return '';
-    } else if (hide) {
-      return 'visibility';
-    } else {
-      return 'visibility_off';
-    }
-  }
-
-  onNoClick(): void {
-    this.dialogRef.close();
-  }
-
-
 }

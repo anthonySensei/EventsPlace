@@ -5,17 +5,21 @@ import {FormsModule} from '@angular/forms';
 import {SharedModule} from '../shared/shared.module';
 import { UsersRoutingModule } from './users-routing.module';
 
-import {ModalDialogComponent, UserComponent} from './user.component';
+import {UserComponent} from './user.component';
 import {UserDetailsComponent} from './user-details/user-details.component';
 import {CreateUserComponent} from './create-user/create-user.component';
 import {UsersComponent} from './users/users.component';
+
+import {ChangePasswordModalComponent} from './change-password-modal/change-password-modal.component';
+import {ChangeProfileImageModalComponent} from './change-profile-image/change-profile-image-modal.component';
 
 
 
 @NgModule({
   declarations: [
     UserComponent,
-    ModalDialogComponent,
+    ChangePasswordModalComponent,
+    ChangeProfileImageModalComponent,
     UserDetailsComponent,
     CreateUserComponent,
     UsersComponent
@@ -26,6 +30,6 @@ import {UsersComponent} from './users/users.component';
     SharedModule,
     UsersRoutingModule
   ],
-  entryComponents: [ ModalDialogComponent ]
+  entryComponents: [ ChangePasswordModalComponent, ChangeProfileImageModalComponent ]
 })
 export class UsersModule { }

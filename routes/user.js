@@ -13,9 +13,11 @@ router.post('/login', userController.postLoginUser);
 
 router.get('/logout', userController.getLogout);
 
-router.get('/my-account', passport.authenticate('jwt', {session: false}), (req, res) => {
-    res.send('My account');
+router.get('/auth', passport.authenticate('jwt', {session: false}), (req, res) => {
+    res.send('Auth');
 });
+
+router.get('/my-account', userController.getUser);
 
 router.post('/my-account', userController.postUpdateUserData);
 

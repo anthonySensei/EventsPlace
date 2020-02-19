@@ -45,7 +45,6 @@ export class StorageService {
       .get(this.GET_POSTS_URL, {headers})
       .pipe(map((response: any) => {
         this.setPosts(response.data.posts);
-        console.log(response.data.posts);
       }));
   }
 

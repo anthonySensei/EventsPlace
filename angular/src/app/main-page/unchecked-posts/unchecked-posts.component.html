@@ -22,6 +22,9 @@
   >Search</button>
 </div>
 <br>
+<div *ngIf="isLoading" style="text-align: center">
+  <app-loading-spinner></app-loading-spinner>
+</div>
 <div class="posts-container" *ngIf="posts.length > 0; else noPosts">
   <div class="flex-container" *ngIf="!isLoading">
     <div class="card" style="width:100%" *ngFor="let card of posts | paginate: {itemsPerPage: 8, currentPage: page}">
@@ -31,7 +34,7 @@
                     'rejected': card.postStatus === 'rejected', 'approved': card.postStatus === 'approved'}"
         >
         <img
-          src="https://images.pexels.com/photos/3558597/pexels-photo-3558597.jpeg"
+          src="{{card.postImage}}"
           alt="post"
           class="card-image">
         <div class="data-on-image">
@@ -49,13 +52,13 @@
       </div>
     </div>
   </div>
-  <div class="pagination-container">
+  <div *ngIf="!isLoading" class="pagination-container">
     <pagination-controls (pageChange)="page = $event"></pagination-controls>
   </div>
 </div>
 
 <ng-template #noPosts>
-  <div style="text-align: center; font-size: 3rem; margin-top: 20px">
+  <div style="text-align: center; font-size: 3rem; margin-top: 20px" *ngIf="!isLoading">
     <span>There are no posts to check</span>
   </div>
 </ng-template>

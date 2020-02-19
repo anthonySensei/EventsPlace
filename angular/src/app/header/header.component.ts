@@ -3,6 +3,7 @@ import {Router} from '@angular/router';
 import {AuthService} from '../auth/auth.service';
 import {Subscription} from 'rxjs';
 import {User} from '../user/user.model';
+import {UserService} from '../user/user.service';
 
 @Component({
   selector: 'app-header',
@@ -12,11 +13,12 @@ import {User} from '../user/user.model';
 export class HeaderComponent implements OnInit, OnDestroy {
   isLoggedIn = false;
   subscription: Subscription;
-  userSubscription: Subscription;
+  userChangedSubscription: Subscription;
   user: User;
   role = 'user';
 
   constructor(private authService: AuthService,
+              private userService: UserService,
               private router: Router) {
   }
 
@@ -25,7 +27,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .subscribe(isLoggedIn => {
         this.isLoggedIn = isLoggedIn;
       });
-    this.userSubscription = this.authService.userChanged
+    this.userChangedSubscription = this.authService.userChanged
       .subscribe(user => {
         this.user = user;
         if (this.user) {

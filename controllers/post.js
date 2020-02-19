@@ -35,14 +35,10 @@ exports.getAllPosts = (req, res) => {
                 post.dataValues.post_image = base64Img.base64Sync(post.dataValues.post_image);
                 posts.push({
                     postId: post.dataValues.id,
-                    description: post.dataValues.description,
                     postStatus: post.dataValues.status,
                     postImage: post.dataValues.post_image,
                     eventLocation: post.dataValues.event_location,
-                    eventName: post.dataValues.event_name,
-                    postCreatedAt: post.dataValues.createdAt,
                     postUpdatedAt: post.dataValues.updatedAt,
-                    user: post.dataValues.user_.dataValues,
                     hashtag: post.dataValues.hashtag_.dataValues
                 });
             }
@@ -67,6 +63,81 @@ exports.getAllPosts = (req, res) => {
             })
         });
 }
+
+module.exports.getPost = (req, res) => {
+    postId = req.query.postId;
+    Post
+     .findOne({ where: { id: postId }})
+     .then(post => {
+        User
+         .findOne({ where: { id: post.dataValues.userId}})
+         .then(user => {
+            //  if (!user.dataValues.name) {
+            //     user.dataValues.name = user;
+            //  }
+            userData = {
+                name: user.dataValues.name,
+                email: user.dataValues.email
+            };
+            Hashtag.findOne({ where: { id: post.dataValues.hashtagId }})
+                .then(hashtag => {
+                    post.dataValues.post_image = base64Img.base64Sync(post.dataValues.post_image);
+                    hashtagData = {
+                        name: hashtag.dataValues.name
+                    }
+                    postData = {
+                        postId: post.dataValues.id,
+                        postStatus: post.dataValues.status,
+                        postImage: post.dataValues.post_image,
+                        description: post.dataValues.description,
+                        eventLocation: post.dataValues.event_location,
+                        postCreatedAt: post.dataValues.createdAt,
+                        postUpdatedAt: post.dataValues.updatedAt,
+                        user: userData,
+                        hashtag: hashtagData
+                    };
+                    console.log('Post was fetched successfully!');
+                    res.send({
+                        responseCode: 500,
+                        data: {
+                            post: postData,
+                            message: 'Post was fetched successfully!'
+                        }
+                    });
+                })
+                .catch(err => {
+                    res.send({
+                         responseCode: 500,
+                         data: {
+                            message: 'Error! ' + err.errors[0].message
+                         }
+                    });
+                })
+         })
+         .catch(err => {
+            console.log(err.errors[0].message);
+            res.send({
+                responseCode: 500,
+                data: {
+                    message: 'Error! ' + err.errors[0].message
+                }
+            });
+        });
+     })
+    .catch(err => {
+        console.log(err.errors[0].message);
+        res.send({
+            responseCode: 500,
+            data: {
+                message: 'Error! ' + err.errors[0].message
+            }
+        });
+    });
+
+}
+
+
+
 
 module.exports.createPost = (req, res) => {
     const imageBase64 = req.body.base64;

@@ -2,10 +2,11 @@ const path = require('path');
 
 const express = require('express');
 const sequelize = require('./config/database');
-const session = require('express-session');
 const bodyParser = require('body-parser');
+
 const passport = require('passport');
 const passportJWT = require('passport-jwt');
+
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 
@@ -34,10 +35,12 @@ require('./config/passport')(passport);
 
 const imageStorage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'angular/src/assets/images');
+        cb(null, 'images');
     },
-    filename: (req, file, cb) => {
-        cb(null, uuidv4());
+
+    filename: function(req, file, cb) {
+        let extension = file.originalname.split('.').pop();         
+        cb(null, uuidv4() + '.' + extension);
     }
 });
 
@@ -51,10 +54,14 @@ const fileFilter = (req, file, cb) => {
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(multer({storage: imageStorage, fileFilter: fileFilter}).single('image'));
+app.use(multer({
+     limits: {fieldSize: 5 * 1024 * 1024 },
+     storage: imageStorage,
+     fileFilter: fileFilter
+}).single('image'));
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('angular/src/assets/images', express.static(path.join(__dirname, 'angular/src/assets/images')));
+app.use('images', express.static(path.join(__dirname, 'images')));
 
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "http://localhost:4200"); // update to match the domain you will make the request from

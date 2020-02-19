@@ -18,8 +18,10 @@ import {MatSidenavModule} from '@angular/material/sidenav';
 import {NgxPaginationModule} from 'ngx-pagination';
 import {ImageCropperModule} from 'ngx-image-cropper';
 
+import { LoadingSpinnerComponent } from './loading-spinner/loading-spinner.component';
+
 @NgModule({
-  declarations: [],
+  declarations: [LoadingSpinnerComponent],
   imports: [
     CommonModule
   ],
@@ -40,7 +42,8 @@ import {ImageCropperModule} from 'ngx-image-cropper';
     MatSidenavModule,
     MatRadioModule,
     NgxPaginationModule,
-    ImageCropperModule
+    ImageCropperModule,
+    LoadingSpinnerComponent
   ]
 })
 
