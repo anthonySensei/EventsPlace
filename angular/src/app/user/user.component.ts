@@ -60,6 +60,9 @@ export class UserComponent implements OnInit, OnDestroy {
       });
     this.response = this.userService.getResponse();
     this.name = this.user.name;
+    if (!this.name) {
+      this.name = '';
+    }
   }
 
   openChangeProfileImageDialog() {
@@ -136,7 +139,10 @@ export class UserComponent implements OnInit, OnDestroy {
   onChangeProfileImage(base64Image: string) {
     // console.log(base64Image);
     this.userService.updateProfileImage(base64Image, this.user)
-      .subscribe();
+      .subscribe(() => {
+        this.message = this.userService.getResponse().data.message;
+        this.openSnackBar(this.message, null);
+      });
   }
 
   openSnackBar(message: string, action: string) {

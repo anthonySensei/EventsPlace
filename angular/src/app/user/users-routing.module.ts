@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
 import {AuthGuard} from '../auth/auth.guard';
+import {AdminGuard} from './admin.guard';
 
 import {UserComponent} from './user.component';
 import {CreateUserComponent} from './create-user/create-user.component';
@@ -11,7 +12,7 @@ import {UserDetailsComponent} from './user-details/user-details.component';
 
 const routes: Routes = [
   { path: 'my-account', component: UserComponent, canActivate: [AuthGuard] },
-  { path: 'create-user', component: CreateUserComponent, canActivate: [AuthGuard] },
+  { path: 'create-user', component: CreateUserComponent, canActivate: [AuthGuard, AdminGuard]},
   { path: 'users', component: UsersComponent, canActivate: [AuthGuard] },
   { path: 'user/:id', component: UserDetailsComponent },
 ];

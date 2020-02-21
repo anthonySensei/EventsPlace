@@ -14,7 +14,8 @@ export class StorageService {
   response;
   postsChanged = new Subject<Post[]>();
   posts: Post[] = [];
-  GET_POSTS_URL = 'http://localhost:3000/posts';
+  GET_ALL_POSTS_URL = 'http://localhost:3000/posts-managing';
+  GET_APPROVED_POSTS_URL = 'http://localhost:3000/posts';
   SET_STATUS_URL = 'http://localhost:3000/set-status';
 
   setPosts(posts: Post[]) {
@@ -35,14 +36,32 @@ export class StorageService {
     this.responseChanged.next(this.response);
   }
 
+  getResponse() {
+    return this.response;
+  }
+
   constructor(private http: HttpClient) { }
+
+  fetchApprovedPosts(filter: string, value: string, page: number) {
+    const headers = new HttpHeaders();
+    headers.append('Content-type', 'application/json');
+    return this
+      .http
+      .get(
+        `${this.GET_APPROVED_POSTS_URL}?filter=${filter}&value=${value}&page=${page}`,
+        {headers})
+      .pipe(map((response: any) => {
+        this.setPosts(response.data.posts);
+        this.setResponse(response);
+      }));
+  }
 
   fetchAllPosts() {
     const headers = new HttpHeaders();
     headers.append('Content-type', 'application/json');
     return this
       .http
-      .get(this.GET_POSTS_URL, {headers})
+      .get(this.GET_ALL_POSTS_URL, {headers})
       .pipe(map((response: any) => {
         this.setPosts(response.data.posts);
       }));

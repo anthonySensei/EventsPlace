@@ -10,10 +10,23 @@ import {User} from '../user/user.model';
 export class AuthService {
   isLoggedIn = false;
   loggedChange = new Subject<boolean>();
+
+  isAdminRole = false;
+  adminChange = new Subject<boolean>();
+
+  isManagerRole = false;
+  managerChange = new Subject<boolean>();
+
   user: User;
   userChanged = new Subject<User>();
+
   authJSONResponseChanged = new Subject<{}>();
   authJSONResponse = {};
+
+  jwtTokenChanged = new Subject<string>();
+  jwtToken: string;
+
+
   REGISTRATION_URL = 'http://localhost:3000/registration';
   LOGIN_URL = 'http://localhost:3000/login';
   LOGOUT_URL = 'http://localhost:3000/logout';
@@ -29,6 +42,24 @@ export class AuthService {
     return promise;
   }
 
+  isAdmin() {
+    const promise = new Promise(
+      (resolve) => {
+        resolve(this.isAdminRole);
+      }
+    );
+    return promise;
+  }
+
+  isManager() {
+    const promise = new Promise(
+      (resolve) => {
+        resolve(this.isManagerRole);
+      }
+    );
+    return promise;
+  }
+
   setUser(user: User) {
     this.user = user;
     this.userChanged.next(this.user);
@@ -38,18 +69,37 @@ export class AuthService {
     return this.user;
   }
 
-  getIsLoggedIn() {
-    return this.isLoggedIn;
-  }
-
   setIsLoggedIn(isLoggedIn: boolean) {
     this.isLoggedIn = isLoggedIn;
     this.loggedChange.next(this.isLoggedIn);
   }
 
+  getIsLoggedIn() {
+    return this.isLoggedIn;
+  }
+
+  setIsAdmin(isAdmin: boolean) {
+    this.isAdminRole = isAdmin;
+    this.adminChange.next(this.isAdminRole);
+  }
+
+  setIsManager(isManager: boolean) {
+    this.isManagerRole = isManager;
+    this.managerChange.next(this.isManagerRole);
+  }
+
   setAuthJSONResponse(response) {
     this.authJSONResponse = response;
     this.authJSONResponseChanged.next(this.authJSONResponse);
+  }
+
+  setJwtToken(token) {
+    this.jwtToken = token;
+    this.jwtTokenChanged.next(this.jwtToken);
+  }
+
+  getJwtToken(): string {
+    return this.jwtToken;
   }
 
   registerUser(user) {
@@ -81,8 +131,27 @@ export class AuthService {
       .pipe(map((response: any) => {
         this.setAuthJSONResponse(response);
         this.setUser(response.data.user);
+        const userRole = this.user.role.role;
+        if (userRole === 'admin') {
+          this.setIsAdmin(true);
+          this.setIsManager(true);
+        } else if(userRole === 'manager') {
+          this.setIsAdmin(false);
+          this.setIsManager(true);
+        } else {
+          this.setIsAdmin(false);
+          this.setIsManager(false);
+        }
+        this.setJwtToken(response.data.token);
+        this.storeUser(response.data.token, response.data.user);
         console.log(response);
       }));
+  }
+
+  storeUser(token, user) {
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(user));
+    this.jwtToken = token;
   }
 
   logout() {
@@ -96,6 +165,8 @@ export class AuthService {
       .pipe(map((response: any) => {
         this.setAuthJSONResponse(response);
         this.setUser(null);
+        localStorage.clear();
+        this.setJwtToken(null);
       }));
   }
 

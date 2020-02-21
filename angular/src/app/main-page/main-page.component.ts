@@ -23,20 +23,31 @@ export class MainPageComponent implements OnInit, OnDestroy {
   snackBarMessage = 'Please login to continue';
 
   position = new FormControl('above');
-  allPosts: Post[] = [];
   posts: Post[] = [];
   cards;
   cardsContent;
+
+  response;
+
   postsSubscription: Subscription;
   loggedInSubscription: Subscription;
+  responseSubscription: Subscription;
+
   isLoading = false;
   isLoggedIn;
   grid = 'FOUR';
   filterContainer;
   showFilterButton = true;
   selected: string;
+  filter: string;
 
-  page = 1;
+  currentPage = 1;
+
+  hasNextPage;
+  hasPreviousPage;
+  nextPage;
+  previousPage;
+  lastPage;
 
   constructor(private storageService: StorageService,
               private authService: AuthService,
@@ -47,8 +58,8 @@ export class MainPageComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.postsSubscription = this.storageService.postsChanged
       .subscribe((posts: Post[]) => {
-        this.allPosts = posts.filter((current) => current.postStatus === 'approved');
-        this.posts = this.allPosts;
+        this.posts = posts;
+        console.log(this.posts);
         this.isLoading = false;
       });
     this.loggedInSubscription = this.authService.loggedChange
@@ -59,16 +70,29 @@ export class MainPageComponent implements OnInit, OnDestroy {
     this.cards = document.getElementsByClassName('card');
     this.cardsContent = document.getElementsByClassName('container');
     this.filterContainer = document.getElementsByClassName('filter-container')[0];
-    this.storageService.fetchAllPosts().subscribe();
-    for (const post of this.allPosts) {
+    this.storageService.fetchApprovedPosts('all', '', this.currentPage).subscribe();
+    for (const post of this.posts) {
       if (!post.postImage) {
         post.postImage = 'https://images.pexels.com/photos/3558597/pexels-photo-3558597.jpeg';
       } else {
         post.postImage = 'localhost:3000/' + post.postImage;
       }
     }
-    this.allPosts = this.storageService.getPosts();
-    this.posts = this.allPosts;
+    this.posts =  this.storageService.getPosts();
+    this.responseSubscription = this.storageService.responseChanged
+      .subscribe(response => {
+        this.response = response;
+        this.currentPage = this.response.data.paginationData.currentPage;
+        this.nextPage = this.response.data.paginationData.nextPage;
+        this.previousPage = this.response.data.paginationData.previousPage;
+        this.hasNextPage = this.response.data.paginationData.hasNextPage;
+        this.hasPreviousPage = this.response.data.paginationData.hasPreviousPage;
+        this.lastPage = this.response.data.paginationData.lastPage;
+        console.log(response);
+    });
+    this.response = this.storageService.getResponse();
+    // this.currentPage = this.response.data.paginationData.currentPage;
+    // this.nextPage = this.response.data.paginationData.nextPage;
 
   }
 
@@ -106,27 +130,66 @@ export class MainPageComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    this.postsSubscription.unsubscribe();
+  search(filter: NgModel) {
+    this.filter = filter.value;
+    this.currentPage = 1;
+    if (this.selected === 'email') {
+      this.isLoading = true;
+      this.storageService.fetchApprovedPosts('email', filter.value, this.currentPage)
+        .subscribe(() => {
+          this.isLoading = false;
+      });
+      this.posts = this.storageService.getPosts();
+    } else if (this.selected === 'hashtag') {
+      this.isLoading = true;
+      this.storageService.fetchApprovedPosts('hashtag', filter.value, this.currentPage)
+        .subscribe(() => {
+          this.isLoading = false;
+      });
+      this.posts = this.storageService.getPosts();
+    } else if (this.selected === 'location') {
+      this.isLoading = true;
+      this.storageService.fetchApprovedPosts('location', filter.value, this.currentPage)
+        .subscribe(() => {
+          this.isLoading = false;
+      });
+      this.posts = this.storageService.getPosts();
+    } else if (this.selected === 'username') {
+      this.isLoading = true;
+      this.storageService.fetchApprovedPosts('username', filter.value, this.currentPage)
+        .subscribe(() => {
+          this.isLoading = false;
+      });
+      this.posts = this.storageService.getPosts();
+    } else if (this.selected === 'all') {
+      this.isLoading = true;
+      this.storageService.fetchApprovedPosts('all', '', this.currentPage)
+        .subscribe(() => {
+          this.isLoading = false;
+      });
+      this.posts = this.storageService.getPosts();
+    }
   }
 
-  search(filter: NgModel) {
-    if (this.selected === 'email') {
-      this.posts = this.allPosts.filter(current => current.user.email === filter.value);
-    } else if (this.selected === 'hashtag') {
-      this.posts = this.allPosts.filter(current => current.hashtag.name === filter.value);
-    } else if (this.selected === 'location') {
-      this.posts = this.allPosts.filter(current => current.eventLocation === filter.value);
-    } else if (this.selected === 'username') {
-      this.posts = this.allPosts.filter(current => current.user.name === filter.value);
-    } else if (this.selected === 'all') {
-      this.posts = this.allPosts;
-    }
+  paginate(page: number) {
+    this.isLoading = true;
+    this.currentPage = page;
+    this.storageService.fetchApprovedPosts(this.selected, this.filter, this.currentPage)
+      .subscribe(() => {
+        this.isLoading = false;
+      });
+    this.posts = this.storageService.getPosts();
+    console.log(page);
   }
 
   toggleFilterButton() {
     this.showFilterButton = !this.showFilterButton;
   }
+
+  ngOnDestroy(): void {
+    this.postsSubscription.unsubscribe();
+  }
+
 }
 
 @Component({

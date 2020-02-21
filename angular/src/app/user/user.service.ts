@@ -93,13 +93,13 @@ export class UserService {
   getUserHttp(userEmail: string) {
     const headers = new HttpHeaders();
     headers.append('Content-type', 'application/json');
+    headers.append('Authorization', this.authService.getJwtToken());
     return this
       .http
       .get(
         this.USER_DATA_URL + '?email=' + userEmail,
         {headers})
       .pipe(map((response: any) => {
-        console.log(response);
         this.authService.setUser(response.data.user);
       }));
   }

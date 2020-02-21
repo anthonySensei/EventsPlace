@@ -18,6 +18,8 @@ const transporter = nodemailer.createTransport(sendGridTransport({
 
 const statuses = require('../enums/status.enum');
 
+const ITEMS_PER_PAGE = 8;
+
 
 exports.getAllPosts = (req, res) => {
     Post
@@ -28,6 +30,11 @@ exports.getAllPosts = (req, res) => {
             {
                 model: Hashtag
             }],
+            limit: 10,
+            offset: 10,
+            order: [
+                ['id', 'ASC']
+            ]
         })
         .then(result => {
             let posts = [];
@@ -62,6 +69,112 @@ exports.getAllPosts = (req, res) => {
                 }
             })
         });
+}
+
+module.exports.getApprovedPosts = (req, res) => {
+    const filter = req.query.filter;
+    const value = req.query.value;
+    const page = +req.query.page || 1;
+
+    let condition = {status: 'approved'};;
+    let userCondition = {};
+    let hashtagCondition = {};
+
+    let totalPosts;
+
+    if (filter === 'all') {
+        condition = {status: 'approved'};
+    } else if (filter === 'location'){
+        condition = {
+            status: 'approved',
+            event_location: value
+        };
+    } else if (filter === 'username') {
+        userCondition = {
+            name: value
+        }
+    } else if (filter === 'email') {
+        userCondition = {
+            email: value
+        }
+    } else if (filter === 'hashtag') {
+        hashtagCondition = {
+            name: value
+        }
+    }
+
+    Post
+      .count({
+        include: [{
+            model: User,
+            where: userCondition
+        },
+        {
+            model: Hashtag,
+            where: hashtagCondition
+        }],
+        where: condition
+    })
+      .then(function(postNumber) {
+          totalPosts = postNumber;
+         return Post.findAll({
+            include: [{
+                model: User,
+                where: userCondition
+            },
+            {
+                model: Hashtag
+            }],
+            where: condition,
+            limit: ITEMS_PER_PAGE,
+            offset: (page - 1) * ITEMS_PER_PAGE,
+            order: [
+                ['id', 'ASC']
+            ]
+        })
+      })
+        .then(result => {
+        let posts = [];
+        for(let post of result){
+            console.log(post.dataValues.id);
+            post.dataValues.post_image = base64Img.base64Sync(post.dataValues.post_image);
+            posts.push({
+                postId: post.dataValues.id,
+                postStatus: post.dataValues.status,
+                postImage: post.dataValues.post_image,
+                eventLocation: post.dataValues.event_location,
+                postUpdatedAt: post.dataValues.updatedAt,
+                hashtag: post.dataValues.hashtag_.dataValues
+            });
+        }
+
+        posts.sort(compareObjectsById);
+        return res.send({
+            responseCode: 500,
+            data: {
+                posts: posts,
+                message: 'Posts was fetched successfully!',
+                paginationData: {
+                    currentPage: page,
+                    hasNextPage: ITEMS_PER_PAGE * page < totalPosts,
+                    hasPreviousPage: page > 1,
+                    nextPage: page + 1,
+                    previousPage: page - 1,
+                    lastPage: Math.ceil(totalPosts / ITEMS_PER_PAGE)
+                }
+            }
+        });
+    })
+    .catch(err => {
+        console.log(err);
+        res.send({
+            responseCode: 500,
+            data: {
+                posts: [],
+                message: 'Error. Cannot fetch message!'
+            }
+        })
+    });
 }
 
 module.exports.getPost = (req, res) => {

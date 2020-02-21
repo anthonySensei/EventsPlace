@@ -1,11 +1,13 @@
 const path = require('path');
 
 const express = require('express');
+const session = require('express-session');
+
 const sequelize = require('./config/database');
+
 const bodyParser = require('body-parser');
 
 const passport = require('passport');
-const passportJWT = require('passport-jwt');
 
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
@@ -27,11 +29,13 @@ const port = 3000;
 
 const uuidv4 = require('uuid/v4')
 
+app.use(session({ secret: 'keyboard cat',resave: true, saveUninitialized:true}));
 
 app.use(passport.initialize());
+
 app.use(passport.session());
 
-require('./config/passport')(passport);
+require('./config/passport')(passport, User);
 
 const imageStorage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -52,7 +56,7 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '10mb'}));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(multer({
      limits: {fieldSize: 5 * 1024 * 1024 },
@@ -63,10 +67,16 @@ app.use(multer({
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('images', express.static(path.join(__dirname, 'images')));
 
-app.use(function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "http://localhost:4200"); // update to match the domain you will make the request from
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
+
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     next();
+
+    app.options('*', (req, res) => {
+        res.header('Access-Control-Allow-Methods', 'GET, PATCH, PUT, POST, DELETE, OPTIONS');
+        res.send();
+    });
 });
 
 app.use(postRoutes);

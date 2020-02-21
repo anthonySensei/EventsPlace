@@ -4,7 +4,7 @@
   <mat-divider [vertical]="true" style="height:80%; background-color: black; margin: 0 0.3% 0 0"></mat-divider>
   <ul class="main-header-item-list">
     <li class="main-header-item" routerLinkActive="active">
-      <a [routerLink]="'/posts'" *ngIf="role !== 'manager'" class="navbar-link">Posts</a>
+      <a [routerLink]="'/posts'" *ngIf="role !== 'manager' && role !== 'admin'" class="navbar-link">Posts</a>
     </li>
     <li *ngIf="role === 'manager' || role === 'admin'" class="main-header-item" routerLinkActive="active">
       <a [routerLink]="'/post-managing'" class="navbar-link">Managing</a>

@@ -11,6 +11,8 @@ const uuidv4 = require('uuid/v4');
 
 const base64Img = require('base64-img');
 
+const passport = require('passport');
+
 sessionDuration = 3600 * 12;
 
 exports.postCreateUser =  (req, res, next) => {
@@ -24,13 +26,7 @@ exports.postCreateUser =  (req, res, next) => {
     console.log(password);
     console.log('User creation!');
     if (!email || !password) {
-        return res.send({              
-            responseCode: 400,
-            data: {
-                 loggedIn: false,
-                 message: 'Please fill in fields'
-            }
-        });  
+        return responseCreateUser(res, 400, false, 'Please fill in fields'); 
     }
     let newUser = new User({
         email: email,
@@ -56,33 +52,15 @@ exports.postCreateUser =  (req, res, next) => {
                 })
                 .then(result => {
                     console.log('User was successfully created!');
-                    return res.send({
-                        responseCod: 200,
-                        data: {
-                             created: true,
-                             message: 'User was successfully created!'
-                        }
-                    });
+                    return responseCreateUser(res, 200, true, 'User was successfully created!');
                 })
                 .catch(err => {
                     console.log(err.errors[0].message);
-                    return res.send({
-                        responseCod: 400,
-                        data: {
-                             created: false,
-                             message: err.errors[0].message
-                        }
-                    });
+                    return responseCreateUser(res, 400, false, err.errors[0].message);
                 });
             }).catch(err => {
                 console.log(err.errors[0].message);
-                return res.send({
-                    responseCod: 400,
-                    data: {
-                         created: false,
-                         message: err.errors[0].message
-                    }
-                });
+                return responseCreateUser(res, 400, false, err.errors[0].message);                
             });
         });
     });
@@ -90,17 +68,12 @@ exports.postCreateUser =  (req, res, next) => {
 };
 
 exports.postLoginUser = (req, res, next) => {
+    console.log(req.headers);
     const email = req.body.email;
     const password = req.body.password;
 
     if (!email || !password) {
-        return res.send({              
-            responseCode: 400,
-            data: {
-                 loggedIn: false,
-                 message: 'Please fill in fields'
-            }
-        });  
+        return responseLogin(res, 400, false, 'Please fill in fields');
     }
 
     User
@@ -108,12 +81,7 @@ exports.postLoginUser = (req, res, next) => {
     .then(user => {
         if (!user) {
             console.log('Bad credentials');
-            return res.send({              
-                responseCode: 400,
-                data: {
-                     loggedIn: false,
-                     message: 'Bad credentials'
-                }});            
+            return responseLogin(res, 400, false, 'Bad credentials');          
         } else {
             console.log('User was found');
             if(bcrypt.compareSync(password, user.dataValues.password)){
@@ -122,50 +90,59 @@ exports.postLoginUser = (req, res, next) => {
                  .findOne({ where: {user_id : user.dataValues.id} })
                  .then(role => {
                     // console.log(user);
-                    user.dataValues.profile_image = base64Img.base64Sync(user.dataValues.profile_image);
+                    profileImage = user.dataValues.profile_image;
+                    if(profileImage) {
+                        profileImage = base64Img.base64Sync(profileImage);
+                    } else {
+                        profileImage = '';
+                    }
                     userData = {
                         email: user.dataValues.email,
-                        profileImage: user.dataValues.profile_image,
+                        profileImage: profileImage,
                         role: role.dataValues
                     };
-                     const token = jwt.sign(user.toJSON(), secret_key, {
-                         expiresIn: sessionDuration
-                     });
-                    //  console.log(token);
-                    res.send({
-                        responseCode: 400,
-                        data: {
-                             loggedIn: true,
-                             message: 'User successfully logged in!',
-                             user: userData,
-                             token: 'JWT ' + token
+
+                    req.login(user, {session: false}, (err) => {
+                        if (err) {
+                            responseErrorMessage(res, 400, err);
                         }
-                    }); 
+
+                        const userJWT = {
+                            id: user.dataValues.id,
+                            email: user.dataValues.email,
+                            role: user.dataValues.role
+                        };
+                         const token = jwt.sign(userJWT, secret_key, {
+                             expiresIn: sessionDuration
+                         });
+                         jwt.verify(token, secret_key, function(err, data){
+                            console.log(err, data);
+                         });
+                        //  console.log(token);
+                        res.send({
+                            responseCode: 400,
+                            data: {
+                                 loggedIn: true,
+                                 message: 'User successfully logged in!',
+                                 user: userData,
+                                 token: 'Bearer ' + token
+                            }
+                        }); 
+                    });
                  })
                  .catch(err => {
                     console.log(err);
-                    return res.send({
-                        responseCod: 400,
-                        data: {
-                             loggedIn: false,
-                             message: err
-                        }
-                    });
+                    return responseLogin(res, 400, false, err);
                  });
             }else{
                 console.log('Not match');
-                return res.send({
-                    responseCod: 400,
-                    data: {
-                         loggedIn: false,
-                         message: 'Bad credentials!'
-                    }
-                });
+                return responseLogin(res, 400, false, 'Bad credentials!');
             }
         }
     })
     .catch(err => {
         console.log(err);
+        return responseLogin(res, 400, false, err);
     });
 };
 
@@ -182,14 +159,10 @@ module.exports.getLogout = (req, res) => {
 
 module.exports.getUser = (req, res) => {
     const email = req.query.email;
+    console.log(req.headers);
     
     if (!email) {
-        return res.send({
-            responseCod: 400,
-            data: {
-                 message: err
-            }
-        });
+        return responseErrorMessage(res, 400, 'Invalid email');
     }
 
     User
@@ -198,7 +171,11 @@ module.exports.getUser = (req, res) => {
             Role
                 .findOne({ where: { user_id: user.dataValues.id }})
                 .then(role => {
-                    user.dataValues.profile_image = base64Img.base64Sync(user.dataValues.profile_image);
+                    if (user.dataValues.profile_image) {
+                        user.dataValues.profile_image = base64Img.base64Sync(user.dataValues.profile_image);
+                    } else {
+                        user.dataValues.profile_image = '';
+                    }
                     userData = {
                         id: user.dataValues.id,
                         name: user.dataValues.name,
@@ -216,22 +193,12 @@ module.exports.getUser = (req, res) => {
                 })
                 .catch(err => {
                         console.log(err);
-                        return res.send({
-                            responseCod: 400,
-                            data: {
-                                 message: err
-                            }
-                        });
+                        return responseErrorMessage(res, 400, err);
                 });
         })
         .catch(err => {
             console.log(err);
-            return res.send({
-                responseCod: 400,
-                data: {
-                     message: err
-                }
-            });
+            return responseErrorMessage(res, 400, err);
         });
 }
 
@@ -240,12 +207,7 @@ module.exports.postUpdateUserData = (req, res) => {
     const userId = req.body.user.id;
     if (!userId) {
         console.log('Error');
-        return res.send({
-            responseCod: 400,
-            data: {
-                 message: 'Error'
-            }
-        });
+        return responseErrorMessage(res, 400, 'Error')
     }
     User
     .findOne({ where: { user_id: userId}})
@@ -255,13 +217,7 @@ module.exports.postUpdateUserData = (req, res) => {
             const oldPassword = req.body.passwordObject.oldPassword;
             if (!oldPassword) {
                 console.log('Old password is empty');
-                return res.send({
-                    responseCod: 400,
-                    data: {
-                         passwordChanged: false,
-                         message: 'Old password is empty'
-                    }
-                });
+                return responseUpdateUserData(res, 400, false, 'Old password is empty');
             }
             if(bcrypt.compareSync(oldPassword, user.dataValues.password)) {
                 console.log('Match');
@@ -269,13 +225,7 @@ module.exports.postUpdateUserData = (req, res) => {
                 const retypeNewPassword = req.body.passwordObject.retypeNewPassword;
                 if (!newPassword || !retypeNewPassword) {
                     console.log('New password is empty')
-                    return res.send({
-                        responseCod: 400,
-                        data: {
-                             passwordChanged: false,
-                             message: 'New password is empty'
-                        }
-                    });
+                    return responseUpdateUserData(res, 400, false, 'New password is empty');
                 }
                 if (newPassword === retypeNewPassword) {
                     let newPassword = req.body.passwordObject.newPassword;
@@ -286,85 +236,49 @@ module.exports.postUpdateUserData = (req, res) => {
                                 password: newPassword
                             }).then(result => {
                                 console.log('Password was successfully changed!');
-                                return res.send({
-                                    responseCod: 400,
-                                    data: {
-                                         passwordChanged: true,
-                                         message: 'Password was successfully changed!'
-                                    }
-                                });
+                                return responseChangeUserPassword(res, 400, true, 'Password was successfully changed!');
                             }).catch(err => {
                                 console.log('Password was not saved');
-                                return res.send({
-                                    responseCod: 400,
-                                    data: {
-                                         passwordChanged: false,
-                                         message: 'Password was not saved'
-                                    }
-                                });
+                                return responseChangeUserPassword(res, 400, false, 'Password was not saved');
                             });
                         });
                     });
                 } else {
                     console.log('Passwords are different');
-                    return res.send({
-                        responseCod: 400,
-                        data: {
-                             passwordChanged: false,
-                             message: 'Passwords are different!'
-                        }
-                    });
+                    return responseChangeUserPassword(res, 400, false, 'Passwords are different!');
                 }
             }else{
                 console.log('Not match');
-                return res.send({
-                    responseCod: 400,
-                    data: {
-                        passwordChanged: false,
-                         message: 'Wrong old password!'
-                    }
-                });
+                return responseChangeUserPassword(res, 400, false, 'Wrong old password!');
             }
         } else if (req.body.changeData.changeInfo) {
             const email = req.body.user.email;
             const name = req.body.user.name;
             if (!email || !name) {
-                return res.send({
-                    responseCod: 400,
-                    data: {
-                         changedUserInfo: false,
-                         message: 'Error'
-                    }
-                });
+                return responseUpdateUserData(res, 400, false, 'Error');
             }
             user.update({
                 email: email,
                 name: name
-            });
-            return res.send({
-                responseCod: 400,
-                data: {
-                     changedUserInfo: true,
-                     message: 'Info successfully changed!'
-                }
+            })
+            .then(result => {
+                return responseUpdateUserData(res, 400, true, 'Info successfully changed!');
+            })
+            .catch(err => {
+                return responseUpdateUserData(res, 400, false, err);
             });
         }
     }) 
-    .catch(err => console.log(err));
-
+    .catch(err => {
+        return responseUpdateUserData(res, 400, false, err);
+    });
 }
 
 module.exports.postUpdateProfileImage = (req, res) => {
     const profileImageBase64 = req.body.base64;
     const user = JSON.parse(req.body.user);
     if (!profileImageBase64 || !user) {
-        return res.send({
-            responseCod: 400,
-            data: {
-                 passwordChanged: false,
-                 message: 'Error'
-            }
-        }); 
+        return responseUpdateUserData(res, 400, false, 'Error');
     }
     // console.log(user);
     const profileImagePath = base64Img.imgSync(profileImageBase64, '../images/profile', uuidv4());
@@ -378,34 +292,15 @@ module.exports.postUpdateProfileImage = (req, res) => {
             })
             .then(result => {
                 console.log('Profile image successfully changed!');
-                return res.send({
-                    responseCod: 400,
-                    data: {
-                         changedUserInfo: true,
-                         message: 'Info successfully changed!'
-                    }
-                });
+                return responseUpdateProfileImage(res, 400, true, 'Profile image successfully changed!');
             })
             .catch(err => {
-                console.log(err.errors[0].message);
-                return res.send({
-                    responseCod: 400,
-                    data: {
-                         passwordChanged: false,
-                         message: err.errors[0].message
-                    }
-                }); 
+                return responseUpdateProfileImage(res, 400, false, err.errors[0].message);
             });
       })
       .catch(err => {
         console.log(err.errors[0].message);
-        return res.send({
-            responseCod: 400,
-            data: {
-                 passwordChanged: false,
-                 message: err.errors[0].message
-            }
-        });
+        return responseUpdateProfileImage(res, 400, false, err.errors[0].message);
       });
 
 }
@@ -418,4 +313,63 @@ function generatePassword() {
         retVal += charset.charAt(Math.floor(Math.random() * n));
     }
     return retVal;
+}
+
+function responseCreateUser(response, responseCode, isCreated, message) {
+    response.send({              
+        responseCode: responseCode,
+        data: {
+             created: isCreated,
+             message: message
+        }
+    });  
+}
+
+function responseLogin(response, responseCode, isLoggedIn, message) {
+    response.send({              
+        responseCode: responseCode,
+        data: {
+             created: isLoggedIn,
+             message: message
+        }
+    });  
+}
+
+function responseErrorMessage(response, responseCode, message){
+    response.send({              
+        responseCode: responseCode,
+        data: {
+             message: message
+        }
+    });  
+}
+
+function responseUpdateProfileImage(response, responseCode, isUpdated, message) {
+    response.send({              
+        responseCode: responseCode,
+        data: {
+             created: isUpdated,
+             message: message
+        }
+    });  
+}
+
+function responseUpdateUserData(response, responseCode, isUpdated, message) {
+    response.send({
+        responseCod: responseCode,
+        data: {
+             changedUserInfo: isUpdated,
+             message: message
+        }
+    });
+}
+
+function responseChangeUserPassword(response, responseCode, isChanged, message) {
+    response.send({
+        responseCod: responseCode,
+        data: {
+             passwordChanged: isChanged,
+             message: message
+        }
+    });
 }

@@ -102,7 +102,7 @@
       <div
         class="card"
         style="width:100%"
-        *ngFor="let card of posts | paginate: {itemsPerPage: 8, currentPage: page}">
+        *ngFor="let card of posts">
         <div class="image-container">
           <img
             src="{{card.postImage}}"
@@ -124,9 +124,39 @@
         </div>
       </div>
     </div>
-    <div class="pagination-container" *ngIf="!isLoading">
-      <pagination-controls (pageChange)="page = $event"></pagination-controls>
-    </div>
+    <section class="pagination">
+      <a
+        *ngIf="hasPreviousPage" 
+        (click)="paginate(previousPage)" 
+      >
+        Previous page 
+      </a>
+      <a 
+        *ngIf="currentPage !== 1" 
+        (click)="paginate(1)"
+      >
+        1
+      </a>
+      <span *ngIf="currentPage !== 1 && previousPage !== 1">...</span>  
+      <a
+         (click)="paginate(currentPage)"
+         class="pagination-active">{{currentPage}}</a
+      >
+      <span *ngIf="lastPage !== currentPage && nextPage !== lastPage">...</span>  
+      <a 
+        *ngIf="lastPage !== currentPage"
+        (click)="paginate(lastPage)"
+      >
+        {{lastPage}}
+      </a>
+      <a
+       *ngIf="hasNextPage" 
+        (click)="paginate(nextPage)" 
+      >
+        Next page 
+      </a>
+
+    </section>
   </div>
 </mat-drawer-container>
 
