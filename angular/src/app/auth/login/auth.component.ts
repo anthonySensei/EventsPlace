@@ -1,7 +1,7 @@
 import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {CheckFormService} from '../check-form.service';
 import {Router} from '@angular/router';
-import {NgForm, NgModel} from '@angular/forms';
+import {FormControl, FormGroup, NgForm, NgModel, Validators} from '@angular/forms';
 import {Subscription} from 'rxjs';
 import {AuthService} from '../auth.service';
 import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
@@ -12,10 +12,13 @@ import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
   styleUrls: ['./auth.component.css']
 })
 export class AuthComponent implements OnInit, OnDestroy {
-  @ViewChild('loginForm', {static: false}) loginForm: NgForm;
+  loginForm: FormGroup;
+
   error: string = null;
   message: string = null;
+
   loggedIn = false;
+
   JSONSubscription: Subscription;
 
   snackbarDuration = 5000;
@@ -26,6 +29,10 @@ export class AuthComponent implements OnInit, OnDestroy {
               private snackBar: MatSnackBar) { }
 
   ngOnInit() {
+    this.loginForm = new FormGroup({
+        email: new FormControl(null, [Validators.required, Validators.email]),
+        password: new FormControl(null, [Validators.required])
+    });
     this.JSONSubscription = this.authService.authJSONResponseChanged
       .subscribe(
         (JSONResponse: {
@@ -42,23 +49,25 @@ export class AuthComponent implements OnInit, OnDestroy {
   }
 
 
-  onLoginUser(email: NgModel, password: NgModel) {
-    if (email.value === '' || password.value === '') {
+  onLoginUser() {
+    const email = this.loginForm.value.email;
+    const password = this.loginForm.value.password;
+    if (email === '' || password === '') {
       this.error = 'Please fill in fields';
       this.loginForm.reset();
       return false;
     }
     const user = {
-      email: email.value,
-      password: password.value
+      email,
+      password
     };
     this.authService
       .login(user)
       .subscribe(() => {
         if (!this.loggedIn) {
           this.error = this.message;
-          this.loginForm.setValue({
-            email: email.value,
+          this.loginForm.patchValue({
+            email,
             password: ''
           });
           return false;

@@ -8,12 +8,13 @@ import {UncheckedPostsComponent} from './unchecked-posts/unchecked-posts.compone
 
 import {AuthGuard} from '../auth/auth.guard';
 import {ManagerGuard} from '../user/manager.guard';
+import {CanDeactivateGuard} from '../shared/can-deactivate-guard.service';
 
 const routes: Routes = [
   { path: 'posts', component: MainPageComponent },
   { path: 'post-managing', canActivate: [AuthGuard, ManagerGuard], component: UncheckedPostsComponent },
   { path: 'posts/:id', component: PostDetailsComponent },
-  { path: 'create-post', canActivate: [AuthGuard], component: CreatePostComponent },
+  { path: 'create-post', canActivate: [AuthGuard], canDeactivate: [CanDeactivateGuard], component: CreatePostComponent }
 ];
 
 @NgModule({

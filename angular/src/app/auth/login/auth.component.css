@@ -71,6 +71,8 @@ form.ng-valid .form-button:hover {
   width: 60%;
 }
 
+
+
 ::ng-deep snack-bar-container.snackbar {
   background: rgb(255, 255, 255);
   border: 2px solid rgb(10, 172, 0);

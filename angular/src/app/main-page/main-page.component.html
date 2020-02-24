@@ -126,34 +126,35 @@
     </div>
     <section class="pagination">
       <a
-        *ngIf="hasPreviousPage" 
-        (click)="paginate(previousPage)" 
+        *ngIf="hasPreviousPage"
+        (click)="paginate(previousPage)"
       >
-        Previous page 
+        Previous page
       </a>
-      <a 
-        *ngIf="currentPage !== 1" 
+      <a
+        *ngIf="currentPage !== 1"
         (click)="paginate(1)"
       >
         1
       </a>
-      <span *ngIf="currentPage !== 1 && previousPage !== 1">...</span>  
-      <a
+      <span *ngIf="currentPage !== 1 && previousPage !== 1">...</span>
+      <a *ngIf="currentPage > 1"
          (click)="paginate(currentPage)"
-         class="pagination-active">{{currentPage}}</a
-      >
-      <span *ngIf="lastPage !== currentPage && nextPage !== lastPage">...</span>  
-      <a 
+         class="pagination-active">
+        {{currentPage}}
+      </a>
+      <span *ngIf="lastPage !== currentPage && nextPage !== lastPage">...</span>
+      <a
         *ngIf="lastPage !== currentPage"
         (click)="paginate(lastPage)"
       >
         {{lastPage}}
       </a>
       <a
-       *ngIf="hasNextPage" 
-        (click)="paginate(nextPage)" 
+       *ngIf="hasNextPage"
+        (click)="paginate(nextPage)"
       >
-        Next page 
+        Next page
       </a>
 
     </section>

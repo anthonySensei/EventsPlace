@@ -22,6 +22,7 @@ const Role = require('./models/role');
 const Hashtag = require('./models/hashtag');
 
 const roles = require('./enums/role.enum');
+const status = require('./enums/user-status.enum');
 
 const app = express();
 
@@ -29,10 +30,7 @@ const port = 3000;
 
 const uuidv4 = require('uuid/v4')
 
-app.use(session({ secret: 'keyboard cat',resave: true, saveUninitialized:true}));
-
 app.use(passport.initialize());
-
 app.use(passport.session());
 
 require('./config/passport')(passport, User);
@@ -71,12 +69,8 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
 
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    res.header('Access-Control-Allow-Methods', 'GET, PATCH, PUT, POST, DELETE, OPTIONS');
     next();
-
-    app.options('*', (req, res) => {
-        res.header('Access-Control-Allow-Methods', 'GET, PATCH, PUT, POST, DELETE, OPTIONS');
-        res.send();
-    });
 });
 
 app.use(postRoutes);
@@ -99,15 +93,17 @@ sequelize
         if(!user){
             const admin = new User({
                 name: 'admin',
-                email: 'admin',
+                email: 'admin@gmail.com',
                 password: 'admin123'
             });
             bcrypt.genSalt(10, (err, salt) => {
                 bcrypt.hash(admin.password, salt, (err, hash) => {
                     admin.password = hash;
                     User.create({
+                        id: 1,
                         name: admin.name,
                         email: admin.email,
+                        status: status.ACTIVATED,
                         password: admin.password
                     }).then(user => {
                         Role.create({

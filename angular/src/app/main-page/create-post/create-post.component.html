@@ -2,27 +2,32 @@
     <div class="form-content">
       <span class="page-title">New post</span>
       <hr style="background-color: #0d0d0d">
+      <div *ngIf="isLoading && editMode" style="text-align: center">
+        <app-loading-spinner></app-loading-spinner>
+      </div>
       <form
-        (submit)="onCreatePost(eventName, postDescription, eventLocation, createPostForm)"
+        [formGroup]="createPostForm"
+        *ngIf="!isLoading"
+        (ngSubmit)="onCreatePost()"
         enctype="multipart/form-data"
-        #createPostForm="ngForm">
+      >
         <button
           type="button"
           mat-raised-button
-          (click)="openDialog()">Choose image</button>
+          (click)="openDialog()">
+          Choose image
+        </button>
+        <div formGroupName="postData">
         <mat-form-field
           class="d-block form-input">
           <mat-label>Event name</mat-label>
           <input
+            type="text"
             matInput
-            name="event-name"
-            #eventName="ngModel"
-            ngModel
+            formControlName="name"
             placeholder="Ex. Graduation"
-            required
           >
         </mat-form-field>
-        <span class="help-block" *ngIf="!eventName.valid && eventName.touched">Please fill in event name</span>
         <mat-form-field class="text-area-container">
           <mat-label>Post description</mat-label>
           <textarea
@@ -31,12 +36,12 @@
             cdkTextareaAutosize
             cdkAutosizeMinRows="1"
             cdkAutosizeMaxRows="5"
+            formControlName="description"
             #postDescription
             placeholder="Ex. This post describes event..."
-            maxlength="255"
-            required
+            maxlength="512"
           ></textarea>
-          <mat-hint align="end">{{postDescription.value?.length || 0}}/255</mat-hint>
+          <mat-hint align="end">{{postDescription.value?.length || 0}}/512</mat-hint>
         </mat-form-field>
           <mat-form-field
             class="d-block form-input">
@@ -44,18 +49,14 @@
             <input
               matInput
               type="text"
-              name="event-location"
-              #eventLocation="ngModel"
-              ngModel
+              formControlName="location"
               placeholder="Ex. New York"
-              required
             >
           </mat-form-field>
-        <span class="help-block" *ngIf="!eventLocation.valid && eventLocation.touched">Please fill in event location</span>
+        </div>
         <button
           type="create"
           class="form-button"
-          [disabled]="createPostForm.invalid"
         >Create</button>
       </form>
     </div>

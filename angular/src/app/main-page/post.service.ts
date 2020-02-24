@@ -11,6 +11,8 @@ import {Post} from './post.model';
 export class PostService {
   GET_POST_URL = 'http://localhost:3000/post-details';
   CREATING_POST_URL = 'http://localhost:3000/create-post';
+  UPDATE_POST_URL = 'http://localhost:3000/update-post';
+
   responseChanged = new Subject();
   response;
   postChanged = new Subject<Post>();
@@ -58,6 +60,27 @@ export class PostService {
       .http
       .post(
         this.CREATING_POST_URL,
+        formData,
+        {headers})
+      .pipe(map((response: any) => {
+        this.setResponse(response);
+      }));
+  }
+
+  updatePost(postId: number, post, imageToUploadBase64: string) {
+    const headers = new HttpHeaders();
+    const formData: FormData = new FormData();
+    const postData = {
+      id: postId,
+      ...post
+    };
+    headers.append('Content-Type', 'multipart/form-data');
+    formData.append('base64', imageToUploadBase64);
+    formData.append('post_data', JSON.stringify(postData));
+    return this
+      .http
+      .put(
+        this.UPDATE_POST_URL,
         formData,
         {headers})
       .pipe(map((response: any) => {

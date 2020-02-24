@@ -20,6 +20,8 @@ import {ImageCropperModule} from 'ngx-image-cropper';
 
 import { LoadingSpinnerComponent } from './loading-spinner/loading-spinner.component';
 
+import {CanDeactivateGuard} from './can-deactivate-guard.service';
+
 @NgModule({
   declarations: [LoadingSpinnerComponent],
   imports: [
@@ -44,7 +46,8 @@ import { LoadingSpinnerComponent } from './loading-spinner/loading-spinner.compo
     NgxPaginationModule,
     ImageCropperModule,
     LoadingSpinnerComponent
-  ]
+  ],
+  providers: [CanDeactivateGuard]
 })
 
 export class SharedModule {}

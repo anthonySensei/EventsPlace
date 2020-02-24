@@ -47,7 +47,6 @@ export class UserComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.userSubscription = this.authService.userChanged
       .subscribe(user => {
-        // console.log(this.user);
         this.user = user;
         this.isLoading = false;
       });
@@ -88,7 +87,8 @@ export class UserComponent implements OnInit, OnDestroy {
         name: this.name,
         oldPassword: this.oldPassword,
         newPassword: this.newPassword,
-        retypeNewPassword: this.retypeNewPassword}
+        retypeNewPassword: this.retypeNewPassword
+      }
     });
 
     dialogRef.afterClosed().subscribe(result => {

@@ -3,8 +3,9 @@
     <span class="page-title">Registration</span>
     <hr style="background-color: #0d0d0d">
   <form
-    (submit)="onRegisterUser(email, password, password2)"
-    #regForm='ngForm'>
+    (ngSubmit)="onRegisterUser()"
+    [formGroup]="regForm"
+  >
     <mat-form-field
       class="form-input">
       <mat-label>Email</mat-label>
@@ -12,16 +13,22 @@
         matInput
         type="email"
         name="email"
-        #email="ngModel"
-        ngModel
+        formControlName="email"
         placeholder="Ex. example@mail.com"
         required
       >
     </mat-form-field>
     <span
       class="help-block"
-      *ngIf="(!email.valid && email.touched) || isEmailError">
-      {{ isEmailError ? error : 'Please fill in email' }}
+      *ngIf="regForm.get('email').errors['required'] && regForm.get('email').touched"
+    >
+      Fill in email
+    </span>
+    <span
+      class="help-block"
+      *ngIf="regForm.get('email').errors['required'] && regForm.get('email').touched"
+    >
+      Fill in email
     </span>
     <mat-form-field
       class="form-input">
@@ -30,15 +37,17 @@
         matInput
         type="password"
         name="password"
-        #password="ngModel"
-        ngModel
+        formControlName="password"
         placeholder="Ex. hello"
         required
       >
     </mat-form-field>
     <span
       class="help-block"
-      *ngIf="(!password.valid && password.touched) && (!isPasswordError && !isEmailError)">Please fill in password</span>
+      *ngIf="regForm.get('password').errors['required'] && regForm.get('password').touched"
+    >
+      Fill in password
+    </span>
     <mat-form-field
       class="form-input">
       <mat-label>input password again</mat-label>
@@ -46,15 +55,15 @@
         matInput
         type="password"
         name="password2"
-        #password2="ngModel"
-        ngModel
+        formControlName="password2"
         required
       >
     </mat-form-field>
     <span
       class="help-block"
-      *ngIf="(!password2.valid && password2.touched && password.valid) || isPasswordError">
-      {{ isPasswordError ? error : ' Please retype password ' }}
+      *ngIf="regForm.get('password2').errors['required'] && regForm.get('password2').touched"
+    >
+      Retype password
     </span>
     <button
       class="form-button"

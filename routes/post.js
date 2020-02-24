@@ -13,6 +13,8 @@ router.get('/post-details', postController.getPost);
 
 router.post('/create-post', passport.authenticate('jwt', {session: false}), postController.createPost);
 
+router.put('/update-post', passport.authenticate('jwt', {session: false}), postController.updatePost);
+
 router.post('/set-status', passport.authenticate('jwt', {session: false}), postController.setPostStatus);
 
 

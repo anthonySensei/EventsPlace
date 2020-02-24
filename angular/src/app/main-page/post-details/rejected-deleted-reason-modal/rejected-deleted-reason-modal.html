@@ -1,0 +1,30 @@
+<div>
+  <mat-form-field style="width: 500px">
+    <mat-label>Reason</mat-label>
+    <textarea matInput
+              cols="10"
+              name="reason"
+              [(ngModel)]="data.reason"
+              cdkTextareaAutosize
+              #autosize="cdkTextareaAutosize"
+              cdkAutosizeMinRows="1"
+              cdkAutosizeMaxRows="5"
+              required
+    ></textarea>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions style="float: left">
+  <button
+          mat-button
+          (click)="onNoClick()"
+  >
+    No Thanks
+  </button>
+  <button
+    class="form-button modal-form-submit"
+    type="submit"
+    [mat-dialog-close]="data.reason"
+  >
+    Save
+  </button>
+</div>

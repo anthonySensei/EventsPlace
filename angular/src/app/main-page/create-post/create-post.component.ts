@@ -1,14 +1,23 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {NgForm, NgModel} from '@angular/forms';
+import {FormControl, FormGroup, NgForm, NgModel, Validators} from '@angular/forms';
+import {ActivatedRoute, Params, Router} from '@angular/router';
+
+import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
+
 import {PostService} from '../post.service';
+import {AuthService} from '../../auth/auth.service';
+
 import {User} from '../../user/user.model';
 import {Hashtag} from '../hashtag.model';
-import {Subscription} from 'rxjs';
-import {Router} from '@angular/router';
-import {AuthService} from '../../auth/auth.service';
-import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
+
+import {Observable, Subscription} from 'rxjs';
+
 import {ImageCroppedEvent} from 'ngx-image-cropper';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
+
+import {CanComponentDeactivate} from '../../shared/can-deactivate-guard.service';
+
+import {Post} from '../post.model';
 
 export interface DialogData {
   imageBase64: string;
@@ -18,14 +27,28 @@ export interface DialogData {
   templateUrl: './create-post.component.html',
   styleUrls: ['../../auth/login/auth.component.css']
 })
-export class CreatePostComponent implements OnInit, OnDestroy {
+export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeactivate {
+  createPostForm: FormGroup;
+
   isCreated: boolean;
   message: string;
   error: string;
   response;
+
   responseSubscription: Subscription;
   userSubscription: Subscription;
+  paramsSubscription: Subscription;
+  postSubscription: Subscription;
+  getPostSubscription: Subscription;
+
   user: User;
+
+  editMode = false;
+  postId: number;
+  isUpdated: boolean;
+  isLoading = false;
+
+  post: Post;
 
   snackbarDuration = 5000;
   snackBarMessage = 'Post was created successfully';
@@ -39,11 +62,41 @@ export class CreatePostComponent implements OnInit, OnDestroy {
   constructor(private postService: PostService,
               private authService: AuthService,
               private router: Router,
+              private route: ActivatedRoute,
               public snackBar: MatSnackBar,
               public dialog: MatDialog) {
   }
 
   ngOnInit() {
+    this.createPostForm = new FormGroup({
+      postData: new FormGroup({
+        name: new FormControl(null, [Validators.required]),
+        description: new FormControl(null, [Validators.required]),
+        location: new FormControl(null, [Validators.required])
+      })
+    });
+    this.paramsSubscription = this.route.queryParams
+      .subscribe((queryParams: Params) => {
+        this.postId = +queryParams.id;
+        this.editMode = queryParams.id != null;
+    });
+    if (this.editMode) {
+      this.isLoading = true;
+      this.getPostSubscription = this.postService.getPostHttp(this.postId).subscribe();
+      this.postSubscription = this.postService.postChanged
+        .subscribe(post => {
+          this.post = post;
+          this.isLoading = false;
+          this.createPostForm.patchValue({
+            postData: {
+              name: this.post.eventName,
+              description: this.post.description,
+              location: this.post.eventLocation
+            }
+          });
+        });
+      this.post = this.postService.getPost();
+    }
     this.responseSubscription = this.postService.responseChanged
       .subscribe((response: {
         responseCode: string;
@@ -55,7 +108,11 @@ export class CreatePostComponent implements OnInit, OnDestroy {
         console.log(response.data);
         if (response.data) {
           this.response = response;
-          this.isCreated = this.response.data.postCreated;
+          if (this.response.data.postCreated) {
+            this.isCreated = this.response.data.postCreated;
+          } else if (this.response.data.postUpdated) {
+            this.isUpdated = this.response.data.postUpdated;
+          }
         }
       });
     this.userSubscription = this.authService.userChanged
@@ -78,33 +135,47 @@ export class CreatePostComponent implements OnInit, OnDestroy {
     });
   }
 
-  onCreatePost(eventName: NgModel,
-               postDescription: HTMLTextAreaElement,
-               eventLocation: NgModel,
-               createPostForm: NgForm) {
+  onCreatePost() {
+    console.log(this.createPostForm);
     const post = {
-      description: postDescription.value,
-      eventName: eventName.value,
-      eventLocation: eventLocation.value,
+      description: this.createPostForm.value.postData.description,
+      eventName: this.createPostForm.value.postData.name,
+      eventLocation: this.createPostForm.value.postData.location,
       user: this.user,
       hashtag: new Hashtag(1, 'test')
     };
-    console.log(this.imageToUploadBase64);
-    this.postService
-      .createPost(post, this.imageToUploadBase64)
-      .subscribe( () => {
-        if (this.isCreated) {
-          console.log('Created');
-          this.message = this.response.data.message;
-          createPostForm.reset();
-          this.router.navigate(['/posts']);
-          this.openSnackBar(this.snackBarMessage);
-        } else {
-          this.error = this.response.data.message;
-          console.log('Error! ' + this.error);
-          return false;
-        }
-      });
+    if (this.editMode) {
+      this.postService
+        .updatePost(this.postId, post, this.imageToUploadBase64)
+        .subscribe( () => {
+          if (this.isUpdated) {
+            console.log('Updated');
+            this.message = this.response.data.message;
+            this.router.navigate(['/posts']);
+            this.snackBarMessage = 'Post was updated successfully';
+            this.openSnackBar(this.snackBarMessage);
+          } else {
+            this.error = this.response.data.message;
+            console.log('Error! ' + this.error);
+            return false;
+          }
+        });
+    } else {
+      this.postService
+        .createPost(post, this.imageToUploadBase64)
+        .subscribe( () => {
+          if (this.isCreated) {
+            console.log('Created');
+            this.message = this.response.data.message;
+            this.router.navigate(['/posts']);
+            this.openSnackBar(this.snackBarMessage);
+          } else {
+            this.error = this.response.data.message;
+            console.log('Error! ' + this.error);
+            return false;
+          }
+        });
+    }
   }
 
   openSnackBar(message: string) {
@@ -114,9 +185,25 @@ export class CreatePostComponent implements OnInit, OnDestroy {
     this.snackBar.open(message, null, config);
   }
 
+  canDeactivate(): Observable<boolean> | Promise<boolean> | boolean {
+    if (this.user) {
+      console.log('Can deactivate');
+      return confirm('Do you want to discard the changes?');
+    } else {
+      return true;
+    }
+  }
+
   ngOnDestroy(): void {
-    this.responseSubscription.unsubscribe();
-    this.userSubscription.unsubscribe();
+    // this.paramsSubscription.unsubscribe();
+    // // this.postSubscription.unsubscribe();
+    // this.getPostSubscription.unsubscribe();
+    // if (this.responseSubscription) {
+    //   this.responseSubscription.unsubscribe();
+    // }
+    // if (this.userSubscription) {
+    //   this.userSubscription.unsubscribe();
+    // }
   }
 }
 

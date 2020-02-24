@@ -8,10 +8,17 @@
         alt="img"
       >
       <div class="description-container">
-        <p class="post-description">{{post.description}}</p>
+        <textarea
+          rows="50"
+          cols="55"
+          class="post-description"
+          disabled
+        >
+         {{post.description}}
+        </textarea>
       </div>
       <div class="row">
-        <p>Name: {{post.user.name}}</p>
+        <p *ngIf="post.user.name">Name: {{post.user.name}}</p>
         <p>Email: {{post.user.email}}</p>
         <p class="event-location">
           <i class="material-icons">location_on</i>
@@ -19,6 +26,17 @@
         </p>
         <p class="post-hashtag">#{{post.hashtag.name}}</p>
         <br>
+        <div class="btn-group" *ngIf="user.email === post.user.email">
+          <a
+            mat-button
+            class="btn btn-yellow"
+            matTooltip="Edit post"
+            [routerLink]="['/create-post']"
+            [queryParams]="{id: postId}"
+          >
+            Edit
+          </a>
+        </div>
         <div class="btn-group" *ngIf="userRole === 'admin' ||userRole === 'manager'">
           <button
             *ngIf="post.postStatus !== 'approved'"

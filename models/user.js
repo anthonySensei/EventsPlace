@@ -30,6 +30,14 @@ const User = sequelize.define('user_', {
         type: Sequelize.STRING,
         allowNull: true
     },
+    status: {
+        type: Sequelize.STRING,
+        allowNull: true
+    },
+    registration_token: {
+        type: Sequelize.STRING,
+        allowNull: true
+    },
     password: {
         type: Sequelize.STRING,
         allowNull: true,

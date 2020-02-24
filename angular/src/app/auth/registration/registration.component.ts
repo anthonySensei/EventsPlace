@@ -1,9 +1,11 @@
 import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {CheckFormService} from '../check-form.service';
+import {FormControl, FormGroup, NgForm, NgModel, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
+
 import {Subscription} from 'rxjs';
-import {NgForm, NgModel} from '@angular/forms';
+
 import {AuthService} from '../auth.service';
+import {CheckFormService} from '../check-form.service';
 
 @Component({
   selector: 'app-registration',
@@ -11,19 +13,37 @@ import {AuthService} from '../auth.service';
   styleUrls: ['../login/auth.component.css']
 })
 export class RegistrationComponent implements OnInit, OnDestroy {
-  @ViewChild('regForm', {static: false}) regForm: NgForm;
+  regForm: FormGroup;
+
   error: string = null;
   message: string = null;
+
   isPasswordError = false;
   isEmailError = false;
   created = false;
+
   JSONSubscription: Subscription;
+
+  emailValidation = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
 
   constructor(private checkFormService: CheckFormService,
               private authService: AuthService,
-              private router: Router) { }
+              private router: Router) {
+  }
 
   ngOnInit() {
+    this.regForm = new FormGroup({
+      email: new FormControl(
+        null,
+        [
+          Validators.required,
+          Validators.email,
+          Validators.pattern(this.emailValidation)
+        ]
+      ),
+      password: new FormControl(null, [Validators.required]),
+      password2: new FormControl(null, [Validators.required])
+    });
     this.JSONSubscription = this.authService.authJSONResponseChanged
       .subscribe(
         (JSONResponse: {
@@ -40,36 +60,40 @@ export class RegistrationComponent implements OnInit, OnDestroy {
   }
 
 
-  onRegisterUser(email: NgModel, password: NgModel, password2: NgModel) {
-      const user = {
-        email: email.value,
-        password: password.value
-      };
+  onRegisterUser() {
+    const email = this.regForm.value.email;
+    const password = this.regForm.value.password;
+    const password2 = this.regForm.value.password2;
 
-      if (!this.checkFormService.comparePasswords(password.value, password2.value)) {
-        this.isPasswordError = true;
-        this.isEmailError = false;
-        this.error = 'Passwords are different';
-        this.regForm.setValue({
-          email: email.value,
-          password: '',
-          password2: ''
-        });
-        return false;
-      }
+    const user = {
+      email,
+      password
+    };
 
-      this.authService
-        .registerUser(user)
-        .subscribe(() => {
-          if (this.created === false) {
-            this.isEmailError = true;
-            this.isPasswordError = false;
-            this.error = this.message;
-            console.log(this.error);
-          } else {
-            this.router.navigate(['login']);
-          }
-        });
+    if (!this.checkFormService.comparePasswords(password, password2)) {
+      this.isPasswordError = true;
+      this.isEmailError = false;
+      this.error = 'Passwords are different';
+      this.regForm.patchValue({
+        email,
+        password: '',
+        password2: ''
+      });
+      return false;
+    }
+
+    this.authService
+      .registerUser(user)
+      .subscribe(() => {
+        if (this.created === false) {
+          this.isEmailError = true;
+          this.isPasswordError = false;
+          this.error = this.message;
+          console.log(this.error);
+        } else {
+          this.router.navigate(['login']);
+        }
+      });
   }
 
   ngOnDestroy(): void {

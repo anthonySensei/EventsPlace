@@ -1,8 +1,11 @@
 import { Injectable } from '@angular/core';
-import {Observable, Subject} from 'rxjs';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
+
+import {Observable, Subject} from 'rxjs';
 import {map} from 'rxjs/operators';
+
 import {User} from '../user/user.model';
+import {Role} from '../user/role.model';
 
 @Injectable({
   providedIn: 'root'
@@ -26,10 +29,13 @@ export class AuthService {
   jwtTokenChanged = new Subject<string>();
   jwtToken: string;
 
+  tokenExpirationTimer;
+
 
   REGISTRATION_URL = 'http://localhost:3000/registration';
   LOGIN_URL = 'http://localhost:3000/login';
   LOGOUT_URL = 'http://localhost:3000/logout';
+  CHECK_REGISTRATION_TOKEN_URL = 'http://localhost:3000/check-registration-token';
 
   constructor(private http: HttpClient) { }
 
@@ -135,7 +141,7 @@ export class AuthService {
         if (userRole === 'admin') {
           this.setIsAdmin(true);
           this.setIsManager(true);
-        } else if(userRole === 'manager') {
+        } else if (userRole === 'manager') {
           this.setIsAdmin(false);
           this.setIsManager(true);
         } else {
@@ -143,15 +149,58 @@ export class AuthService {
           this.setIsManager(false);
         }
         this.setJwtToken(response.data.token);
-        this.storeUser(response.data.token, response.data.user);
+        this.handleAuthentication(
+          response.data.user.id,
+          response.data.user.email,
+          response.data.user.role,
+          response.data.user.profileImage,
+          response.data.token,
+          response.data.tokenExpiresIn
+        );
         console.log(response);
       }));
   }
 
-  storeUser(token, user) {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    this.jwtToken = token;
+  autoLogin() {
+    const userData: {
+      id: number;
+      name: string;
+      email: string;
+      profileImage: string;
+      password: string;
+      createdAt: Date;
+      role: Role;
+    } = JSON.parse(localStorage.getItem('userData'));
+    const tokenData: {
+      token: string;
+      expirationDate: string;
+    } = JSON.parse(localStorage.getItem('tokenData'));
+    if (!userData) {
+      return;
+    }
+
+    const loadedUser = new User(userData.id, null, userData.email, userData.profileImage, null, null, userData.role);
+
+    const userRole = loadedUser.role.role;
+    if (userRole === 'admin') {
+      this.setIsAdmin(true);
+      this.setIsManager(true);
+    } else if (userRole === 'manager') {
+      this.setIsAdmin(false);
+      this.setIsManager(true);
+    } else {
+      this.setIsAdmin(false);
+      this.setIsManager(false);
+    }
+
+    if (tokenData.token) {
+      this.userChanged.next(loadedUser);
+      this.setUser(loadedUser);
+      this.setJwtToken(tokenData.token);
+      const expirationDuration = new Date(tokenData.expirationDate).getTime() - new Date().getTime();
+      this.setIsLoggedIn(true);
+      this.autoLogout(expirationDuration);
+    }
   }
 
   logout() {
@@ -167,7 +216,51 @@ export class AuthService {
         this.setUser(null);
         localStorage.clear();
         this.setJwtToken(null);
+        this.tokenExpirationTimer = null;
       }));
   }
 
+  autoLogout(expirationDuration: number) {
+    if (expirationDuration < 0) {
+      this.logout();
+      localStorage.clear();
+    }
+    this.tokenExpirationTimer  = setTimeout(() => {
+      this.logout();
+    }, expirationDuration);
+    console.log(expirationDuration);
+  }
+
+  private handleAuthentication(userId, email: string, role: Role, profileImage, token: string, expiresIn: number) {
+    const expirationDate = new Date(
+      new Date().getTime() + expiresIn * 1000
+    );
+    const user = new User(userId, null, email, profileImage, null, null, role);
+    const tokenData = {
+      token,
+      expirationDate
+    };
+    this.setUser(user);
+    this.userChanged.next(user);
+    this.autoLogout(expiresIn * 1000);
+    localStorage.setItem('tokenData', JSON.stringify(tokenData));
+    localStorage.setItem('userData', JSON.stringify(user));
+  }
+
+  checkRegistrationToken(registrationToken: string) {
+    const headers = new HttpHeaders();
+    const token = {
+      registrationToken
+    };
+    headers.append('Content-type', 'application/json');
+    return this
+      .http
+      .post(
+        this.CHECK_REGISTRATION_TOKEN_URL,
+        token,
+        {headers})
+      .pipe(map((response: any) => {
+        console.log(response);
+      }));
+  }
 }

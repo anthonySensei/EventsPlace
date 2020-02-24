@@ -4,8 +4,9 @@
     <span class="page-title">Login</span>
     <hr style="background-color: #0d0d0d">
     <form
-      (submit)="onLoginUser(email, password)"
-      #loginForm="ngForm">
+      (ngSubmit)="onLoginUser()"
+      [formGroup]="loginForm"
+    >
       <div class="input-group form-group">
         <mat-form-field
           class="fadeIn second form-input">
@@ -13,14 +14,18 @@
           <input
             matInput
             name="email"
-            #email="ngModel"
-            ngModel
+            formControlName="email"
             placeholder="Ex. #hello"
             required
           >
         </mat-form-field>
       </div>
-      <span class="help-block" *ngIf="!email.valid && email.touched">Please fill in email</span>
+      <span
+        class="help-block"
+        *ngIf="loginForm.get('email').errors['required'] && loginForm.get('email').touched"
+      >
+        Fill in email
+      </span>
       <div class="input-group form-group">
         <mat-form-field
           class="fadeIn third form-input">
@@ -29,8 +34,7 @@
             matInput
             type="password"
             name="password"
-            #password="ngModel"
-            ngModel
+            formControlName="password"
             placeholder="Ex. hello"
             required
           >
@@ -38,7 +42,8 @@
       </div>
       <span
         class="help-block"
-        *ngIf="(!password.valid && password.touched) || error">
+        *ngIf="loginForm.get('password').errors['required'] && loginForm.get('password').touched"
+      >
         {{ error ? error : 'Fill in password' }}
       </span>
       <button
@@ -51,7 +56,7 @@
       <a class="underlineHover" routerLink="/password-recovery">
         Forgot Password?
       </a> / <a class="underlineHover" routerLink="/registration">
-      Don't have account?
+         Don't have account?
     </a>
     </div>
   </div>

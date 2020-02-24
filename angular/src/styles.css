@@ -228,6 +228,28 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 
+/* pagination */
+
+.pagination {
+  margin: 2rem 0 2rem 0;
+  text-align: center;
+}
+
+.pagination a {
+  text-decoration: none;
+  color: rgb(2,169,255);
+  padding: 0.5rem;
+  border: 1px solid rgb(2,169,255);
+  margin: 0 1rem 0 1rem;
+}
+
+.pagination a:hover,
+.pagination a:active,
+.pagination a.pagination-active {
+  background-color: rgb(2,169,255);
+  color: #ffffff;
+}
+
 /* Scrollbar */
 
 /* width */

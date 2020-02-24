@@ -8,6 +8,7 @@ import {Post} from './post.model';
 import {Subscription} from 'rxjs';
 import {MAT_SNACK_BAR_DATA, MatSnackBar, MatSnackBarConfig, MatSnackBarRef} from '@angular/material';
 import {AuthService} from '../auth/auth.service';
+import {MainPageSnackbarComponent} from './main-page-snackbar/main-page-snackbar.component';
 
 
 @Component({
@@ -55,17 +56,17 @@ export class MainPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.authService.autoLogin();
     this.isLoading = true;
     this.postsSubscription = this.storageService.postsChanged
       .subscribe((posts: Post[]) => {
         this.posts = posts;
-        console.log(this.posts);
         this.isLoading = false;
       });
     this.loggedInSubscription = this.authService.loggedChange
       .subscribe(isLoggedIn => {
         this.isLoggedIn = isLoggedIn;
-      });
+    });
     this.isLoggedIn = this.authService.getIsLoggedIn();
     this.cards = document.getElementsByClassName('card');
     this.cardsContent = document.getElementsByClassName('container');
@@ -88,12 +89,8 @@ export class MainPageComponent implements OnInit, OnDestroy {
         this.hasNextPage = this.response.data.paginationData.hasNextPage;
         this.hasPreviousPage = this.response.data.paginationData.hasPreviousPage;
         this.lastPage = this.response.data.paginationData.lastPage;
-        console.log(response);
     });
     this.response = this.storageService.getResponse();
-    // this.currentPage = this.response.data.paginationData.currentPage;
-    // this.nextPage = this.response.data.paginationData.nextPage;
-
   }
 
   openSnackBar() {
@@ -192,13 +189,3 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
 }
 
-@Component({
-  selector: 'app-snackbar',
-  templateUrl: 'main-page-snackbar.component.html',
-  styleUrls: ['./main-page.component.css']
-})
-export class MainPageSnackbarComponent {
-  constructor(
-    public snackBarRef: MatSnackBarRef<MainPageSnackbarComponent>,
-    @Inject(MAT_SNACK_BAR_DATA) public data: any) { }
-}

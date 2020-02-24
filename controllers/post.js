@@ -3,7 +3,7 @@ const User = require('../models/user');
 const Hashtag = require('../models/hashtag');
 
 
-const uuidv4 = require('uuid/v4')
+const uuidv4 = require('uuid/v4');
 
 const base64Img = require('base64-img');
 
@@ -22,19 +22,44 @@ const ITEMS_PER_PAGE = 8;
 
 
 exports.getAllPosts = (req, res) => {
+    const status = req.query.status;
+    const page = +req.query.page || 1;
+
+    let condition = {status: status};
+
+
+    if(status === 'all') {
+        condition = {};
+    }
+
+    let totalPosts;
+
     Post
-        .findAll({
+      .count({
+        include: [{
+            model: User
+        },
+        {
+            model: Hashtag
+        }],
+        where: condition,
+    })
+      .then(function(postNumber) {
+         totalPosts = postNumber;
+         return Post.findAll({
             include: [{
                 model: User
             },
             {
                 model: Hashtag
             }],
-            limit: 10,
-            offset: 10,
+            where: condition,
+            limit: ITEMS_PER_PAGE,
+            offset: (page-1) * ITEMS_PER_PAGE,
             order: [
                 ['id', 'ASC']
             ]
+         })
         })
         .then(result => {
             let posts = [];
@@ -55,7 +80,15 @@ exports.getAllPosts = (req, res) => {
                 responseCode: 500,
                 data: {
                     posts: posts,
-                    message: 'Posts was fetched successfully!'
+                    message: 'Posts was fetched successfully!',
+                    paginationData: {
+                        currentPage: page,
+                        hasNextPage: ITEMS_PER_PAGE * page < totalPosts,
+                        hasPreviousPage: page > 1,
+                        nextPage: page + 1,
+                        previousPage: page - 1,
+                        lastPage: Math.ceil(totalPosts / ITEMS_PER_PAGE)
+                    }
                 }
             })
         })
@@ -136,7 +169,6 @@ module.exports.getApprovedPosts = (req, res) => {
         .then(result => {
         let posts = [];
         for(let post of result){
-            console.log(post.dataValues.id);
             post.dataValues.post_image = base64Img.base64Sync(post.dataValues.post_image);
             posts.push({
                 postId: post.dataValues.id,
@@ -179,15 +211,13 @@ module.exports.getApprovedPosts = (req, res) => {
 
 module.exports.getPost = (req, res) => {
     postId = req.query.postId;
+    console.log(postId);
     Post
      .findOne({ where: { id: postId }})
      .then(post => {
         User
          .findOne({ where: { id: post.dataValues.userId}})
          .then(user => {
-            //  if (!user.dataValues.name) {
-            //     user.dataValues.name = user;
-            //  }
             userData = {
                 name: user.dataValues.name,
                 email: user.dataValues.email
@@ -203,6 +233,7 @@ module.exports.getPost = (req, res) => {
                         postStatus: post.dataValues.status,
                         postImage: post.dataValues.post_image,
                         description: post.dataValues.description,
+                        eventName: post.dataValues.event_name,
                         eventLocation: post.dataValues.event_location,
                         postCreatedAt: post.dataValues.createdAt,
                         postUpdatedAt: post.dataValues.updatedAt,
@@ -229,7 +260,7 @@ module.exports.getPost = (req, res) => {
          })
          .catch(err => {
             console.log(err.errors[0].message);
-            res.send({
+            return res.send({
                 responseCode: 500,
                 data: {
                     message: 'Error! ' + err.errors[0].message
@@ -238,18 +269,16 @@ module.exports.getPost = (req, res) => {
         });
      })
     .catch(err => {
-        console.log(err.errors[0].message);
-        res.send({
+        console.log(err);
+        return res.send({
             responseCode: 500,
             data: {
-                message: 'Error! ' + err.errors[0].message
+                message: 'Error! ' + err
             }
         });
     });
 
 }
-
-
 
 
 module.exports.createPost = (req, res) => {
@@ -288,6 +317,56 @@ module.exports.createPost = (req, res) => {
             }
         });
     });   
+}
+
+module.exports.updatePost = (req, res) => {
+    const imageBase64 = req.body.base64;
+    postData = JSON.parse(req.body.post_data);
+    const postId = postData.id;
+    const filepath = base64Img.imgSync(imageBase64, '../images/', uuidv4());
+
+    Post
+      .findOne({ where: { id: postId } })
+      .then(post => {
+          post
+            .update({
+                description: postData.description,
+                status: statuses.UNCONFIRMED,
+                post_image: filepath,
+                event_name: postData.eventName,
+                event_location: postData.eventLocation,
+                userId: postData.user.id,
+                hashtagId: postData.hashtag.hashtagId
+            })
+            .then(post => {
+                console.log('Created');
+                res.send({
+                    responseCode: 500,
+                    data: {
+                        postUpdated: true,
+                        message: 'Post was updated successfully!'
+                    }
+                });
+            })
+            .catch((err) => {
+                console.log(err.errors[0].message);
+                res.send({
+                    responseCode: 500,
+                    data: {
+                        message: 'Error! ' + err.errors[0].message
+                    }
+                });
+            });   
+      })
+      .catch(err => {
+        console.log(err.errors[0].message);
+        res.send({
+            responseCode: 500,
+            data: {
+                message: 'Error! ' + err.errors[0].message
+            }
+        });
+      }); 
 }
 
 exports.setPostStatus = (req, res) => {

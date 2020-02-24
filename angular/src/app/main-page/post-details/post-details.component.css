@@ -19,13 +19,20 @@
 }
 
 .description-container {
-  text-align: justify;
-  height: 450px;
-  max-height: 450px;
-  overflow: auto;
+  height: 460px;
+  max-height: 460px;
+  width: 55%;
+  max-width: 55%;
+  overflow: hidden;
 }
-.post-description {
+.post-description,
+.post-description:disabled
+{
+  background-color: inherit;
+  border: none;
+  font-size: 1.2em;
   padding-right: 10px;
+  resize: none;
 }
 .row {
   padding: 10px;

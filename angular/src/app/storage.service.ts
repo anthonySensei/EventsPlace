@@ -56,14 +56,17 @@ export class StorageService {
       }));
   }
 
-  fetchAllPosts() {
+  fetchAllPosts(status: string, page: number) {
     const headers = new HttpHeaders();
     headers.append('Content-type', 'application/json');
     return this
       .http
-      .get(this.GET_ALL_POSTS_URL, {headers})
+      .get(
+        `${this.GET_ALL_POSTS_URL}?status=${status}&page=${page}`,
+        {headers})
       .pipe(map((response: any) => {
         this.setPosts(response.data.posts);
+        this.setResponse(response);
       }));
   }
 
