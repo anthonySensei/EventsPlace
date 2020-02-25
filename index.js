@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
+
 const path = require('path');
 
 const express = require('express');
@@ -26,7 +30,7 @@ const status = require('./enums/user-status.enum');
 
 const app = express();
 
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 const uuidv4 = require('uuid/v4')
 
@@ -66,7 +70,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('images', express.static(path.join(__dirname, 'images')));
 
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
+    res.header('Access-Control-Allow-Origin', process.env.ANGULAR);
 
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     res.header('Access-Control-Allow-Methods', 'GET, PATCH, PUT, POST, DELETE, OPTIONS');
@@ -92,15 +96,15 @@ sequelize
     .then(user => {
         if(!user){
             const admin = new User({
-                name: 'admin',
-                email: 'admin@gmail.com',
-                password: 'admin123'
+                name: process.env.ADMIN_NAME,
+                email: process.env.ADMIN_EMAIL,
+                password: process.env.ADMIN_PASSWORD
             });
             bcrypt.genSalt(10, (err, salt) => {
                 bcrypt.hash(admin.password, salt, (err, hash) => {
                     admin.password = hash;
                     User.create({
-                        id: 1,
+                        id: process.env.ADMIN_ID,
                         name: admin.name,
                         email: admin.email,
                         status: status.ACTIVATED,

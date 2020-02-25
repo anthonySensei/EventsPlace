@@ -16,16 +16,12 @@
             name="email"
             formControlName="email"
             placeholder="Ex. #hello"
-            required
           >
+          <mat-error *ngIf="hasError('email', 'required')">
+            Email is required
+          </mat-error>
         </mat-form-field>
       </div>
-      <span
-        class="help-block"
-        *ngIf="loginForm.get('email').errors['required'] && loginForm.get('email').touched"
-      >
-        Fill in email
-      </span>
       <div class="input-group form-group">
         <mat-form-field
           class="fadeIn third form-input">
@@ -36,16 +32,15 @@
             name="password"
             formControlName="password"
             placeholder="Ex. hello"
-            required
           >
+          <mat-error *ngIf="hasError('password', 'required') && !error">
+            Password is required
+          </mat-error>
+          <mat-error *ngIf="error">
+            {{error}}
+          </mat-error>
         </mat-form-field>
       </div>
-      <span
-        class="help-block"
-        *ngIf="loginForm.get('password').errors['required'] && loginForm.get('password').touched"
-      >
-        {{ error ? error : 'Fill in password' }}
-      </span>
       <button
         type="submit"
         class="fadeIn fourth form-button"

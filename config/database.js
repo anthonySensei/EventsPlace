@@ -1,14 +1,14 @@
 const { Sequelize } = require('sequelize');
 
 const sequelize = new Sequelize(
- 'eventsplace',
- USER,
- PASSWORD,
+ process.env.DATABASE_NAME,
+ process.env.DATABASE_USER,
+ process.env.DATABASE_PASSWORD,
  {
-     dialect: 'postgres',
-     host: 'localhost',
-     port: 5432
+     dialect: process.env.DATABASE_DIALECT,
+     host: process.env.DATABASE_HOST,
+     port: process.env.DATABASE_PORT 
  }
-);
+); 
 
 module.exports = sequelize;

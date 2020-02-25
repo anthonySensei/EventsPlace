@@ -1,60 +1,74 @@
 <div class="wrapper">
   <div class="form-content">
-<!--    <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>-->
+    <!--    -->
     <div class="profile-container">
       <span class="page-title">Profile</span>
       <hr style="background-color: #0d0d0d">
-      <!--    -->
-      <img
-        class="profile-image"
-        src="{{user.profileImage}}"
-        alt="Avatar"
-        style="width:200px">
-      <form
-        (submit)="onChangeUserData(name, email)"
-        #profileForm='ngForm'>
-        <a
-          mat-raised-button
-          style="margin-right: 5px;"
-          (click)="openChangeProfileImageDialog()"
-        >Change image</a>
-        <a
-          mat-raised-button
-          (click)="openChangePasswordDialog()"
-        >Change password</a>
-        <mat-form-field
-          class="form-input">
-          <mat-label>Full name</mat-label>
-          <input
-            matInput
-            name="name"
-            #name="ngModel"
-            [(ngModel)]="user.name"
-            placeholder="Ex. Anthony"
-            required
+      <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+      <div *ngIf="!isLoading">
+        <img
+          class="profile-image"
+          src="{{user.profileImage}}"
+          alt="Avatar"
+          style="width:200px">
+        <form
+          (ngSubmit)="onChangeUserData()"
+          [formGroup]="profileForm">
+          <a
+            mat-raised-button
+            style="margin-right: 5px;"
+            (click)="openChangeProfileImageDialog()"
           >
-        </mat-form-field>
-        <span class="help-block" *ngIf="!name.valid && name.touched">Please fill in full name</span>
-        <mat-form-field
-          class="form-input">
-          <mat-label>Email</mat-label>
-          <input
-            matInput
-            name="email"
-            #email="ngModel"
-            [(ngModel)]="user.email"
-            placeholder="Ex. example@mail.com"
-            required
+            Change image
+          </a>
+          <a
+            mat-raised-button
+            (click)="openChangePasswordDialog()"
           >
-        </mat-form-field>
-        <span class="help-block" *ngIf="!email.valid && email.touched">Please fill in email</span>
-        <button
-          class="form-button"
-          type="submit"
-          [disabled]="(profileForm.invalid) || !email.touched || !name.touched"
-        >Save
-        </button>
-      </form>
+            Change password
+          </a>
+          <mat-form-field
+            class="form-input">
+            <mat-label>Full name</mat-label>
+            <input
+              matInput
+              name="name"
+              formControlName="name"
+              placeholder="Ex. Anthony"
+            >
+          </mat-form-field>
+          <mat-form-field
+            class="form-input">
+            <mat-label>Email</mat-label>
+            <input
+              matInput
+              name="email"
+              formControlName="email"
+              placeholder="Ex. example@mail.com"
+            >
+            <mat-error *ngIf="error">
+              {{error}}
+            </mat-error>
+            <mat-error *ngIf="hasError('email', 'required') && !error">
+              Email is required
+            </mat-error>
+            <mat-error
+              *ngIf="
+                  (hasError('email', 'email') ||
+                   hasError('email', 'pattern')) && !error"
+            >
+              Email is not valid
+            </mat-error>
+          </mat-form-field>
+          <button
+            class="form-button"
+            type="submit"
+            [disabled]="profileForm.invalid"
+          >
+            Save
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </div>

@@ -1,28 +1,84 @@
-const db = require('./database');
-const User = require('../models/user');
-const secret_key = require('../config/secret_key');
+const bCrypt = require('bcryptjs');
 
 const passportJWT = require('passport-jwt');
 
-let JwtStrategy = passportJWT.Strategy;
-let ExtractJwt = passportJWT.ExtractJwt;
+const JWTStrategy = passportJWT.Strategy;
+const ExtractJWT = passportJWT.ExtractJwt;
 
-module.exports = passport => {
-    let jwtOptions = {}
-    jwtOptions.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-    jwtOptions.secretOrKey = secret_key;
+const status = require('../enums/user-status.enum');
 
-    let strategy = new JwtStrategy(jwtOptions, function(jwt_payload, done) {
-        console.log('payload received', jwt_payload);
-        User
-          .findOne({where: { id: jwt_payload.sub}})
-          .then((user) => {
-            done(null, user, {message: 'Good'});
-          })
-          .catch((err) => {
-            done(null, false, {message: 'Good'});
-          });
-    })
-    passport.use(strategy);
+module.exports = (passport, user) => {
+  let User = user;
+  
+  const LocalStrategy = require('passport-local').Strategy;
+  
+    passport.use(new LocalStrategy(
+        {
+            usernameField: 'email',
+            passwordField: 'password',
+            passReqToCallback: true 
+        },
+        (req, email, password, done) => {
+            let User = user;
+            const isValidPassword = (userpass, password) => {
+                return bCrypt.compareSync(password, userpass);
+            }
+            console.log("logged to", email);
+            User.findOne({
+                where: {
+                    email: email,
+                    status: status.ACTIVATED
+                }
+            }).then( (user)  => {
+                if (!user) {
+                    return done(null, false, {
+                        message: 'Email does not exist'
+                    });
+
+                }
+                if (!isValidPassword(user.password, password)) {
+                    return done(null, false, {
+                        message: 'Incorrect password.'
+                    });
+                }
+                let userinfo = user.get();
+                return done(null, userinfo);
+            }).catch((err) => {
+                console.log("Error:", err);
+                return done(null, false, {
+                    message: 'Something went wrong with your Signin'
+                });
+            });
+        }
+    ));
+
+    passport.use(new JWTStrategy({
+        jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+        secretOrKey   : secret_key
+    },
+    function (jwtPayload, cb) {
+
+        return User.findOne({where: {id: jwtPayload.id}})
+            .then(user => {
+                return cb(null, user);
+            })
+            .catch(err => {
+                return cb(err);
+            });
+    }
+    ));
+
+    passport.serializeUser(function (auth, done) {
+        done(null, auth.id);
+    });
+
+    passport.deserializeUser(function (id, done) {
+        User.findOne({where: {id: id}}).then(function (user) {
+            if (user) {
+                done(null, user.get());
+            } else {
+                done(user.errors, null);
+            }
+        });
+    });
 }
-

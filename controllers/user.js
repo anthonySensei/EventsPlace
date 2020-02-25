@@ -15,30 +15,31 @@ const passport = require('passport');
 
 const userStatus = require('../enums/user-status.enum');
 
-sessionDuration = 3600 * 12;
+sessionDuration = 3600 * 12; //12 hours
+
+lengthOfGeneratedPassword = 8;
+charsetOfGeneratedPassword = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
 const nodemailer = require('nodemailer');
 const sendGridTransport = require('nodemailer-sendgrid-transport');
 
-//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
-//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
-
 const transporter = nodemailer.createTransport(sendGridTransport({
     auth: {
-        api_key: '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'
+        api_key: process.env.SEND_GRID_API_KEY
     }
 }));
 
 exports.postCreateUser = (req, res, next) => {
     let email = req.body.email;
+    if (email) {
+        return;
+    }
     let password;
     if (req.body.password) {
         password = req.body.password;
     } else {
         password = generatePassword();
     }
-    console.log(password);
-    console.log('User creation!');
     if (!email || !password) {
         return responseCreateUser(res, 400, false, 'Please fill in fields');
     }
@@ -72,7 +73,7 @@ exports.postCreateUser = (req, res, next) => {
                         console.log(newUser.email);
                         transporter.sendMail({
                             to: newUser.email,
-                            from: 'noreply@eventsplace.com',
+                            from: process.env.EVENTS_PLACE_EMAIL_ADDRESS,
                             subject: 'Account activation',
                             html: `
                             Hello!
@@ -150,83 +151,65 @@ exports.postCheckRegistrationToken = (req, res, next) => {
 }
 
 exports.postLoginUser = (req, res, next) => {
-    console.log(req.headers);
-    const email = req.body.email;
-    const password = req.body.password;
-
-    if (!email || !password) {
-        return responseLogin(res, 400, false, 'Please fill in fields');
-    }
-
-    User
-        .findOne({where: {email: email}})
-        .then(user => {
-            if (!user) {
-                console.log('Bad credentials');
-                return responseLogin(res, 400, false, 'Bad credentials');
-            } else {
-                console.log('User was found');
-                if (bcrypt.compareSync(password, user.dataValues.password)) {
-                    console.log('Match');
-                    Role
-                        .findOne({where: {user_id: user.dataValues.id}})
-                        .then(role => {
-                            // console.log(user);
-                            profileImage = user.dataValues.profile_image;
-                            if (profileImage) {
-                                profileImage = base64Img.base64Sync(profileImage);
-                            } else {
-                                profileImage = '';
-                            }
-                            const userData = {
-                                id: user.dataValues.id,
-                                email: user.dataValues.email,
-                                profileImage: profileImage,
-                                role: role.dataValues
-                            };
-
-                            req.login(user, {session: false}, (err) => {
-                                if (err) {
-                                    responseErrorMessage(res, 400, err);
-                                }
-                                const userJWT = {
-                                    id: user.dataValues.id,
-                                    email: user.dataValues.email,
-                                    role: user.dataValues.role,
-                                };
-                                const token = jwt.sign(userJWT, secret_key, {
-                                    expiresIn: sessionDuration
-                                });
-                                jwt.verify(token, secret_key, function (err, data) {
-                                    console.log(err, data);
-                                });
-                                //  console.log(token);
-                                res.send({
-                                    responseCode: 400,
-                                    data: {
-                                        loggedIn: true,
-                                        message: 'User successfully logged in!',
-                                        user: userData,
-                                        token: 'Bearer ' + token,
-                                        tokenExpiresIn: sessionDuration
-                                    }
-                                });
-                            });
-                        })
-                        .catch(err => {
-                            console.log(err);
-                            return responseLogin(res, 400, false, err);
-                        });
-                } else {
-                    console.log('Not match');
-                    return responseLogin(res, 400, false, 'Bad credentials!');
-                }
-            }
-        })
-        .catch(err => {
-            console.log(err);
+    passport.authenticate('local', function(err, user, info) {
+        if (err) {
             return responseLogin(res, 400, false, err);
-        });
+        }
+        if (!user) { 
+            console.log('Bad credentials');
+            return responseLogin(res, 401, false, 'Wrong password or login');
+        } else {
+            Role
+            .findOne({where: {user_id: user.id}})
+            .then(role => {
+                profileImage = user.profile_image;
+                if (profileImage) {
+                    profileImage = base64Img.base64Sync(profileImage);
+                } else {
+                    profileImage = '';
+                }
+                const userData = {
+                    id: user.id,
+                    email: user.email,
+                    profileImage: profileImage,
+                    role: role.dataValues
+                };
+
+                req.login(user, {session: false}, (err) => {
+                    if (err) {
+                        responseErrorMessage(res, 400, err);
+                    }
+                    const userJWT = {
+                        id: user.id,
+                        email: user.email,
+                        role: user.role,
+                    };
+                    const token = jwt.sign(userJWT, secret_key, {
+                        expiresIn: sessionDuration
+                    });
+                    jwt.verify(token, secret_key, function (err, data) {
+                        console.log(err, data);
+                    });
+                    //  console.log(token);
+                    res.send({
+                        responseCode: 400,
+                        data: {
+                            loggedIn: true,
+                            message: 'User successfully logged in!',
+                            user: userData,
+                            token: 'Bearer ' + token,
+                            tokenExpiresIn: sessionDuration
+                        }
+                    });
+                });
+            })
+            .catch(err => {
+                console.log(err);
+                return responseLogin(res, 400, false, err);
+            });
+        }
+        // createSendToken(req.user, res);
+      })(req, res, next);
 };
 
 module.exports.getLogout = (req, res) => {
@@ -390,10 +373,10 @@ module.exports.postUpdateProfileImage = (req, res) => {
 }
 
 function generatePassword() {
-    var length = 8,
-        charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    let length = lengthOfGeneratedPassword,
+        charset = charsetOfGeneratedPassword,
         retVal = "";
-    for (var i = 0, n = charset.length; i < length; ++i) {
+    for (let i = 0, n = charset.length; i < length; ++i) {
         retVal += charset.charAt(Math.floor(Math.random() * n));
     }
     return retVal;

@@ -1,14 +1,16 @@
-import {NgModel} from '@angular/forms';
 import {Component, OnDestroy, OnInit} from '@angular/core';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
+
 import {MatDialog} from '@angular/material/dialog';
+import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
+
+import {Subscription} from 'rxjs';
 
 import {UserService} from './user.service';
 import {AuthService} from '../auth/auth.service';
 
 import {User} from './user.model';
 
-import {Subscription} from 'rxjs';
-import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
 import {ChangePasswordModalComponent} from './change-password-modal/change-password-modal.component';
 import {ChangeProfileImageModalComponent} from './change-profile-image/change-profile-image-modal.component';
 
@@ -18,6 +20,8 @@ import {ChangeProfileImageModalComponent} from './change-profile-image/change-pr
   styleUrls: ['./user.component.css']
 })
 export class UserComponent implements OnInit, OnDestroy {
+  profileForm: FormGroup;
+
   isLoading: boolean;
   user: User;
   userSubscription: Subscription;
@@ -27,14 +31,18 @@ export class UserComponent implements OnInit, OnDestroy {
   response;
   message;
 
-  name: string;
   oldPassword: string;
   newPassword: string;
   retypeNewPassword: string;
 
+  oldName: string;
+  oldEmail: string;
+
   profileImageBase64;
 
   snackbarDuration = 5000;
+
+  emailValidation = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
 
 
   constructor(private authService: AuthService,
@@ -44,24 +52,40 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.profileForm = new FormGroup({
+      email: new FormControl(
+        null,
+        [
+          Validators.required,
+          Validators.email,
+          Validators.pattern(this.emailValidation)
+        ]
+      ),
+      name: new FormControl(null, null)
+    });
     this.isLoading = true;
     this.userSubscription = this.authService.userChanged
       .subscribe(user => {
         this.user = user;
+        this.oldEmail = user.email;
+        this.oldName = user.name;
+        this.profileForm.patchValue({
+          name: user.name,
+          email: user.email
+        });
         this.isLoading = false;
       });
     this.user = this.authService.getUser();
     this.getUserSubscription = this.userService.getUserHttp(this.user.email).subscribe();
-    // console.log(this.user.profile_image);
     this.responseSubscription = this.userService.responseChanged
       .subscribe(response => {
         this.response = response;
       });
     this.response = this.userService.getResponse();
-    this.name = this.user.name;
-    if (!this.name) {
-      this.name = '';
-    }
+  }
+
+  hasError(controlName: string, errorName: string) {
+    return this.profileForm.controls[controlName].hasError(errorName);
   }
 
   openChangeProfileImageDialog() {
@@ -84,7 +108,7 @@ export class UserComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(ChangePasswordModalComponent, {
       width: '35%',
       data: {
-        name: this.name,
+        name: this.profileForm.value.name,
         oldPassword: this.oldPassword,
         newPassword: this.newPassword,
         retypeNewPassword: this.retypeNewPassword
@@ -103,9 +127,22 @@ export class UserComponent implements OnInit, OnDestroy {
     });
   }
 
-  onChangeUserData(name: NgModel, email: NgModel) {
-    this.user.email = email.value;
-    this.user.name = name.value;
+  onChangeUserData() {
+    const email = this.profileForm.value.email;
+    const name = this.profileForm.value.name;
+
+    if (!email) {
+      this.error = 'Email is required';
+      return false;
+    }
+
+    if (email === this.oldEmail && name === this.oldName) {
+        this.openSnackBar('Nothing changed', null);
+        return false;
+    }
+
+    this.user.email = email;
+    this.user.name = name;
     this.userService.updateUserData(this.user, 'info')
       .subscribe(() => {
         if (this.response.data.changedUserInfo) {

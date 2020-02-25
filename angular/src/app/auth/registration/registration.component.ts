@@ -1,5 +1,5 @@
-import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {FormControl, FormGroup, NgForm, NgModel, Validators} from '@angular/forms';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 
 import {Subscription} from 'rxjs';
@@ -18,17 +18,22 @@ export class RegistrationComponent implements OnInit, OnDestroy {
   error: string = null;
   message: string = null;
 
-  isPasswordError = false;
-  isEmailError = false;
   created = false;
 
   JSONSubscription: Subscription;
 
   emailValidation = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
+  passwordValidation = /(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/;
 
-  constructor(private checkFormService: CheckFormService,
-              private authService: AuthService,
-              private router: Router) {
+  hidePassword = true;
+  hideRetypePassword = true;
+
+  isPasswordError = false;
+
+
+constructor(private checkFormService: CheckFormService,
+            private authService: AuthService,
+            private router: Router) {
   }
 
   ngOnInit() {
@@ -41,8 +46,18 @@ export class RegistrationComponent implements OnInit, OnDestroy {
           Validators.pattern(this.emailValidation)
         ]
       ),
-      password: new FormControl(null, [Validators.required]),
-      password2: new FormControl(null, [Validators.required])
+      password: new FormControl(
+        null, [
+          Validators.required,
+          Validators.pattern(this.passwordValidation)
+        ]
+      ),
+      password2: new FormControl(
+        null, [
+          Validators.required,
+          Validators.pattern(this.passwordValidation)
+        ]
+      )
     });
     this.JSONSubscription = this.authService.authJSONResponseChanged
       .subscribe(
@@ -59,11 +74,37 @@ export class RegistrationComponent implements OnInit, OnDestroy {
       );
   }
 
+  hasError(controlName: string, errorName: string) {
+    return this.regForm.controls[controlName].hasError(errorName);
+  }
+
+  checkIcon(hide: boolean, password: string) {
+    if (password == null || password === '') {
+      return '';
+    } else if (hide) {
+      return 'visibility';
+    } else {
+      return 'visibility_off';
+    }
+  }
+
 
   onRegisterUser() {
     const email = this.regForm.value.email;
     const password = this.regForm.value.password;
     const password2 = this.regForm.value.password2;
+
+    if (email === '' || password === '' || password2 === '') {
+      return false;
+    }
+
+    if (!this.emailValidation.test(email)) {
+      return false;
+    }
+
+    if (!this.passwordValidation.test(password) || !this.passwordValidation.test(password2)) {
+      return false;
+    }
 
     const user = {
       email,
@@ -72,7 +113,6 @@ export class RegistrationComponent implements OnInit, OnDestroy {
 
     if (!this.checkFormService.comparePasswords(password, password2)) {
       this.isPasswordError = true;
-      this.isEmailError = false;
       this.error = 'Passwords are different';
       this.regForm.patchValue({
         email,
@@ -86,8 +126,12 @@ export class RegistrationComponent implements OnInit, OnDestroy {
       .registerUser(user)
       .subscribe(() => {
         if (this.created === false) {
-          this.isEmailError = true;
           this.isPasswordError = false;
+          this.regForm.patchValue({
+            password: '',
+            password2: ''
+          });
+          this.regForm.controls.email.setErrors({incorrect: true});
           this.error = this.message;
           console.log(this.error);
         } else {

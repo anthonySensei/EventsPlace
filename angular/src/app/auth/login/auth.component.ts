@@ -23,6 +23,9 @@ export class AuthComponent implements OnInit, OnDestroy {
 
   snackbarDuration = 5000;
 
+  emailValidation = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
+  // passwordValidation = /(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/;
+
   constructor(private checkFormService: CheckFormService,
               private authService: AuthService,
               private router: Router,
@@ -30,8 +33,8 @@ export class AuthComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loginForm = new FormGroup({
-        email: new FormControl(null, [Validators.required, Validators.email]),
-        password: new FormControl(null, [Validators.required])
+        email: new FormControl('', [Validators.required, Validators.email]),
+        password: new FormControl('', [Validators.required])
     });
     this.JSONSubscription = this.authService.authJSONResponseChanged
       .subscribe(
@@ -48,15 +51,22 @@ export class AuthComponent implements OnInit, OnDestroy {
       );
   }
 
+  hasError(controlName: string, errorName: string) {
+    return this.loginForm.controls[controlName].hasError(errorName);
+  }
 
   onLoginUser() {
     const email = this.loginForm.value.email;
     const password = this.loginForm.value.password;
     if (email === '' || password === '') {
-      this.error = 'Please fill in fields';
-      this.loginForm.reset();
       return false;
     }
+    if (!this.emailValidation.test(email)) {
+      return false;
+    }
+    // if (!this.passwordValidation.test(email)) {
+    //   return false;
+    // }
     const user = {
       email,
       password
@@ -65,11 +75,11 @@ export class AuthComponent implements OnInit, OnDestroy {
       .login(user)
       .subscribe(() => {
         if (!this.loggedIn) {
-          this.error = this.message;
           this.loginForm.patchValue({
             email,
             password: ''
           });
+          this.error = this.message;
           return false;
         } else {
           this.authService.setIsLoggedIn(this.loggedIn);

@@ -12,6 +12,7 @@
     "base64-img": "^1.0.4",
     "bcryptjs": "*",
     "body-parser": "*",
+    "dotenv": "^8.2.0",
     "express": "*",
     "express-session": "*",
     "jsonwebtoken": "^8.5.1",

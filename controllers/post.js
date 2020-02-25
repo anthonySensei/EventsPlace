@@ -12,7 +12,7 @@ const sendGridTransport = require('nodemailer-sendgrid-transport');
 
 const transporter = nodemailer.createTransport(sendGridTransport({
     auth: {
-        api_key: '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'
+        api_key: process.env.SEND_GRID_API_KEY
     }
 }));
 
@@ -396,7 +396,7 @@ exports.setPostStatus = (req, res) => {
            }
         //    transporter.sendMail({
         //        to: userEmail,
-        //        from: 'noreply@eventsplace.com',
+        //        from: process.env.EVENTS_PLACE_EMAIL_ADDRESS,
         //        subject: 'Post decision',
         //        html: `Hello! Your post was ${newPostStatus}. ${reason}`
         //    })

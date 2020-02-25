@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 
 import {Observable, Subject} from 'rxjs';
@@ -137,7 +137,12 @@ export class AuthService {
       .pipe(map((response: any) => {
         this.setAuthJSONResponse(response);
         this.setUser(response.data.user);
-        const userRole = this.user.role.role;
+        let userRole;
+        if (this.user) {
+          userRole = this.user.role.role;
+        } else {
+          userRole = '';
+        }
         if (userRole === 'admin') {
           this.setIsAdmin(true);
           this.setIsManager(true);
@@ -148,16 +153,17 @@ export class AuthService {
           this.setIsAdmin(false);
           this.setIsManager(false);
         }
-        this.setJwtToken(response.data.token);
-        this.handleAuthentication(
-          response.data.user.id,
-          response.data.user.email,
-          response.data.user.role,
-          response.data.user.profileImage,
-          response.data.token,
-          response.data.tokenExpiresIn
-        );
-        console.log(response);
+        if (response.data.user) {
+          this.setJwtToken(response.data.token);
+          this.handleAuthentication(
+            response.data.user.id,
+            response.data.user.email,
+            response.data.user.role,
+            response.data.user.profileImage,
+            response.data.token,
+            response.data.tokenExpiresIn
+          );
+        }
       }));
   }
 
@@ -228,7 +234,6 @@ export class AuthService {
     this.tokenExpirationTimer  = setTimeout(() => {
       this.logout();
     }, expirationDuration);
-    console.log(expirationDuration);
   }
 
   private handleAuthentication(userId, email: string, role: Role, profileImage, token: string, expiresIn: number) {

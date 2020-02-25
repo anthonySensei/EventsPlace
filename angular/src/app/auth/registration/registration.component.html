@@ -15,60 +15,81 @@
         name="email"
         formControlName="email"
         placeholder="Ex. example@mail.com"
-        required
       >
+      <mat-error *ngIf="error">
+        {{error}}
+      </mat-error>
+      <mat-error *ngIf="hasError('email', 'required') && !error">
+        Email is required
+      </mat-error>
+      <mat-error
+        *ngIf="
+        (hasError('email', 'email') ||
+        hasError('email', 'pattern')) && !error"
+      >
+        Email is not valid
+      </mat-error>
     </mat-form-field>
-    <span
-      class="help-block"
-      *ngIf="regForm.get('email').errors['required'] && regForm.get('email').touched"
-    >
-      Fill in email
-    </span>
-    <span
-      class="help-block"
-      *ngIf="regForm.get('email').errors['required'] && regForm.get('email').touched"
-    >
-      Fill in email
-    </span>
     <mat-form-field
       class="form-input">
       <mat-label>Password</mat-label>
       <input
         matInput
-        type="password"
+        [type]="hidePassword ? 'password' : 'text'"
         name="password"
         formControlName="password"
-        placeholder="Ex. hello"
-        required
+        placeholder="Ex. Qwerty8_"
+        #password
       >
+      <button
+        mat-icon-button matSuffix
+        (click)="hidePassword = !hidePassword"
+        [attr.aria-label]="'Hide password'"
+        [attr.aria-pressed]="hidePassword">
+        <mat-icon>{{checkIcon(hidePassword, password.value)}}</mat-icon>
+      </button>
+      <mat-error *ngIf="hasError('password', 'required') && !error">
+        Password is required
+      </mat-error>
+      <mat-error *ngIf="hasError('password', 'pattern') && !error">
+        Password is not valid
+      </mat-error>
+      <mat-error *ngIf="isPasswordError">
+        {{error}}
+      </mat-error>
     </mat-form-field>
-    <span
-      class="help-block"
-      *ngIf="regForm.get('password').errors['required'] && regForm.get('password').touched"
-    >
-      Fill in password
-    </span>
     <mat-form-field
       class="form-input">
-      <mat-label>input password again</mat-label>
+      <mat-label>Input password again</mat-label>
       <input
         matInput
-        type="password"
+        [type]="hideRetypePassword ? 'password' : 'text'"
         name="password2"
         formControlName="password2"
-        required
+        #password2
       >
+      <button
+        mat-icon-button matSuffix
+        (click)="hideRetypePassword = !hideRetypePassword"
+        [attr.aria-label]="'Hide password'"
+        [attr.aria-pressed]="hideRetypePassword"
+      >
+        <mat-icon>{{checkIcon(hideRetypePassword, password2.value)}}</mat-icon>
+      </button>
+      <mat-error *ngIf="hasError('password2', 'required') && !error">
+        Please retype password
+      </mat-error>
+      <mat-error *ngIf="hasError('password2', 'pattern') && !error">
+        Please retype valid password
+      </mat-error>
     </mat-form-field>
-    <span
-      class="help-block"
-      *ngIf="regForm.get('password2').errors['required'] && regForm.get('password2').touched"
-    >
-      Retype password
-    </span>
     <button
       class="form-button"
       type="submit"
-      [disabled]="regForm.invalid">Submit</button>
+      [disabled]="regForm.invalid"
+    >
+      Submit
+    </button>
   </form>
   <div class="form-footer">
     <a class="underlineHover" routerLink="/login">
