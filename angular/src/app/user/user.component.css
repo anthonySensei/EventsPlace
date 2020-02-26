@@ -113,11 +113,7 @@ form.ng-valid .form-button:disabled:hover, .form-button:disabled:hover{
   margin: 0 auto 0 auto
 }
 
-::ng-deep snack-bar-container.snackbar {
-  background: rgb(255, 255, 255);
-  border: 2px solid rgb(10, 172, 0);
-  color: rgb(10, 172, 0);
-}
+
 
 
 

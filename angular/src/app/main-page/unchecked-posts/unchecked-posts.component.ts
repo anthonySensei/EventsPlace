@@ -49,12 +49,14 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
     this.responseSubscription = this.storageService.responseChanged
       .subscribe(response => {
         this.response = response;
-        this.currentPage = this.response.data.paginationData.currentPage;
-        this.nextPage = this.response.data.paginationData.nextPage;
-        this.previousPage = this.response.data.paginationData.previousPage;
-        this.hasNextPage = this.response.data.paginationData.hasNextPage;
-        this.hasPreviousPage = this.response.data.paginationData.hasPreviousPage;
-        this.lastPage = this.response.data.paginationData.lastPage;
+        if (this.response.data.paginationData) {
+          this.currentPage = this.response.data.paginationData.currentPage;
+          this.nextPage = this.response.data.paginationData.nextPage;
+          this.previousPage = this.response.data.paginationData.previousPage;
+          this.hasNextPage = this.response.data.paginationData.hasNextPage;
+          this.hasPreviousPage = this.response.data.paginationData.hasPreviousPage;
+          this.lastPage = this.response.data.paginationData.lastPage;
+        }
       });
   }
 

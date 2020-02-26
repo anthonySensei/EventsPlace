@@ -1,13 +1,15 @@
-import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormControl, NgModel} from '@angular/forms';
 
+import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
+
 import {StorageService} from '../storage.service';
+import {AuthService} from '../auth/auth.service';
 
 import {Post} from './post.model';
 
 import {Subscription} from 'rxjs';
-import {MAT_SNACK_BAR_DATA, MatSnackBar, MatSnackBarConfig, MatSnackBarRef} from '@angular/material';
-import {AuthService} from '../auth/auth.service';
+
 import {MainPageSnackbarComponent} from './main-page-snackbar/main-page-snackbar.component';
 
 
@@ -62,6 +64,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
       .subscribe((posts: Post[]) => {
         this.posts = posts;
         this.isLoading = false;
+        console.log(posts);
       });
     this.loggedInSubscription = this.authService.loggedChange
       .subscribe(isLoggedIn => {
@@ -83,12 +86,14 @@ export class MainPageComponent implements OnInit, OnDestroy {
     this.responseSubscription = this.storageService.responseChanged
       .subscribe(response => {
         this.response = response;
-        this.currentPage = this.response.data.paginationData.currentPage;
-        this.nextPage = this.response.data.paginationData.nextPage;
-        this.previousPage = this.response.data.paginationData.previousPage;
-        this.hasNextPage = this.response.data.paginationData.hasNextPage;
-        this.hasPreviousPage = this.response.data.paginationData.hasPreviousPage;
-        this.lastPage = this.response.data.paginationData.lastPage;
+        if (this.response.data.paginationData) {
+          this.currentPage = this.response.data.paginationData.currentPage;
+          this.nextPage = this.response.data.paginationData.nextPage;
+          this.previousPage = this.response.data.paginationData.previousPage;
+          this.hasNextPage = this.response.data.paginationData.hasNextPage;
+          this.hasPreviousPage = this.response.data.paginationData.hasPreviousPage;
+          this.lastPage = this.response.data.paginationData.lastPage;
+        }
     });
     this.response = this.storageService.getResponse();
   }

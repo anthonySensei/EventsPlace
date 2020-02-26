@@ -1,23 +1,23 @@
-  <div class="wrapper">
-    <div class="form-content">
-      <span class="page-title">New post</span>
-      <hr style="background-color: #0d0d0d">
-      <div *ngIf="isLoading && editMode" style="text-align: center">
-        <app-loading-spinner></app-loading-spinner>
-      </div>
-      <form
-        [formGroup]="createPostForm"
-        *ngIf="!isLoading"
-        (ngSubmit)="onCreatePost()"
-        enctype="multipart/form-data"
-      >
-        <button
-          type="button"
-          mat-raised-button
-          (click)="openDialog()">
-          Choose image
-        </button>
-        <div formGroupName="postData">
+<div class="wrapper">
+  <div class="form-content">
+    <span class="page-title">New post</span>
+    <hr style="background-color: #0d0d0d">
+    <div *ngIf="isLoading && editMode" style="text-align: center">
+      <app-loading-spinner></app-loading-spinner>
+    </div>
+    <form
+      [formGroup]="createPostForm"
+      *ngIf="!isLoading"
+      (ngSubmit)="onCreatePost()"
+      enctype="multipart/form-data"
+    >
+      <button
+        type="button"
+        mat-raised-button
+        (click)="openDialog()">
+        Choose image
+      </button>
+      <div>
         <mat-form-field
           class="d-block form-input">
           <mat-label>Event name</mat-label>
@@ -27,6 +27,9 @@
             formControlName="name"
             placeholder="Ex. Graduation"
           >
+          <mat-error *ngIf="hasError('name', 'required') && !error">
+            Event name is required
+          </mat-error>
         </mat-form-field>
         <mat-form-field class="text-area-container">
           <mat-label>Post description</mat-label>
@@ -42,22 +45,47 @@
             maxlength="512"
           ></textarea>
           <mat-hint align="end">{{postDescription.value?.length || 0}}/512</mat-hint>
+          <mat-error *ngIf="hasError('description', 'required') && !error">
+            Description is required
+          </mat-error>
         </mat-form-field>
-          <mat-form-field
-            class="d-block form-input">
-            <mat-label>Event location</mat-label>
-            <input
-              matInput
-              type="text"
-              formControlName="location"
-              placeholder="Ex. New York"
-            >
-          </mat-form-field>
-        </div>
-        <button
-          type="create"
-          class="form-button"
-        >Create</button>
-      </form>
-    </div>
+        <mat-form-field
+          class="d-block form-input"
+        >
+          <mat-label>Event location</mat-label>
+          <input
+            matInput
+            type="text"
+            name="location"
+            formControlName="location"
+            placeholder="Ex. New York"
+          >
+          <mat-error *ngIf="hasError('location', 'required') && !error">
+            Location is required
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field
+          class="d-block form-input"
+        >
+          <mat-label>Hashtag</mat-label>
+          <mat-select
+            name="hashtagSelect"
+            formControlName="hashtagSelect"
+          >
+            <mat-option *ngFor="let hashtag of hashtags" [value]="hashtag">
+              {{hashtag.name}}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="hasError('hashtagSelect', 'required') && !error">
+            Hashtag is required
+          </mat-error>
+        </mat-form-field>
+      </div>
+      <button
+        type="create"
+        class="form-button"
+      >Create
+      </button>
+    </form>
   </div>
+</div>

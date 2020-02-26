@@ -250,6 +250,26 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   color: #ffffff;
 }
 
+/* Snackbar */
+
+.success-snackbar {
+  background: rgb(255, 255, 255);
+  border: 2px solid rgb(10, 172, 0);
+  color: rgb(10, 172, 0);
+}
+
+.warn-snackbar {
+  background: rgb(255, 255, 255);
+  border: 2px solid rgb(241, 128, 0);
+  color: rgb(241, 128, 0);
+}
+
+.danger-snackbar {
+  background: rgb(255, 255, 255);
+  border: 2px solid rgb(195, 4, 21);
+  color: rgb(195, 4, 21);
+}
+
 /* Scrollbar */
 
 /* width */

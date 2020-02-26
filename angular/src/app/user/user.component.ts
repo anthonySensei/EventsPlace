@@ -52,6 +52,7 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.authService.autoLogin();
     this.profileForm = new FormGroup({
       email: new FormControl(
         null,
@@ -66,13 +67,15 @@ export class UserComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.userSubscription = this.authService.userChanged
       .subscribe(user => {
-        this.user = user;
-        this.oldEmail = user.email;
-        this.oldName = user.name;
-        this.profileForm.patchValue({
-          name: user.name,
-          email: user.email
-        });
+        if (user) {
+          this.user = user;
+          this.oldEmail = user.email;
+          this.oldName = user.name;
+          this.profileForm.patchValue({
+            name: user.name,
+            email: user.email
+          });
+        }
         this.isLoading = false;
       });
     this.user = this.authService.getUser();
@@ -100,6 +103,8 @@ export class UserComponent implements OnInit, OnDestroy {
       this.profileImageBase64 = result;
       if (this.profileImageBase64) {
         this.onChangeProfileImage(this.profileImageBase64);
+      } else {
+        this.openSnackBar('Image was not selected', null, 'warn-snackbar');
       }
     });
   }
@@ -116,8 +121,14 @@ export class UserComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (!result) {
-        return false;
+      console.log(result);
+      if (result === 'nothing') {
+        this.openSnackBar('Nothing changed', null, 'warn-snackbar');
+        return;
+      }
+      if (!result.oldPassword || !result.newPassword || !result.retypeNewPassword) {
+        this.openSnackBar('Please fill in passwords fields', null, 'danger-snackbar');
+        return;
       }
       this.onChangeUserPassword(
         result.oldPassword,
@@ -137,8 +148,8 @@ export class UserComponent implements OnInit, OnDestroy {
     }
 
     if (email === this.oldEmail && name === this.oldName) {
-        this.openSnackBar('Nothing changed', null);
-        return false;
+      this.openSnackBar('Nothing to change', null, 'warn-snackbar');
+      return false;
     }
 
     this.user.email = email;
@@ -147,7 +158,7 @@ export class UserComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         if (this.response.data.changedUserInfo) {
           this.message = this.response.data.message;
-          this.openSnackBar(this.message, null);
+          this.openSnackBar(this.message, null, 'success-snackbar');
         }
       });
   }
@@ -166,25 +177,28 @@ export class UserComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         if (this.response.data.passwordChanged) {
           this.message = this.response.data.message;
-          this.openSnackBar(this.message, null);
+          this.openSnackBar(this.message, null, 'success-snackbar');
         } else {
           this.error = this.response.data.message;
+          this.openSnackBar(this.error, null, 'danger-snackbar');
         }
       });
   }
 
   onChangeProfileImage(base64Image: string) {
-    // console.log(base64Image);
+    this.isLoading = true;
     this.userService.updateProfileImage(base64Image, this.user)
       .subscribe(() => {
         this.message = this.userService.getResponse().data.message;
-        this.openSnackBar(this.message, null);
+        this.user = this.authService.getUser();
+        this.openSnackBar(this.message, null, 'success-snackbar');
+        this.isLoading = false;
       });
   }
 
-  openSnackBar(message: string, action: string) {
+  openSnackBar(message: string, action: string, style: string) {
     const config = new MatSnackBarConfig();
-    config.panelClass = ['snackbar'];
+    config.panelClass = [style];
     config.duration = this.snackbarDuration;
     this.snackBar.open(message, action, config);
   }

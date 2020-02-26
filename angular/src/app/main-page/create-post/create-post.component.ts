@@ -59,6 +59,8 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
   newPassword: string;
   retypeNewPassword: string;
 
+  hashtags: Hashtag[] = [new Hashtag(1, 'admin'), new Hashtag(2, 'Anton')];
+
   constructor(private postService: PostService,
               private authService: AuthService,
               private router: Router,
@@ -69,11 +71,10 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
 
   ngOnInit() {
     this.createPostForm = new FormGroup({
-      postData: new FormGroup({
         name: new FormControl(null, [Validators.required]),
         description: new FormControl(null, [Validators.required]),
-        location: new FormControl(null, [Validators.required])
-      })
+        location: new FormControl(null, [Validators.required]),
+        hashtagSelect: new FormControl(null, [Validators.required])
     });
     this.paramsSubscription = this.route.queryParams
       .subscribe((queryParams: Params) => {
@@ -122,6 +123,10 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
     this.user = this.authService.getUser();
   }
 
+  hasError(controlName: string, errorName: string) {
+    return this.createPostForm.controls[controlName].hasError(errorName);
+  }
+
   openDialog(): void {
     const dialogRef = this.dialog.open(ModalPostCreateDialogComponent, {
       width: '70%',
@@ -136,14 +141,23 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
   }
 
   onCreatePost() {
-    console.log(this.createPostForm);
+    const description = this.createPostForm.value.description;
+    const eventName = this.createPostForm.value.name;
+    const eventLocation = this.createPostForm.value.location;
+    const user = this.user;
+    const hashtag = this.createPostForm.value.hashtagSelect;
     const post = {
-      description: this.createPostForm.value.postData.description,
-      eventName: this.createPostForm.value.postData.name,
-      eventLocation: this.createPostForm.value.postData.location,
-      user: this.user,
-      hashtag: new Hashtag(1, 'test')
+      description,
+      eventName,
+      eventLocation,
+      user,
+      hashtag
     };
+    console.log(post);
+    if (!this.imageToUploadBase64) {
+      this.openSnackBar('Image was not selected', 'warn-snackbar');
+      return false;
+    }
     if (this.editMode) {
       this.postService
         .updatePost(this.postId, post, this.imageToUploadBase64)
@@ -153,7 +167,7 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
             this.message = this.response.data.message;
             this.router.navigate(['/posts']);
             this.snackBarMessage = 'Post was updated successfully';
-            this.openSnackBar(this.snackBarMessage);
+            this.openSnackBar(this.snackBarMessage, 'success-snackbar');
           } else {
             this.error = this.response.data.message;
             console.log('Error! ' + this.error);
@@ -168,7 +182,7 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
             console.log('Created');
             this.message = this.response.data.message;
             this.router.navigate(['/posts']);
-            this.openSnackBar(this.snackBarMessage);
+            this.openSnackBar(this.snackBarMessage, 'success-snackbar');
           } else {
             this.error = this.response.data.message;
             console.log('Error! ' + this.error);
@@ -178,9 +192,10 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
     }
   }
 
-  openSnackBar(message: string) {
+
+  openSnackBar(message: string, style) {
     const config = new MatSnackBarConfig();
-    config.panelClass = ['snackbar'];
+    config.panelClass = [style];
     config.duration = this.snackbarDuration;
     this.snackBar.open(message, null, config);
   }
