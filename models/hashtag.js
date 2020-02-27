@@ -11,6 +11,7 @@ const Hashtag = sequelize.define('hashtag_', {
     },
     name: {
         type: Sequelize.STRING,
+        unique: true,
         allowNull: false
     },
 });

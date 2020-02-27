@@ -10,6 +10,9 @@ const base64Img = require('base64-img');
 const nodemailer = require('nodemailer');
 const sendGridTransport = require('nodemailer-sendgrid-transport');
 
+const { Sequelize } = require('sequelize');
+const Op = Sequelize.Op;
+
 const transporter = nodemailer.createTransport(sendGridTransport({
     auth: {
         api_key: process.env.SEND_GRID_API_KEY
@@ -24,6 +27,16 @@ const ITEMS_PER_PAGE = 8;
 exports.getAllPosts = (req, res) => {
     const status = req.query.status;
     const page = +req.query.page || 1;
+
+    if (!status) {
+        res.send({
+            responseCode: 500,
+            data: {
+                posts: [],
+                message: 'Error. Status was not defined!'
+            }
+        })
+    }
 
     let condition = {status: status};
 
@@ -63,14 +76,20 @@ exports.getAllPosts = (req, res) => {
         })
         .then(result => {
             let posts = [];
+
             for(let post of result){
+                const user = {
+                    email: post.dataValues.user_.dataValues.email
+                }
                 post.dataValues.post_image = base64Img.base64Sync(post.dataValues.post_image);
                 posts.push({
                     postId: post.dataValues.id,
                     postStatus: post.dataValues.status,
                     postImage: post.dataValues.post_image,
                     eventLocation: post.dataValues.event_location,
+                    eventTime: post.dataValues.event_time,
                     postUpdatedAt: post.dataValues.updatedAt,
+                    user: user,
                     hashtag: post.dataValues.hashtag_.dataValues
                 });
             }
@@ -94,7 +113,7 @@ exports.getAllPosts = (req, res) => {
         })
         .catch(err => {
             console.log(err);
-            res.send({
+            return res.send({
                 responseCode: 500,
                 data: {
                     posts: [],
@@ -108,6 +127,8 @@ module.exports.getApprovedPosts = (req, res) => {
     const filter = req.query.filter;
     const value = req.query.value;
     const page = +req.query.page || 1;
+    const fromDate = req.query.fDate;
+    const toDate = req.query.tDate;
 
     let condition = {status: 'approved'};;
     let userCondition = {};
@@ -120,21 +141,44 @@ module.exports.getApprovedPosts = (req, res) => {
     } else if (filter === 'location'){
         condition = {
             status: 'approved',
-            event_location: value
+            event_location: {
+                [Op.iLike]: `%${value}%`
+            }
         };
     } else if (filter === 'username') {
         userCondition = {
-            name: value
+            name: {
+                [Op.iLike]: `%${value}%`
+            }
         }
     } else if (filter === 'email') {
         userCondition = {
-            email: value
+            email: {
+                [Op.iLike]: `%${value}%`
+            }
         }
     } else if (filter === 'hashtag') {
         hashtagCondition = {
-            name: value
+            name: {
+                [Op.iLike]: `%${value}%`
+            }
         }
     }
+
+    if(fromDate && toDate){
+        condition.event_time = {
+            [Op.between]: [fromDate, toDate]
+        }
+    }
+    else if (fromDate) {
+        condition.event_time = {
+            [Op.gte]: fromDate
+        }
+    } else if(toDate) (
+        condition.event_time = {
+            [Op.lte]: toDate
+        }
+    )
 
     Post
       .count({
@@ -148,8 +192,8 @@ module.exports.getApprovedPosts = (req, res) => {
         }],
         where: condition
     })
-      .then(function(postNumber) {
-          totalPosts = postNumber;
+      .then(postNumber => {
+         totalPosts = postNumber;
          return Post.findAll({
             include: [{
                 model: User,
@@ -169,13 +213,18 @@ module.exports.getApprovedPosts = (req, res) => {
         .then(result => {
         let posts = [];
         for(let post of result){
+            const user = {
+                email: post.dataValues.user_.dataValues.email
+            }
             post.dataValues.post_image = base64Img.base64Sync(post.dataValues.post_image);
             posts.push({
                 postId: post.dataValues.id,
                 postStatus: post.dataValues.status,
                 postImage: post.dataValues.post_image,
                 eventLocation: post.dataValues.event_location,
+                eventTime: post.dataValues.event_time,
                 postUpdatedAt: post.dataValues.updatedAt,
+                user: user,
                 hashtag: post.dataValues.hashtag_.dataValues
             });
         }
@@ -235,6 +284,7 @@ module.exports.getPost = (req, res) => {
                         description: post.dataValues.description,
                         eventName: post.dataValues.event_name,
                         eventLocation: post.dataValues.event_location,
+                        eventTime: post.dataValues.event_time,
                         postCreatedAt: post.dataValues.createdAt,
                         postUpdatedAt: post.dataValues.updatedAt,
                         user: userData,
@@ -283,7 +333,25 @@ module.exports.getPost = (req, res) => {
 
 module.exports.createPost = (req, res) => {
     const imageBase64 = req.body.base64;
+    if(!imageBase64) {
+        res.send({
+            responseCode: 500,
+            data: {
+                postCreated: false,
+                message: 'Image is empty!'
+            }
+        });
+    }
     postData = JSON.parse(req.body.post_data);
+    if(!postData) {
+        res.send({
+            responseCode: 500,
+            data: {
+                postCreated: false,
+                message: 'Post data is empty!'
+            }
+        }); 
+    }
     const filepath = base64Img.imgSync(imageBase64, '../images/', uuidv4());
 
     let newPost = new Post({
@@ -292,6 +360,7 @@ module.exports.createPost = (req, res) => {
         post_image: filepath,
         event_name: postData.eventName,
         event_location: postData.eventLocation,
+        event_time: postData.eventTime,
         userId: postData.user.id,
         hashtagId: postData.hashtag.hashtagId
     });
@@ -317,6 +386,45 @@ module.exports.createPost = (req, res) => {
             }
         });
     });   
+}
+
+exports.getHashtag = (req, res) => {
+    Hashtag
+        .findAll({
+            // offset: 1,
+            where: { 
+                id: {
+                   [Op.notIn]:[1]
+                }
+            },
+            order: [
+                ['name', 'ASC']
+            ],
+        })
+        .then(result => {
+            const hashtags = [];
+            for (hashtag of result) {
+                hashtags.push({
+                    hashtagId: hashtag.dataValues.id,
+                    name: hashtag.dataValues.name
+                });
+            }
+            return res.send({
+                responseCode: 500,
+                data: {
+                    hashtags: hashtags,
+                    message: 'Hashtags was fetched successfully!'
+                }
+            });
+        })
+        .catch(err => {
+            return res.send({
+                responseCode: 500,
+                data: {
+                    message: 'Error! ' + err
+                }
+            });
+        });
 }
 
 module.exports.updatePost = (req, res) => {

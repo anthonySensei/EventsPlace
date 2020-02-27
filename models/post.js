@@ -28,6 +28,10 @@ const Post = sequelize.define('post_', {
     event_location: {
         type: Sequelize.STRING,
         allowNull: false
+    },
+    event_time: {
+        type: Sequelize.STRING,
+        allowNull: false
     }
 });
 

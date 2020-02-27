@@ -41,7 +41,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
   grid = 'FOUR';
   filterContainer;
   showFilterButton = true;
-  selected: string;
+  selected = 'all';
   filter: string;
 
   currentPage = 1;
@@ -51,6 +51,9 @@ export class MainPageComponent implements OnInit, OnDestroy {
   nextPage;
   previousPage;
   lastPage;
+
+  fromDate: Date;
+  toDate: Date;
 
   constructor(private storageService: StorageService,
               private authService: AuthService,
@@ -64,7 +67,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
       .subscribe((posts: Post[]) => {
         this.posts = posts;
         this.isLoading = false;
-        console.log(posts);
+        console.log(this.posts);
       });
     this.loggedInSubscription = this.authService.loggedChange
       .subscribe(isLoggedIn => {
@@ -74,7 +77,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
     this.cards = document.getElementsByClassName('card');
     this.cardsContent = document.getElementsByClassName('container');
     this.filterContainer = document.getElementsByClassName('filter-container')[0];
-    this.storageService.fetchApprovedPosts('all', '', this.currentPage).subscribe();
+    this.storageService.fetchApprovedPosts('all', '', {}, this.currentPage).subscribe();
     for (const post of this.posts) {
       if (!post.postImage) {
         post.postImage = 'https://images.pexels.com/photos/3558597/pexels-photo-3558597.jpeg';
@@ -135,37 +138,42 @@ export class MainPageComponent implements OnInit, OnDestroy {
   search(filter: NgModel) {
     this.filter = filter.value;
     this.currentPage = 1;
+    const dateObj = {
+      fromDate: this.fromDate ? this.fromDate.toISOString() : this.fromDate,
+      toDate: this.toDate ? this.toDate.toISOString() : this.toDate
+    };
+    console.log(this.toDate);
     if (this.selected === 'email') {
       this.isLoading = true;
-      this.storageService.fetchApprovedPosts('email', filter.value, this.currentPage)
+      this.storageService.fetchApprovedPosts('email', this.filter, dateObj, this.currentPage)
         .subscribe(() => {
           this.isLoading = false;
       });
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'hashtag') {
       this.isLoading = true;
-      this.storageService.fetchApprovedPosts('hashtag', filter.value, this.currentPage)
+      this.storageService.fetchApprovedPosts('hashtag', filter.value, dateObj, this.currentPage)
         .subscribe(() => {
           this.isLoading = false;
       });
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'location') {
       this.isLoading = true;
-      this.storageService.fetchApprovedPosts('location', filter.value, this.currentPage)
+      this.storageService.fetchApprovedPosts('location', filter.value, dateObj, this.currentPage)
         .subscribe(() => {
           this.isLoading = false;
       });
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'username') {
       this.isLoading = true;
-      this.storageService.fetchApprovedPosts('username', filter.value, this.currentPage)
+      this.storageService.fetchApprovedPosts('username', filter.value, dateObj, this.currentPage)
         .subscribe(() => {
           this.isLoading = false;
       });
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'all') {
       this.isLoading = true;
-      this.storageService.fetchApprovedPosts('all', '', this.currentPage)
+      this.storageService.fetchApprovedPosts('all', '', dateObj, this.currentPage)
         .subscribe(() => {
           this.isLoading = false;
       });
@@ -176,7 +184,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
   paginate(page: number) {
     this.isLoading = true;
     this.currentPage = page;
-    this.storageService.fetchApprovedPosts(this.selected, this.filter, this.currentPage)
+    this.storageService.fetchApprovedPosts(this.selected, this.filter, {}, this.currentPage)
       .subscribe(() => {
         this.isLoading = false;
       });

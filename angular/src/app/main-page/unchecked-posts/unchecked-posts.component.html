@@ -44,13 +44,10 @@
         </div>
       </div>
       <div class="card-container">
-        <mat-grid-list cols="2" rowHeight="4:1">
-          <mat-grid-tile>
-            <i class="material-icons">location_on</i>
-            {{card.eventLocation}}
-          </mat-grid-tile>
-          <mat-grid-tile style="color: #02a9ff"><i>#{{card.hashtag.name}}</i></mat-grid-tile>
-        </mat-grid-list>
+        <span style="display: block">Location: {{card.eventLocation}}</span>
+        <span style="display: block">Time: {{card.eventTime | date:'short'}}</span>
+        <span style="display: block; overflow: hidden">Email address: {{card.user.email}}</span>
+        <span style="display: block"><i style="color: #02a9ff">#{{card.hashtag.name}}</i></span>
       </div>
     </div>
   </div>
@@ -68,10 +65,11 @@
       1
     </a>
     <span *ngIf="currentPage !== 1 && previousPage !== 1">...</span>
-    <a
-      (click)="paginate(currentPage)"
-      class="pagination-active">{{currentPage}}</a
-    >
+    <a *ngIf="currentPage > 1"
+       (click)="paginate(currentPage)"
+       class="pagination-active">
+      {{currentPage}}
+    </a>
     <span *ngIf="lastPage !== currentPage && nextPage !== lastPage">...</span>
     <a
       *ngIf="lastPage !== currentPage"

@@ -53,7 +53,6 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
     this.paramsSubscription = this.route.params
       .subscribe((params: Params) => {
           this.postId = +params.id;
-          console.log(this.postId);
     });
     this.postService.getPostHttp(this.postId).subscribe();
     this.postSubscription = this.postService.postChanged

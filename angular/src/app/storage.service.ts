@@ -42,13 +42,25 @@ export class StorageService {
 
   constructor(private http: HttpClient) { }
 
-  fetchApprovedPosts(filter: string, value: string, page: number) {
+  fetchApprovedPosts(filter: string, value: string, dateObj, page: number) {
+    let fromDate;
+    let toDate;
+    if (dateObj.fromDate) {
+      fromDate = dateObj.fromDate;
+    } else {
+      fromDate = '';
+    }
+    if (dateObj.toDate) {
+      toDate = dateObj.toDate;
+    } else {
+      toDate = '';
+    }
     const headers = new HttpHeaders();
     headers.append('Content-type', 'application/json');
     return this
       .http
       .get(
-        `${this.GET_APPROVED_POSTS_URL}?filter=${filter}&value=${value}&page=${page}`,
+        `${this.GET_APPROVED_POSTS_URL}?filter=${filter}&value=${value}&page=${page}&fDate=${fromDate}&tDate=${toDate}`,
         {headers})
       .pipe(map((response: any) => {
         this.setPosts(response.data.posts);
@@ -71,7 +83,6 @@ export class StorageService {
   }
 
   setPostStatus(post: Post, reason?: string) {
-    console.log(post);
     post.postImage = '';
     const headers = new HttpHeaders();
     headers.append('Content-type', 'application/json');

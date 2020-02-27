@@ -45,6 +45,36 @@
           [disabled]="selected === 'all'"
         >
       </mat-form-field>
+      <mat-divider></mat-divider>
+      <mat-form-field
+        class="d-block">
+        <mat-label>From</mat-label>
+        <input
+          matInput
+          [owlDateTimeTrigger]="dtFrom"
+          [owlDateTime]="dtFrom"
+          name="timeFrom"
+          [(ngModel)]="fromDate"
+          placeholder="Ex. #hello"
+        >
+        <mat-icon matSuffix>date_range</mat-icon>
+        <owl-date-time #dtFrom></owl-date-time>
+      </mat-form-field>
+      <mat-form-field
+        class="d-block">
+        <mat-label>To</mat-label>
+        <input
+          matInput
+          [owlDateTimeTrigger]="dtTo"
+          [owlDateTime]="dtTo"
+          name="timeTo"
+          [(ngModel)]="toDate"
+          placeholder="Ex. #hello"
+        >
+        <mat-icon matSuffix>date_range</mat-icon>
+        <owl-date-time #dtTo></owl-date-time>
+      </mat-form-field>
+
       <button
         mat-button
         class="btn"
@@ -114,13 +144,10 @@
           </div>
         </div>
         <div class="card-container">
-          <mat-grid-list cols="2" rowHeight="4:1">
-            <mat-grid-tile>
-              <i class="material-icons">location_on</i>
-              {{card.eventLocation}}
-            </mat-grid-tile>
-            <mat-grid-tile style="color: #02a9ff"><i>#{{card.hashtag.name}}</i></mat-grid-tile>
-          </mat-grid-list>
+          <span style="display: block">Location: {{card.eventLocation}}</span>
+          <span style="display: block">Time: {{card.eventTime | date:'short'}}</span>
+          <span style="display: block; overflow: hidden">Email address: {{card.user.email}}</span>
+          <span style="display: block"><i style="color: #02a9ff">#{{card.hashtag.name}}</i></span>
         </div>
       </div>
     </div>
@@ -151,7 +178,7 @@
         {{lastPage}}
       </a>
       <a
-       *ngIf="hasNextPage"
+        *ngIf="hasNextPage"
         (click)="paginate(nextPage)"
       >
         Next page

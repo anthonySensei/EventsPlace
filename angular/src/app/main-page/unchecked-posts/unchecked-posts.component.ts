@@ -37,7 +37,6 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    console.log(this.selected);
     this.isLoading = true;
     this.postsFetchSubscription = this.storageService.fetchAllPosts('unconfirmed', this.currentPage).subscribe();
     this.postsChangedSubscription = this.storageService.postsChanged

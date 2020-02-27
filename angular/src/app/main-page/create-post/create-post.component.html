@@ -67,24 +67,50 @@
         <mat-form-field
           class="d-block form-input"
         >
-          <mat-label>Hashtag</mat-label>
+          <mat-label>Time</mat-label>
+          <input
+            matInput
+            [owlDateTimeTrigger]="dt"
+            [owlDateTime]="dt"
+            type="text"
+            name="time"
+            formControlName="time"
+            placeholder="Ex. New York"
+          >
+          <mat-icon matSuffix>date_range</mat-icon>
+          <owl-date-time #dt></owl-date-time>
+          <mat-error *ngIf="hasError('time', 'required') && !error">
+            Time is required
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field
+          class="d-block form-input"
+        >
+          <mat-label>Category</mat-label>
           <mat-select
-            name="hashtagSelect"
-            formControlName="hashtagSelect"
+            name="hashtag"
+            formControlName="hashtag"
           >
             <mat-option *ngFor="let hashtag of hashtags" [value]="hashtag">
-              {{hashtag.name}}
+              {{hashtag.name | lowercase }}
+            </mat-option>
+            <mat-divider></mat-divider>
+            <mat-option [value]="{hashtagId: 1, name: 'other'}">
+              other
             </mat-option>
           </mat-select>
-          <mat-error *ngIf="hasError('hashtagSelect', 'required') && !error">
+          <mat-error *ngIf="hasError('hashtag', 'required') && !error">
             Hashtag is required
           </mat-error>
         </mat-form-field>
+
       </div>
       <button
         type="create"
         class="form-button"
-      >Create
+        [disabled]="createPostForm.invalid"
+      >
+        Create
       </button>
     </form>
   </div>

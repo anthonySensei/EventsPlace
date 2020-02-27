@@ -1,5 +1,6 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
+import {ReactiveFormsModule} from '@angular/forms';
 
 import {MatRadioModule, MatSnackBarModule} from '@angular/material';
 import {MatMenuModule} from '@angular/material/menu';
@@ -21,6 +22,8 @@ import {ImageCropperModule} from 'ngx-image-cropper';
 import { LoadingSpinnerComponent } from './loading-spinner/loading-spinner.component';
 
 import {CanDeactivateGuard} from './can-deactivate-guard.service';
+
+import {OwlDateTimeModule, OwlNativeDateTimeModule} from 'ng-pick-datetime';
 
 @NgModule({
   declarations: [LoadingSpinnerComponent],
@@ -45,7 +48,10 @@ import {CanDeactivateGuard} from './can-deactivate-guard.service';
     MatRadioModule,
     NgxPaginationModule,
     ImageCropperModule,
-    LoadingSpinnerComponent
+    LoadingSpinnerComponent,
+    ReactiveFormsModule,
+    OwlNativeDateTimeModule,
+    OwlDateTimeModule
   ],
   providers: [CanDeactivateGuard]
 })

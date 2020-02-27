@@ -8,6 +8,7 @@ export class Post {
   postImage: string;
   eventLocation: string;
   eventName: string;
+  eventTime: Date;
   postCreatedAt: Date;
   postUpdatedAt: Date;
   user: User;
@@ -15,14 +16,15 @@ export class Post {
   reason?: string;
 
   constructor(id: number, description: string, status: string, image: string, createdAt: Date,
-              updatedAt: Date, eventLocation: string, eventName, user: User, hashtag: Hashtag,
-              reason?: string) {
+              updatedAt: Date, eventLocation: string, eventName, eventTime: Date, user: User,
+              hashtag: Hashtag, reason?: string) {
     this.postId = id;
     this.description = description;
     this.postStatus = status;
     this.postImage = image;
     this.eventLocation = eventLocation;
     this.eventName = eventName;
+    this.eventTime = eventTime;
     this.postCreatedAt = createdAt;
     this.postUpdatedAt = updatedAt;
     this.user = user;

@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {FormsModule} from '@angular/forms';
 
 import {SharedModule} from '../shared/shared.module';
 import { UsersRoutingModule } from './users-routing.module';
@@ -8,10 +8,10 @@ import { UsersRoutingModule } from './users-routing.module';
 import {UserComponent} from './user.component';
 import {UserDetailsComponent} from './user-details/user-details.component';
 import {CreateUserComponent} from './create-user/create-user.component';
-import {UsersComponent} from './users/users.component';
-
 import {ChangePasswordModalComponent} from './change-password-modal/change-password-modal.component';
 import {ChangeProfileImageModalComponent} from './change-profile-image/change-profile-image-modal.component';
+import {UsersComponent} from './users/users.component';
+
 
 
 
@@ -28,8 +28,7 @@ import {ChangeProfileImageModalComponent} from './change-profile-image/change-pr
         CommonModule,
         FormsModule,
         SharedModule,
-        UsersRoutingModule,
-        ReactiveFormsModule
+        UsersRoutingModule
     ],
   entryComponents: [ ChangePasswordModalComponent, ChangeProfileImageModalComponent ]
 })

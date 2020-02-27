@@ -17,6 +17,8 @@ router.put('/update-post', passport.authenticate('jwt', {session: false}), postC
 
 router.post('/set-status', passport.authenticate('jwt', {session: false}), postController.setPostStatus);
 
+router.get('/hashtags', passport.authenticate('jwt', {session: false}), postController.getHashtag);
+
 
 
 module.exports = router;

@@ -1,5 +1,5 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {FormControl, FormGroup, NgForm, NgModel, Validators} from '@angular/forms';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute, Params, Router} from '@angular/router';
 
 import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
@@ -40,6 +40,8 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
   paramsSubscription: Subscription;
   postSubscription: Subscription;
   getPostSubscription: Subscription;
+  getHashtagsHttpSubscription: Subscription;
+  hashtagSubscription: Subscription;
 
   user: User;
 
@@ -59,7 +61,7 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
   newPassword: string;
   retypeNewPassword: string;
 
-  hashtags: Hashtag[] = [new Hashtag(1, 'admin'), new Hashtag(2, 'Anton')];
+  hashtags: Hashtag[];
 
   constructor(private postService: PostService,
               private authService: AuthService,
@@ -74,8 +76,15 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
         name: new FormControl(null, [Validators.required]),
         description: new FormControl(null, [Validators.required]),
         location: new FormControl(null, [Validators.required]),
-        hashtagSelect: new FormControl(null, [Validators.required])
+        time: new FormControl(null, [Validators.required]),
+        hashtag: new FormControl(null, [Validators.required])
     });
+    this.getHashtagsHttpSubscription = this.postService.getHashtagsHttp().subscribe();
+    this.hashtagSubscription = this.postService.hashtagsChanged
+      .subscribe(hashtags => {
+        this.hashtags = hashtags;
+      });
+    this.hashtags = this.postService.getHashtags();
     this.paramsSubscription = this.route.queryParams
       .subscribe((queryParams: Params) => {
         this.postId = +queryParams.id;
@@ -88,12 +97,12 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
         .subscribe(post => {
           this.post = post;
           this.isLoading = false;
+          console.log(this.post.hashtag);
           this.createPostForm.patchValue({
-            postData: {
               name: this.post.eventName,
               description: this.post.description,
-              location: this.post.eventLocation
-            }
+              location: this.post.eventLocation,
+              hashtag: this.post.hashtag.name
           });
         });
       this.post = this.postService.getPost();
@@ -106,7 +115,6 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
           message: string
         }
       }) => {
-        console.log(response.data);
         if (response.data) {
           this.response = response;
           if (this.response.data.postCreated) {
@@ -144,16 +152,21 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
     const description = this.createPostForm.value.description;
     const eventName = this.createPostForm.value.name;
     const eventLocation = this.createPostForm.value.location;
+    const eventTime = this.createPostForm.value.time;
     const user = this.user;
-    const hashtag = this.createPostForm.value.hashtagSelect;
+    const hashtag = this.createPostForm.value.hashtag;
+    if (!description || !eventName || !eventLocation || !user || !hashtag || !eventTime) {
+        this.error = 'Fields are required';
+        return;
+    }
     const post = {
       description,
       eventName,
       eventLocation,
+      eventTime,
       user,
       hashtag
     };
-    console.log(post);
     if (!this.imageToUploadBase64) {
       this.openSnackBar('Image was not selected', 'warn-snackbar');
       return false;
@@ -170,7 +183,6 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
             this.openSnackBar(this.snackBarMessage, 'success-snackbar');
           } else {
             this.error = this.response.data.message;
-            console.log('Error! ' + this.error);
             return false;
           }
         });
@@ -179,13 +191,11 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
         .createPost(post, this.imageToUploadBase64)
         .subscribe( () => {
           if (this.isCreated) {
-            console.log('Created');
             this.message = this.response.data.message;
             this.router.navigate(['/posts']);
             this.openSnackBar(this.snackBarMessage, 'success-snackbar');
           } else {
             this.error = this.response.data.message;
-            console.log('Error! ' + this.error);
             return false;
           }
         });
@@ -201,7 +211,7 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
   }
 
   canDeactivate(): Observable<boolean> | Promise<boolean> | boolean {
-    if (this.user) {
+    if (this.createPostForm.touched) {
       console.log('Can deactivate');
       return confirm('Do you want to discard the changes?');
     } else {

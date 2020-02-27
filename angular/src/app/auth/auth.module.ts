@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import {RouterModule} from '@angular/router';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {FormsModule} from '@angular/forms';
 
 import {SharedModule} from '../shared/shared.module';
-
-import {RegistrationComponent} from './registration/registration.component';
-import {AuthComponent} from './login/auth.component';
 import {AuthRoutingModule} from './auth-routing.module';
+
+import {AuthComponent} from './login/auth.component';
+import {RegistrationComponent} from './registration/registration.component';
 import { ActivationPageComponent } from './activation-page/activation-page.component';
 
 
@@ -22,8 +22,7 @@ import { ActivationPageComponent } from './activation-page/activation-page.compo
         SharedModule,
         RouterModule,
         AuthRoutingModule,
-        FormsModule,
-        ReactiveFormsModule
+        FormsModule
     ]
 })
 export class AuthModule { }
