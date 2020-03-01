@@ -204,5 +204,30 @@
   background: rgba(10,172,0, 0.8);
 }
 
+@media screen and (max-width: 576px) {
+  .flex-container > .card {
+    flex: 50%;
+    max-width: 100%;
+  }
+  .filter-button {
+    max-width: 40px;
+  }
+}
+
+@media screen and (max-width: 992px) and (min-width: 577px) {
+  .flex-container > .card {
+    flex: 40%;
+    max-width: 50%;
+  }
+}
+
+
+@media screen and (max-width: 1200px) and (min-width: 993px){
+  .flex-container > .card {
+    flex: 25%;
+    max-width: 33%;
+  }
+}
+
 
 

@@ -2,17 +2,22 @@
   <img src="assets/main.png" alt="logo" style="width:40px">
   <a [routerLink]="'/'" class="navbar-name">EventsPlace</a>
   <mat-divider [vertical]="true" style="height:80%; background-color: black; margin: 0 0.3% 0 0"></mat-divider>
-  <ul class="main-header-item-list">
-    <li class="main-header-item" routerLinkActive="active">
-      <a [routerLink]="'/posts'" *ngIf="role !== 'manager' && role !== 'admin'" class="navbar-link">Posts</a>
-    </li>
-    <li *ngIf="role === 'manager' || role === 'admin'" class="main-header-item" routerLinkActive="active">
-      <a [routerLink]="'/post-managing'" class="navbar-link">Managing</a>
-    </li>
-    <li *ngIf="role === 'admin'" class="main-header-item" routerLinkActive="active">
-      <a [routerLink]="'/create-user'" class="navbar-link">Add user</a>
-    </li>
-  </ul>
+  <div class="not-small-screen-container" *ngIf="!isSmallScreen">
+    <ul class="main-header-item-list">
+      <li class="main-header-item" routerLinkActive="active">
+        <a [routerLink]="'/posts'" *ngIf="role !== 'manager' && role !== 'admin'" class="navbar-link">Posts</a>
+      </li>
+      <li *ngIf="role === 'manager' || role === 'admin'" class="main-header-item" routerLinkActive="active">
+        <a [routerLink]="'/post-managing'" class="navbar-link">Managing</a>
+      </li>
+      <li *ngIf="role === 'admin'" class="main-header-item" routerLinkActive="active">
+        <a [routerLink]="'/create-user'" class="navbar-link">Add user</a>
+      </li>
+      <li *ngIf="role === 'admin'" class="main-header-item" routerLinkActive="active">
+        <a [routerLink]="'/users'" class="navbar-link">Users</a>
+      </li>
+    </ul>
+  </div>
 
   <span class="fill-remaining-space"></span>
 
@@ -24,11 +29,50 @@
       <mat-menu #appMenu="matMenu">
         <a
           mat-menu-item
+          routerLinkActive="menu-active"
           [routerLink]="'/my-account'"
           class="mat-menu-item"
         >
           Profile
         </a>
+        <div class="small-screen-container" *ngIf="isSmallScreen">
+          <a
+            routerLinkActive="menu-active"
+            [routerLink]="'/posts'"
+            *ngIf="role !== 'manager' && role !== 'admin'"
+            mat-menu-item
+            class="mat-menu-item"
+          >
+            Posts
+          </a>
+          <a
+            routerLinkActive="menu-active"
+            [routerLink]="'/post-managing'"
+            *ngIf="role === 'manager' || role === 'admin'"
+            mat-menu-item
+            class="mat-menu-item"
+          >
+            Managing
+          </a>
+          <a
+            routerLinkActive="menu-active"
+            [routerLink]="'/create-user'"
+            *ngIf="role === 'admin'"
+            mat-menu-item
+            class="mat-menu-item"
+          >
+            Add user
+          </a>
+          <a
+            routerLinkActive="menu-active"
+            [routerLink]="'/users'"
+            *ngIf="role === 'admin'"
+            mat-menu-item
+            class="mat-menu-item"
+          >
+            Add user
+          </a>
+        </div>
         <button
           mat-menu-item
           (click)="onLogoutUser()"
@@ -52,3 +96,4 @@
   </ul>
 
 </mat-toolbar>
+

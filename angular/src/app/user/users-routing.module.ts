@@ -9,11 +9,24 @@ import {CreateUserComponent} from './create-user/create-user.component';
 import {UsersComponent} from './users/users.component';
 import {UserDetailsComponent} from './user-details/user-details.component';
 
+import {CanDeactivateGuard} from '../shared/can-deactivate-guard.service';
+import {ManagerGuard} from './manager.guard';
+
 
 const routes: Routes = [
-  { path: 'my-account', component: UserComponent, canActivate: [AuthGuard] },
-  { path: 'create-user', component: CreateUserComponent, canActivate: [AuthGuard, AdminGuard]},
-  { path: 'users', component: UsersComponent, canActivate: [AuthGuard] },
+  {
+    path: 'my-account',
+    canDeactivate: [CanDeactivateGuard],
+    component: UserComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'create-user',
+    canDeactivate: [CanDeactivateGuard],
+    component: CreateUserComponent,
+    canActivate: [AuthGuard, AdminGuard]
+  },
+  { path: 'users', component: UsersComponent, canActivate: [AuthGuard, ManagerGuard] },
   { path: 'user/:id', component: UserDetailsComponent },
 ];
 

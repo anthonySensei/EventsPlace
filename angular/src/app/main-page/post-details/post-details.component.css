@@ -1,42 +1,29 @@
-.image{
-  float: left;
-  margin: 10px 10px 0 10px;
-  width: 350px;
-  height: 450px;
-}
-
 .form-content {
   margin-top: 3%;
-  width: 60%;
+  width: 50%;
+}
+
+.post-description {
+  padding-right: 10px;
+  max-width: 100%;
+  max-height: 200px;
+  overflow: auto;
 }
 
 
 .post-detail-image {
-  float: left;
   margin: 10px;
   width: 350px;
   height: 450px;
 }
 
-.description-container {
-  height: 460px;
-  max-height: 460px;
-  width: 55%;
-  max-width: 55%;
-  overflow: hidden;
-}
-.post-description,
-.post-description:disabled
-{
-  background-color: inherit;
-  border: none;
-  font-size: 1.2em;
-  padding-right: 10px;
-  resize: none;
-}
 .row {
   padding: 10px;
   text-align: left;
+}
+.post-description{
+  max-height: 150px;
+  overflow: auto;
 }
 .event-location {
   display: inline-block;
@@ -100,4 +87,38 @@
 
 .btn-red.active {
   background-color: rgb(234,4,21);
+}
+
+@media screen and (max-width: 576px) {
+  .form-content {
+    width: 90%;
+  }
+  .post-detail-image {
+    width: 200px;
+    height: 260px;
+  }
+}
+
+@media screen and (max-width: 768px) and (min-width: 577px) {
+  .form-content {
+    width: 80%;
+  }
+  .post-detail-image {
+    width: 300px;
+    height: 385px;
+  }
+}
+
+@media screen and (max-width: 992px) and (min-width: 769px) {
+  .post-detail-image {
+    width: 300px;
+    height: 385px;
+  }
+}
+
+
+@media screen and (max-width: 1200px) and (min-width: 993px){
+  .form-content {
+    width: 50%;
+  }
 }

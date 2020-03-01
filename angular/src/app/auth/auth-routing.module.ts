@@ -5,10 +5,12 @@ import {AuthComponent} from './login/auth.component';
 import {RegistrationComponent} from './registration/registration.component';
 import {ActivationPageComponent} from './activation-page/activation-page.component';
 
+import {CanDeactivateGuard} from '../shared/can-deactivate-guard.service';
+
 
 const routes: Routes = [
   { path: 'login', component:  AuthComponent},
-  { path: 'registration', component:  RegistrationComponent},
+  { path: 'registration', canDeactivate: [CanDeactivateGuard], component:  RegistrationComponent},
   { path: 'activation-page', component: ActivationPageComponent }
 ];
 @NgModule({

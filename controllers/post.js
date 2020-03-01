@@ -57,7 +57,7 @@ exports.getAllPosts = (req, res) => {
         }],
         where: condition,
     })
-      .then(function(postNumber) {
+      .then(postNumber => {
          totalPosts = postNumber;
          return Post.findAll({
             include: [{
@@ -259,11 +259,36 @@ module.exports.getApprovedPosts = (req, res) => {
 }
 
 module.exports.getPost = (req, res) => {
-    postId = req.query.postId;
-    console.log(postId);
+    const postId = req.query.postId;
+    const userRole = req.query.userRole;
+    let condition = { id: postId };
+    if (!postId) {
+        return res.send({
+            responseCode: 500,
+            data: {
+                message: 'Error occurred!'
+            }
+        });
+    }
     Post
-     .findOne({ where: { id: postId }})
+     .findOne({ where: condition})
      .then(post => {
+        if(!post) {
+            return res.send({
+                responseCode: 500,
+                data: {
+                    message: 'Error occurred!'
+                }
+            });
+        }
+        if ((userRole === 'user' || !userRole) && post.dataValues.status !== 'approved') {
+            return res.send({
+                responseCode: 500,
+                data: {
+                    message: 'Error occurred!'
+                }
+            });
+        }
         User
          .findOne({ where: { id: post.dataValues.userId}})
          .then(user => {
@@ -307,10 +332,10 @@ module.exports.getPost = (req, res) => {
                          }
                     });
                 })
-         })
+         }) 
          .catch(err => {
             console.log(err.errors[0].message);
-            return res.send({
+            return res.send({ 
                 responseCode: 500,
                 data: {
                     message: 'Error! ' + err.errors[0].message
@@ -354,9 +379,15 @@ module.exports.createPost = (req, res) => {
     }
     const filepath = base64Img.imgSync(imageBase64, '../images/', uuidv4());
 
+    if (postData.user.role.role === 'admin') {
+        status = statuses.APPROVED
+    } else { 
+        status = statuses.UNCONFIRMED;
+    }
+
     let newPost = new Post({
         description: postData.description,
-        status: statuses.UNCONFIRMED,
+        status: status,
         post_image: filepath,
         event_name: postData.eventName,
         event_location: postData.eventLocation,
@@ -547,4 +578,4 @@ function compareObjectsById(a, b) {
       comparison = -1;
     }
     return comparison;
-  }
+}

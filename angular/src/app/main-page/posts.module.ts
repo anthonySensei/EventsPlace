@@ -1,18 +1,17 @@
 import {NgModule} from '@angular/core';
 import {RouterModule} from '@angular/router';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {FormsModule} from '@angular/forms';
 
 import {SharedModule} from '../shared/shared.module';
 import {PostsRoutingModule} from './posts-routing.module';
 
 import {MainPageComponent} from './main-page.component';
 import {PostDetailsComponent} from './post-details/post-details.component';
-import {CreatePostComponent, ModalPostCreateDialogComponent} from './create-post/create-post.component';
+import {CreatePostComponent} from './create-post/create-post.component';
 import {UncheckedPostsComponent} from './unchecked-posts/unchecked-posts.component';
 import {RejectedDeletedReasonModalComponent} from './post-details/rejected-deleted-reason-modal/rejected-deleted-reason-modal.component';
 import {MainPageSnackbarComponent} from './main-page-snackbar/main-page-snackbar.component';
-
-import {OwlDateTimeModule, OwlNativeDateTimeModule} from 'ng-pick-datetime';
+import {ModalPostCreateDialogComponent} from './create-post/choose-post-image-modal/choose-post-image-modal.component';
 
 
 @NgModule({

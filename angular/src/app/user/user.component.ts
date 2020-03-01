@@ -1,18 +1,23 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 
 import {MatDialog} from '@angular/material/dialog';
-import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
 
-import {Subscription} from 'rxjs';
+import {Observable, Subject, Subscription} from 'rxjs';
 
 import {UserService} from './user.service';
 import {AuthService} from '../auth/auth.service';
+import {ValidationService} from '../validation.service';
+import {MaterialService} from '../shared/material.service';
 
 import {User} from './user.model';
 
+import {SnackBarClassesEnum} from '../shared/snackBarClasses.enum';
+
 import {ChangePasswordModalComponent} from './change-password-modal/change-password-modal.component';
 import {ChangeProfileImageModalComponent} from './change-profile-image/change-profile-image-modal.component';
+
 
 @Component({
   selector: 'app-user',
@@ -42,16 +47,54 @@ export class UserComponent implements OnInit, OnDestroy {
 
   snackbarDuration = 5000;
 
-  emailValidation = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
+  emailValidation;
+
+  changePasswordModalWidth = '35%';
+  changePictureModal = '70%';
+
+  isDone = false;
+
+  discard = false;
+  discardChanged = new Subject<boolean>();
 
 
   constructor(private authService: AuthService,
               private userService: UserService,
               public dialog: MatDialog,
-              private snackBar: MatSnackBar) {
+              private materialService: MaterialService,
+              private validationService: ValidationService,
+              private breakpointObserver: BreakpointObserver) {
+    breakpointObserver.observe([
+      Breakpoints.Small,
+      Breakpoints.XSmall
+    ]).subscribe(result => {
+      if (result.matches) {
+        this.changePasswordModalWidth = '95%';
+        this.changePictureModal = '95%';
+      }
+    });
+    breakpointObserver.observe([
+      Breakpoints.Medium,
+      Breakpoints.Tablet
+    ]).subscribe(result => {
+      if (result.matches) {
+        this.changePasswordModalWidth = '75%';
+        this.changePictureModal = '85%';
+      }
+    });
+    breakpointObserver.observe([
+      Breakpoints.Large,
+      Breakpoints.XLarge
+    ]).subscribe(result => {
+      if (result.matches) {
+        this.changePasswordModalWidth = '35%';
+        this.changePictureModal = '70%';
+      }
+    });
   }
 
   ngOnInit() {
+    this.emailValidation = this.validationService.getEmailValidation();
     this.authService.autoLogin();
     this.profileForm = new FormGroup({
       email: new FormControl(
@@ -93,7 +136,7 @@ export class UserComponent implements OnInit, OnDestroy {
 
   openChangeProfileImageDialog() {
     const dialogRef = this.dialog.open(ChangeProfileImageModalComponent, {
-      width: '70%',
+      width: this.changePictureModal,
       data: {
         imageBase64: ''
       }
@@ -104,14 +147,14 @@ export class UserComponent implements OnInit, OnDestroy {
       if (this.profileImageBase64) {
         this.onChangeProfileImage(this.profileImageBase64);
       } else {
-        this.openSnackBar('Image was not selected', null, 'warn-snackbar');
+        this.openSnackBar('Image was not selected', SnackBarClassesEnum.Warn, this.snackbarDuration);
       }
     });
   }
 
   openChangePasswordDialog(): void {
     const dialogRef = this.dialog.open(ChangePasswordModalComponent, {
-      width: '35%',
+      width: this.changePasswordModalWidth,
       data: {
         name: this.profileForm.value.name,
         oldPassword: this.oldPassword,
@@ -123,11 +166,11 @@ export class UserComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       console.log(result);
       if (result === 'nothing') {
-        this.openSnackBar('Nothing changed', null, 'warn-snackbar');
+        this.openSnackBar('Nothing changed', SnackBarClassesEnum.Warn, this.snackbarDuration);
         return;
       }
       if (!result.oldPassword || !result.newPassword || !result.retypeNewPassword) {
-        this.openSnackBar('Please fill in passwords fields', null, 'danger-snackbar');
+        this.openSnackBar('Please fill in passwords fields', SnackBarClassesEnum.Danger, this.snackbarDuration);
         return;
       }
       this.onChangeUserPassword(
@@ -148,7 +191,7 @@ export class UserComponent implements OnInit, OnDestroy {
     }
 
     if (email === this.oldEmail && name === this.oldName) {
-      this.openSnackBar('Nothing to change', null, 'warn-snackbar');
+      this.openSnackBar('Nothing to change', SnackBarClassesEnum.Warn, this.snackbarDuration);
       return false;
     }
 
@@ -157,10 +200,22 @@ export class UserComponent implements OnInit, OnDestroy {
     this.userService.updateUserData(this.user, 'info')
       .subscribe(() => {
         if (this.response.data.changedUserInfo) {
+          this.isDone = true;
           this.message = this.response.data.message;
-          this.openSnackBar(this.message, null, 'success-snackbar');
+          this.openSnackBar(this.message, SnackBarClassesEnum.Success, this.snackbarDuration);
+        } else {
+          this.isDone = false;
         }
       });
+  }
+
+  canDeactivate(): Observable<boolean> | Promise<boolean> | boolean {
+    if (this.profileForm.touched && !this.isDone) {
+      this.materialService.openDiscardChangesDialog(this.discard, this.discardChanged);
+      return this.discardChanged;
+    } else {
+      return true;
+    }
   }
 
   onChangeUserPassword(
@@ -177,10 +232,10 @@ export class UserComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         if (this.response.data.passwordChanged) {
           this.message = this.response.data.message;
-          this.openSnackBar(this.message, null, 'success-snackbar');
+          this.openSnackBar(this.message, SnackBarClassesEnum.Success, this.snackbarDuration);
         } else {
           this.error = this.response.data.message;
-          this.openSnackBar(this.error, null, 'danger-snackbar');
+          this.openSnackBar(this.error, SnackBarClassesEnum.Danger, this.snackbarDuration);
         }
       });
   }
@@ -191,16 +246,13 @@ export class UserComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.message = this.userService.getResponse().data.message;
         this.user = this.authService.getUser();
-        this.openSnackBar(this.message, null, 'success-snackbar');
+        this.openSnackBar(this.message, SnackBarClassesEnum.Success, this.snackbarDuration);
         this.isLoading = false;
       });
   }
 
-  openSnackBar(message: string, action: string, style: string) {
-    const config = new MatSnackBarConfig();
-    config.panelClass = [style];
-    config.duration = this.snackbarDuration;
-    this.snackBar.open(message, action, config);
+  openSnackBar(message: string, style: string, duration: number) {
+    this.materialService.openSnackBar(message, style, duration);
   }
 
   ngOnDestroy(): void {

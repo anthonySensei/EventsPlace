@@ -1,9 +1,14 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
-import {AuthService} from '../auth/auth.service';
+
 import {Subscription} from 'rxjs';
-import {User} from '../user/user.model';
+
+import {AuthService} from '../auth/auth.service';
 import {UserService} from '../user/user.service';
+
+import {User} from '../user/user.model';
+import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
+
 
 @Component({
   selector: 'app-header',
@@ -16,10 +21,24 @@ export class HeaderComponent implements OnInit, OnDestroy {
   userChangedSubscription: Subscription;
   user: User;
   role = 'user';
+  isSmallScreen = false;
+
+
 
   constructor(private authService: AuthService,
               private userService: UserService,
-              private router: Router) {
+              private router: Router,
+              private breakpointObserver: BreakpointObserver) {
+    breakpointObserver.observe([
+      Breakpoints.Small,
+      Breakpoints.XSmall
+    ]).subscribe(result => {
+      if (result.matches) {
+        this.isSmallScreen = true;
+      } else if (!result.matches) {
+        this.isSmallScreen = false;
+      }
+    });
   }
 
   ngOnInit() {

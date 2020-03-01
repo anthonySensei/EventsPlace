@@ -3,8 +3,9 @@
     <span class="page-title">Add user</span>
     <hr style="background-color: #0d0d0d">
     <form
-      (submit)="onCreateUser(email, userRole)"
-      #createUserForm='ngForm'>
+      (ngSubmit)="onCreateUser()"
+      [formGroup]="createUserForm"
+    >
       <mat-form-field
         class="form-input d-block">
         <mat-label>Email</mat-label>
@@ -12,31 +13,43 @@
           matInput
           type="email"
           name="email"
-          #email="ngModel"
-          ngModel
+          formControlName="email"
           placeholder="Ex. example@mail.com"
-          required
         >
+        <mat-error *ngIf="error">
+          {{error}}
+        </mat-error>
+        <mat-error *ngIf="hasError('email', 'required') && !error">
+          Email is required
+        </mat-error>
+        <mat-error
+          *ngIf="
+        (hasError('email', 'email') ||
+        hasError('email', 'pattern')) && !error"
+        >
+          Email is not valid
+        </mat-error>
       </mat-form-field>
-      <span
-        class="help-block"
-        *ngIf="(!email.valid && email.touched) || isEmailError"
-      >
-      {{ isEmailError ? error : 'Please fill in email' }}
-      </span>
-      <br>
+      <br><br>
       <mat-radio-group
         class="d-block"
         name="userRole"
-        [(ngModel)]="userRole"
-        aria-label="Choose role">
+        aria-label="Choose role"
+        formControlName="userRole"
+      >
         <mat-radio-button value="user">User</mat-radio-button>
         <mat-radio-button value="manager">Manager</mat-radio-button>
+        <mat-error *ngIf="hasError('userRole', 'required') && !error && createUserForm.touched">
+          User role is required
+        </mat-error>
       </mat-radio-group>
+      <br>
       <button
         class="form-button"
         type="submit"
-        >Create
+        [disabled]="createUserForm.invalid"
+      >
+        Create
       </button>
     </form>
   </div>

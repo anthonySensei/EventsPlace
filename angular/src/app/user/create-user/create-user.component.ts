@@ -1,18 +1,22 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {NgModel} from '@angular/forms';
-import {AuthService} from '../../auth/auth.service';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
-import {Subscription} from 'rxjs';
-import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
+
+import {AuthService} from '../../auth/auth.service';
+import {ValidationService} from '../../validation.service';
+import {MaterialService} from '../../shared/material.service';
+
+import {Observable, Subject, Subscription} from 'rxjs';
+
+import {SnackBarClassesEnum} from '../../shared/snackBarClasses.enum';
 
 @Component({
   selector: 'app-create-user',
-  templateUrl: './create-user.component.html',
-  styleUrls: ['./create-user.component.css']
+  templateUrl: './create-user.component.html'
 })
 export class CreateUserComponent implements OnInit, OnDestroy {
-  isEmailError: boolean;
-  userRole: string;
+  createUserForm: FormGroup;
+
   isCreated: boolean;
   JSONSubscription: Subscription;
   error: string = null;
@@ -20,11 +24,31 @@ export class CreateUserComponent implements OnInit, OnDestroy {
 
   snackbarDuration = 5000;
 
+  emailValidation;
+
+  isDone = false;
+
+  discard = false;
+  discardChanged = new Subject<boolean>();
+
   constructor(private authService: AuthService,
               private router: Router,
-              private snackBar: MatSnackBar) { }
+              private materialService: MaterialService,
+              private validationService: ValidationService) { }
 
   ngOnInit() {
+    this.emailValidation = this.validationService.getEmailValidation();
+    this.createUserForm = new FormGroup({
+      email: new FormControl(
+        null,
+        [
+          Validators.required,
+          Validators.email,
+          Validators.pattern(this.emailValidation)
+        ]
+      ),
+      userRole: new FormControl(null, [Validators.required])
+    });
     this.JSONSubscription = this.authService.authJSONResponseChanged
       .subscribe(
         (JSONResponse: {
@@ -40,30 +64,46 @@ export class CreateUserComponent implements OnInit, OnDestroy {
       );
   }
 
-  onCreateUser(email: NgModel, userRole: string) {
-    const user = {
-      email: email.value,
-      userRole
-    };
+  onCreateUser() {
+    const email = this.createUserForm.value.email;
+    const userRole = this.createUserForm.value.userRole;
+    if (this.createUserForm.invalid) {
+      return;
+    }
+    if (!this.emailValidation.test(email)) {
+      return;
+    }
+    const user = {email, userRole};
     console.log(user);
     this.authService.registerUser(user)
       .subscribe(() => {
         if (this.isCreated === false) {
-          this.isEmailError = true;
+          this.isDone = false;
           this.error = this.message;
-          console.log(this.error);
+          this.createUserForm.controls.email.setErrors({incorrect: true});
         } else {
-          this.router.navigate(['users']);
-          this.openSnackBar(this.message, null);
+          this.isDone = true;
+          this.router.navigate(['/users']);
+          this.openSnackBar(this.message, SnackBarClassesEnum.Success, this.snackbarDuration);
         }
       });
   }
 
-  openSnackBar(message: string, action: string) {
-    const config = new MatSnackBarConfig();
-    config.panelClass = ['snackbar'];
-    config.duration = this.snackbarDuration;
-    this.snackBar.open(message, action, config);
+  canDeactivate(): Observable<boolean> | Promise<boolean> | boolean {
+    if (this.createUserForm.touched && !this.isDone) {
+      this.materialService.openDiscardChangesDialog(this.discard, this.discardChanged);
+      return this.discardChanged;
+    } else {
+      return true;
+    }
+  }
+
+  hasError(controlName: string, errorName: string) {
+    return this.createUserForm.controls[controlName].hasError(errorName);
+  }
+
+  openSnackBar(message: string, style: string, duration: number) {
+    this.materialService.openSnackBar(message, style, duration);
   }
 
   ngOnDestroy(): void {

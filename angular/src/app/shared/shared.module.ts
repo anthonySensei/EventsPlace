@@ -20,13 +20,16 @@ import {NgxPaginationModule} from 'ngx-pagination';
 import {ImageCropperModule} from 'ngx-image-cropper';
 
 import { LoadingSpinnerComponent } from './loading-spinner/loading-spinner.component';
+import {DiscardChangesModalComponent} from './discard-changes-modal/discard-changes-modal.component';
 
 import {CanDeactivateGuard} from './can-deactivate-guard.service';
 
 import {OwlDateTimeModule, OwlNativeDateTimeModule} from 'ng-pick-datetime';
 
+
+
 @NgModule({
-  declarations: [LoadingSpinnerComponent],
+  declarations: [LoadingSpinnerComponent, DiscardChangesModalComponent],
   imports: [
     CommonModule
   ],
@@ -53,7 +56,8 @@ import {OwlDateTimeModule, OwlNativeDateTimeModule} from 'ng-pick-datetime';
     OwlNativeDateTimeModule,
     OwlDateTimeModule
   ],
-  providers: [CanDeactivateGuard]
+  providers: [CanDeactivateGuard],
+  entryComponents: [DiscardChangesModalComponent]
 })
 
 export class SharedModule {}

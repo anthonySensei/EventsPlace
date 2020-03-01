@@ -1,10 +1,16 @@
-import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {CheckFormService} from '../check-form.service';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
-import {FormControl, FormGroup, NgForm, NgModel, Validators} from '@angular/forms';
-import {Subscription} from 'rxjs';
-import {AuthService} from '../auth.service';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
+
 import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
+
+import {Subscription} from 'rxjs';
+
+import {AuthService} from '../auth.service';
+import {ValidationService} from '../../validation.service';
+import {MaterialService} from '../../shared/material.service';
+
+import {SnackBarClassesEnum} from '../../shared/snackBarClasses.enum';
 
 @Component({
   selector: 'app-auth',
@@ -23,17 +29,21 @@ export class AuthComponent implements OnInit, OnDestroy {
 
   snackbarDuration = 5000;
 
-  emailValidation = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
-  // passwordValidation = /(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/;
+  emailValidation;
 
-  constructor(private checkFormService: CheckFormService,
+  constructor(private validationService: ValidationService,
               private authService: AuthService,
-              private router: Router,
-              private snackBar: MatSnackBar) { }
+              private materialService: MaterialService,
+              private router: Router) { }
 
   ngOnInit() {
+    this.emailValidation = this.validationService.getEmailValidation();
     this.loginForm = new FormGroup({
-        email: new FormControl('', [Validators.required, Validators.email]),
+        email: new FormControl('', [
+          Validators.required,
+          Validators.email,
+          Validators.pattern(this.emailValidation)
+        ]),
         password: new FormControl('', [Validators.required])
     });
     this.JSONSubscription = this.authService.authJSONResponseChanged
@@ -58,15 +68,9 @@ export class AuthComponent implements OnInit, OnDestroy {
   onLoginUser() {
     const email = this.loginForm.value.email;
     const password = this.loginForm.value.password;
-    if (email === '' || password === '') {
-      return false;
+    if (this.loginForm.invalid) {
+      return;
     }
-    if (!this.emailValidation.test(email)) {
-      return false;
-    }
-    // if (!this.passwordValidation.test(email)) {
-    //   return false;
-    // }
     const user = {
       email,
       password
@@ -86,16 +90,13 @@ export class AuthComponent implements OnInit, OnDestroy {
           this.router.navigate(['posts']);
           this.loginForm.reset();
           this.message = 'You was logged in successfully';
-          this.openSnackBar(this.message, null);
+          this.openSnackBar(this.message,  SnackBarClassesEnum.Success, this.snackbarDuration);
         }
       });
   }
 
-  openSnackBar(message: string, action: string) {
-    const config = new MatSnackBarConfig();
-    config.panelClass = ['snackbar'];
-    config.duration = this.snackbarDuration;
-    this.snackBar.open(message, action, config);
+  openSnackBar(message: string, style: string, duration: number) {
+    this.materialService.openSnackBar(message, style, duration);
   }
 
   ngOnDestroy(): void {

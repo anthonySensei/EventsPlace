@@ -13,6 +13,8 @@ import {AuthService} from '../auth/auth.service';
 export class UserService {
   USER_DATA_URL = 'http://localhost:3000/my-account';
   UPDATE_PROFILE_IMAGE_URL = 'http://localhost:3000/my-account/update-profile-image';
+  GET_USERS_URL = 'http://localhost:3000/users';
+
   request = {
     user: null,
     changeData: {
@@ -26,8 +28,12 @@ export class UserService {
       retypeNewPassword: ''
     }
   };
+
   response;
   responseChanged = new Subject();
+
+  users: User[] = [];
+  usersChanged = new Subject<User[]>();
 
   constructor(private http: HttpClient,
               private authService: AuthService) {}
@@ -39,6 +45,15 @@ export class UserService {
 
   getResponse() {
     return this.response;
+  }
+
+  setUsers(users: User[]) {
+    this.users = users;
+    this.usersChanged.next(this.users);
+  }
+
+  getUsers(): User[] {
+    return this.users;
   }
 
   updateUserData(user: User, changed: string, passwordObject?) {
@@ -93,7 +108,6 @@ export class UserService {
   getUserHttp(userEmail: string) {
     const headers = new HttpHeaders();
     headers.append('Content-type', 'application/json');
-    headers.append('Authorization', this.authService.getJwtToken());
     return this
       .http
       .get(
@@ -101,6 +115,20 @@ export class UserService {
         {headers})
       .pipe(map((response: any) => {
         this.authService.setUser(response.data.user);
+      }));
+  }
+
+  getUsersHttp() {
+    const headers = new HttpHeaders();
+    headers.append('Content-type', 'application/json');
+    return this
+      .http
+      .get(
+        this.GET_USERS_URL,
+        {headers})
+      .pipe(map((response: any) => {
+         this.setUsers(response.data.users);
+         console.log(response);
       }));
   }
 }

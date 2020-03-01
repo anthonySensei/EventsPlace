@@ -1,0 +1,8 @@
+.error-container{
+  height: 400px;
+}
+p{
+  line-height: 200px;
+  text-align: center;
+  font-size: 3rem
+}

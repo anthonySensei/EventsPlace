@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {FormControl, NgModel} from '@angular/forms';
+import {NgModel} from '@angular/forms';
 
 import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
 
@@ -25,10 +25,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
   };
   snackBarMessage = 'Please login to continue';
 
-  position = new FormControl('above');
   posts: Post[] = [];
-  cards;
-  cardsContent;
 
   response;
 
@@ -38,8 +35,6 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   isLoading = false;
   isLoggedIn;
-  grid = 'FOUR';
-  filterContainer;
   showFilterButton = true;
   selected = 'all';
   filter: string;
@@ -74,9 +69,6 @@ export class MainPageComponent implements OnInit, OnDestroy {
         this.isLoggedIn = isLoggedIn;
     });
     this.isLoggedIn = this.authService.getIsLoggedIn();
-    this.cards = document.getElementsByClassName('card');
-    this.cardsContent = document.getElementsByClassName('container');
-    this.filterContainer = document.getElementsByClassName('filter-container')[0];
     this.storageService.fetchApprovedPosts('all', '', {}, this.currentPage).subscribe();
     for (const post of this.posts) {
       if (!post.postImage) {
@@ -106,33 +98,6 @@ export class MainPageComponent implements OnInit, OnDestroy {
       data: this.snackBarMessage,
       ...this.snackBarConfig
     });
-  }
-
-  three() {
-    for (const element of this.cards) {
-      element.style.msFlex = '30%';  // IE10
-      element.style.flex = '30%';
-      element.style.maxWidth = '32%';
-    }
-  }
-
-  four() {
-    for (const element of this.cards) {
-      element.style.msFlex = '20%';  // IE10
-      element.style.flex = '20%';
-      element.style.maxWidth = '25%';
-    }
-  }
-
-
-  changeGrid() {
-    if (this.grid === 'TWO') {
-      this.four();
-      this.grid = 'FOUR';
-    } else {
-      this.three();
-      this.grid = 'TWO';
-    }
   }
 
   search(filter: NgModel) {

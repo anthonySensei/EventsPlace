@@ -2,7 +2,6 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ActivatedRoute, Params, Router} from '@angular/router';
 
 import {MatDialog} from '@angular/material/dialog';
-import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
 
 import {Subscription} from 'rxjs';
 
@@ -12,8 +11,11 @@ import {User} from '../../user/user.model';
 import {PostService} from '../post.service';
 import {AuthService} from '../../auth/auth.service';
 import {StorageService} from '../../storage.service';
+import {MaterialService} from '../../shared/material.service';
 
 import {RejectedDeletedReasonModalComponent} from './rejected-deleted-reason-modal/rejected-deleted-reason-modal.component';
+
+import {SnackBarClassesEnum} from '../../shared/snackBarClasses.enum';
 
 
 @Component({
@@ -45,7 +47,7 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
               private storageService: StorageService,
               private postService: PostService,
               private authService: AuthService,
-              private snackBar: MatSnackBar,
+              private materialService: MaterialService,
               public dialog: MatDialog) { }
 
   ngOnInit() {
@@ -54,10 +56,19 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
       .subscribe((params: Params) => {
           this.postId = +params.id;
     });
-    this.postService.getPostHttp(this.postId).subscribe();
+    this.user = this.authService.getUser();
+    if (this.user) {
+      this.userRole = this.user.role.role;
+    } else {
+      this.userRole = '';
+    }
+    this.postService.getPostHttp(this.postId, this.userRole).subscribe();
     this.postSubscription = this.postService.postChanged
       .subscribe(post => {
         this.post = post;
+        if (!this.post) {
+          this.router.navigate(['/error-page']);
+        }
         this.isLoading = false;
     });
     this.post = this.postService.getPost();
@@ -66,12 +77,6 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
          this.response = response;
          this.isUpdatedPostStatus = this.response.data.postUpdated;
       });
-    this.user = this.authService.getUser();
-    if (this.user) {
-      this.userRole = this.user.role.role;
-    } else {
-      this.userRole = '';
-    }
   }
 
   onSetStatus(status: string, post: Post) {
@@ -84,7 +89,7 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
           if (this.isUpdatedPostStatus) {
             this.message = this.response.data.message + ' to ' + '\'' + status.toUpperCase() + '\'';
             this.router.navigate(['/posts']);
-            this.openSnackBar(this.message, null);
+            this.openSnackBar(this.message, SnackBarClassesEnum.Success, this.snackbarDuration);
           } else  {
             this.error = this.response.data.message;
             return false;
@@ -93,11 +98,8 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  openSnackBar(message: string, action: string) {
-    const config = new MatSnackBarConfig();
-    config.panelClass = ['snackbar'];
-    config.duration = this.snackbarDuration;
-    this.snackBar.open(message, action, config);
+  openSnackBar(message: string, style: string, duration: number) {
+    this.materialService.openSnackBar(message, style, duration);
   }
 
   openRejectedDeletedReasonModal(status: string, post: Post): void {
@@ -119,7 +121,7 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
           if (this.isUpdatedPostStatus) {
             this.message = this.response.data.message + ' to ' + '\'' + status.toUpperCase() + '\'';
             this.router.navigate(['/posts']);
-            this.openSnackBar(this.message, null);
+            this.openSnackBar(this.message, SnackBarClassesEnum.Success, this.snackbarDuration);
           } else  {
             this.error = this.response.data.message;
             return false;

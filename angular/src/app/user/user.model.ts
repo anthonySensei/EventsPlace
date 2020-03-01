@@ -8,9 +8,10 @@ export class User {
   password: string;
   createdAt: Date;
   role: Role;
+  status?: string;
 
   constructor(id: number, name: string, email: string, image: string,
-              password: string, created: Date, role: Role) {
+              password: string, created: Date, role: Role, status?: string) {
     this.id = id;
     this.name = name;
     this.email = email;
@@ -18,6 +19,7 @@ export class User {
     this.password = password;
     this.createdAt = created;
     this.role = role;
+    this.status = status;
   }
 
 

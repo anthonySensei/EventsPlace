@@ -14,6 +14,8 @@ router.post('/login', userController.postLoginUser);
 
 router.get('/logout', userController.getLogout);
 
+router.get('/users', passport.authenticate('jwt', {session: false}), userController.getUsers);
+
 router.get('/my-account', passport.authenticate('jwt', {session: false}), userController.getUser);
 
 router.post('/my-account', passport.authenticate('jwt', {session: false}), userController.postUpdateUserData);

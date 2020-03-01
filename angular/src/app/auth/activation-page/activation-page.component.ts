@@ -10,8 +10,16 @@ import {Subscription} from 'rxjs';
 })
 export class ActivationPageComponent implements OnInit, OnDestroy {
   registrationToken: string = null;
+
   paramsSubscription: Subscription;
   authSubscription: Subscription;
+
+  response;
+  isActivated: boolean;
+
+  message;
+  error;
+
 
   constructor(private route: ActivatedRoute,
               private authService: AuthService) {
@@ -22,7 +30,16 @@ export class ActivationPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.authSubscription = this.authService.checkRegistrationToken(this.registrationToken).subscribe();
+    this.authSubscription = this.authService.checkRegistrationToken(this.registrationToken)
+      .subscribe(() => {
+        this.response = this.authService.getAuthJSONResponse();
+        this.isActivated = this.response.data.isActivated;
+        if (this.isActivated) {
+          this.message = this.response.data.message;
+        } else {
+          this.error = this.response.data.message;
+        }
+      });
   }
 
   ngOnDestroy(): void {

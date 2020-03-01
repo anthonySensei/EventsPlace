@@ -4,6 +4,7 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 
 import {ChangePasswordDialogData} from './change-password-dialog-data.model';
+import {ValidationService} from '../../validation.service';
 
 @Component({
   selector: 'app-dialog',
@@ -22,18 +23,20 @@ export class ChangePasswordModalComponent implements OnInit {
   retypeNewPassword: string;
 
 
-  passwordValidation = /(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/;
+  passwordValidation;
 
   error: string;
   message: string;
 
   constructor(
+    private validationService: ValidationService,
     public dialogRef: MatDialogRef<ChangePasswordModalComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ChangePasswordDialogData) {
     dialogRef.disableClose = true;
   }
 
   ngOnInit(): void {
+    this.passwordValidation = this.validationService.getPasswordValidation();
     this.passwordsForm = new FormGroup({
       oldPassword: new FormControl(
         null,
@@ -60,8 +63,8 @@ export class ChangePasswordModalComponent implements OnInit {
     const oldPassword = this.passwordsForm.value.oldPassword;
     const newPassword = this.passwordsForm.value.newPassword;
     const retypeNewPassword = this.passwordsForm.value.retypeNewPassword;
-    if (oldPassword || newPassword || retypeNewPassword) {
-      this.error = 'Please fill in fields';
+    if (this.passwordsForm.invalid) {
+      return;
     }
     this.data.newPassword = newPassword;
     this.data.oldPassword = oldPassword;

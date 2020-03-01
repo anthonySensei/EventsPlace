@@ -54,12 +54,12 @@ export class PostService {
     this.responseChanged.next(this.response);
   }
 
-  getPostHttp(postId: number) {
+  getPostHttp(postId: number, userRole?: string) {
     const headers = new HttpHeaders();
     headers.append('Content-type', 'application/json');
     return this
       .http
-      .get(this.GET_POST_URL + '?postId=' + postId,
+      .get(`${this.GET_POST_URL}?postId=${postId}&userRole=${userRole}`,
         {headers})
       .pipe(map((response: any) => {
         this.setPost(response.data.post);

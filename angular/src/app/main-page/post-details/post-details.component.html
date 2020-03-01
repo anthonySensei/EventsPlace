@@ -7,27 +7,20 @@
         src="{{post.postImage}}"
         alt="img"
       >
-      <div class="description-container">
-        <textarea
-          rows="50"
-          cols="55"
-          class="post-description"
-          disabled
-        >
-         {{post.description}}
-        </textarea>
-      </div>
       <div class="row">
         <p *ngIf="post.user.name">Name: {{post.user.name}}</p>
+        <p class="post-description">Description: {{post.description}}</p>
         <p>Email: {{post.user.email}}</p>
+        <p>Time: {{post.eventTime | date:'short'}}</p>
         <p class="event-location">
           <i class="material-icons">location_on</i>
           {{post.eventLocation}}
         </p>
         <p class="post-hashtag">#{{post.hashtag.name}}</p>
         <br>
-        <div class="btn-group" *ngIf="user.email === post.user.email">
+        <div class="btn-group" *ngIf="user">
           <a
+            *ngIf="user.email === post.user.email"
             mat-button
             class="btn btn-yellow"
             matTooltip="Edit post"

@@ -99,6 +99,10 @@ export class AuthService {
     this.authJSONResponseChanged.next(this.authJSONResponse);
   }
 
+  getAuthJSONResponse() {
+    return this.authJSONResponse;
+  }
+
   setJwtToken(token) {
     this.jwtToken = token;
     this.jwtTokenChanged.next(this.jwtToken);
@@ -265,7 +269,7 @@ export class AuthService {
         token,
         {headers})
       .pipe(map((response: any) => {
-        console.log(response);
+        this.setAuthJSONResponse(response);
       }));
   }
 }

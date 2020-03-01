@@ -23,6 +23,8 @@ charsetOfGeneratedPassword = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX
 const nodemailer = require('nodemailer');
 const sendGridTransport = require('nodemailer-sendgrid-transport');
 
+USERS_PER_PAGE = 10;
+
 const transporter = nodemailer.createTransport(sendGridTransport({
     auth: {
         api_key: process.env.SEND_GRID_API_KEY
@@ -30,9 +32,11 @@ const transporter = nodemailer.createTransport(sendGridTransport({
 }));
 
 exports.postCreateUser = (req, res, next) => {
+    console.log(req.body);
     let email = req.body.email;
-    if (email) {
-        return;
+    if (!email) {
+        console.log('Email is required');
+        return responseCreateUser(res, 400, false, 'Email is required');
     }
     let password;
     if (req.body.password) {
@@ -47,6 +51,7 @@ exports.postCreateUser = (req, res, next) => {
         email: email,
         password: password
     });
+    console.log(newUser);
     bcrypt.genSalt(10, (err, salt) => {
         bcrypt.hash(newUser.password, salt, (err, hash) => {
             newUser.password = hash;
@@ -110,6 +115,15 @@ exports.postCreateUser = (req, res, next) => {
 exports.postCheckRegistrationToken = (req, res, next) => {
     console.log(req.body);
     token = req.body.registrationToken;
+    if (!token) {
+        return res.send({
+            responseCod: 400,
+            data: {
+                isActivated: false,
+                message: 'Token is required.'
+            }
+        });
+    }
     User
      .findOne({where: {registration_token: token}})
      .then(user => {
@@ -133,7 +147,7 @@ exports.postCheckRegistrationToken = (req, res, next) => {
                responseCod: 400,
                data: {
                    isActivated: false,
-                   message: 'Error occurred! Try again.'
+                   message: 'User with this token doesn\'t exist.'
                }
            });
          });
@@ -267,6 +281,63 @@ module.exports.getUser = (req, res) => {
             console.log(err);
             return responseErrorMessage(res, 400, err);
         });
+}
+
+module.exports.getUsers = (req, res) => {
+    const page = +req.query.page || 1;
+
+    let totalUsers;
+    
+    User
+      .count()
+      .then(usersNumber => {
+           totalUsers = usersNumber;
+           return  User.findAll({
+             limit: USERS_PER_PAGE,
+             offset: (page-1) * USERS_PER_PAGE,
+             order: [
+                 ['id', 'ASC']
+             ]
+           })
+      })
+      .then(result => {
+        let users = [];
+
+        for(let user of result){
+            if (user.dataValues.profile_image) {
+                user.dataValues.profile_image = base64Img.base64Sync(user.dataValues.profile_image);
+            } else {
+                user.dataValues.profile_image = '';
+            }
+            users.push({
+                id: user.dataValues.id,
+                name: user.dataValues.name,
+                email: user.dataValues.email,
+                status: user.dataValues.status,
+                profileImage: user.dataValues.profile_image
+            });
+        }
+        users.sort(compareObjectsById);
+        return res.send({
+            responseCode: 500,
+            data: {
+                users: users,
+                message: 'Users was fetched successfully!',
+                paginationData: {
+                    currentPage: page,
+                    hasNextPage: USERS_PER_PAGE * page < totalUsers,
+                    hasPreviousPage: page > 1,
+                    nextPage: page + 1,
+                    previousPage: page - 1,
+                    lastPage: Math.ceil(totalUsers / USERS_PER_PAGE)
+                }
+            }
+        });
+      })
+      .catch(err => {
+          console.log(err);
+          return responseErrorMessage(res, 400, 'Error');
+      })
 }
 
 module.exports.postUpdateUserData = (req, res) => {
@@ -444,4 +515,17 @@ function responseChangeUserPassword(response, responseCode, isChanged, message) 
             message: message
         }
     });
+}
+
+function compareObjectsById(a, b) {
+    const idA = a.postId;
+    const idB = b.postId;
+  
+    let comparison = 0;
+    if (idA > idB) {
+      comparison = 1;
+    } else if (idA < idB) {
+      comparison = -1;
+    }
+    return comparison;
 }

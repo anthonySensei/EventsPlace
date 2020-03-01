@@ -5,7 +5,6 @@ import {Subscription} from 'rxjs';
 import {StorageService} from '../../storage.service';
 
 import {Post} from '../post.model';
-import {element} from 'protractor';
 
 
 @Component({
@@ -59,11 +58,6 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
       });
   }
 
-  ngOnDestroy(): void {
-    this.postsFetchSubscription.unsubscribe();
-    this.postsChangedSubscription.unsubscribe();
-  }
-
   changePostsByStatus() {
     this.currentPage = 1;
     if (this.selected === 'approved') {
@@ -87,13 +81,6 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         });
       this.posts = this.storageService.getPosts();
-    } else if (this.selected === 'deleted') {
-      this.isLoading = true;
-      this.storageService.fetchAllPosts('deleted', this.currentPage)
-        .subscribe(() => {
-          this.isLoading = false;
-        });
-      this.posts = this.storageService.getPosts();
     } else if (this.selected === 'all') {
       this.isLoading = true;
       this.storageService.fetchAllPosts('all', this.currentPage)
@@ -113,5 +100,10 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
       });
     this.posts = this.storageService.getPosts();
     console.log(page);
+  }
+
+  ngOnDestroy(): void {
+    this.postsFetchSubscription.unsubscribe();
+    this.postsChangedSubscription.unsubscribe();
   }
 }

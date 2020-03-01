@@ -125,6 +125,16 @@
   color: rgb(255, 255, 255);
 }
 
+
+.card-details {
+  display: block;
+  margin-top: 5px;
+}
+
+.characteristic-name {
+  color: rgba(0, 0, 0, 0.8);
+}
+
 .image-container:hover .card-image {
   -webkit-filter: blur(2px) grayscale(100%);
   filter: blur(2px) grayscale(100%);
@@ -146,7 +156,6 @@
 }
 
 .page-container {
-  position: absolute;
   min-width: 100%;
   min-height: 91%;
 }
@@ -160,5 +169,33 @@
   border: 2px solid rgb(2,169,255);
   color: rgb(2,169,255);
 }
+
+@media screen and (max-width: 576px) {
+  .flex-container > .card {
+    flex: 50%;
+    max-width: 100%;
+  }
+  .filter-button {
+    max-width: 40px;
+  }
+}
+
+@media screen and (max-width: 992px) and (min-width: 577px) {
+  .flex-container > .card {
+    flex: 40%;
+    max-width: 50%;
+  }
+}
+
+
+@media screen and (max-width: 1200px) and (min-width: 993px){
+  .flex-container > .card {
+    flex: 25%;
+    max-width: 33%;
+  }
+}
+
+
+
 
 

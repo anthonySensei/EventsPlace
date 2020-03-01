@@ -41,7 +41,6 @@
           name="filter"
           #filter='ngModel'
           ngModel
-          placeholder="Ex. #hello"
           [disabled]="selected === 'all'"
         >
       </mat-form-field>
@@ -55,7 +54,6 @@
           [owlDateTime]="dtFrom"
           name="timeFrom"
           [(ngModel)]="fromDate"
-          placeholder="Ex. #hello"
         >
         <mat-icon matSuffix>date_range</mat-icon>
         <owl-date-time #dtFrom></owl-date-time>
@@ -89,16 +87,6 @@
   </div>
 
   <div class="post-features-container">
-    <button
-      *ngIf="posts.length > 0"
-      mat-button
-      class="btn"
-      (click)="changeGrid()"
-      style="position: absolute"
-      matTooltip="Change column quantity"
-      [matTooltipPosition]="position.value">
-      <i class="material-icons">list</i>
-    </button>
     <div style="overflow:hidden">
       <a
         *ngIf="isLoggedIn; else isNotLoggedIn"
@@ -144,14 +132,22 @@
           </div>
         </div>
         <div class="card-container">
-          <span style="display: block">Location: {{card.eventLocation}}</span>
-          <span style="display: block">Time: {{card.eventTime | date:'short'}}</span>
-          <span style="display: block; overflow: hidden">Email address: {{card.user.email}}</span>
-          <span style="display: block"><i style="color: #02a9ff">#{{card.hashtag.name}}</i></span>
+          <span class="card-details">
+            <span class="characteristic-name">Location</span>: {{card.eventLocation}}
+          </span>
+          <span class="card-details">
+            Time: {{card.eventTime | date:'short'}}
+          </span>
+          <span class="card-details">
+            Email address: {{card.user.email}}
+          </span>
+          <span class="card-details">
+            <i style="color: #02a9ff">#{{card.hashtag.name}}</i>
+          </span>
         </div>
       </div>
     </div>
-    <section class="pagination">
+    <section class="pagination" *ngIf="!isLoading">
       <a
         *ngIf="hasPreviousPage"
         (click)="paginate(previousPage)"

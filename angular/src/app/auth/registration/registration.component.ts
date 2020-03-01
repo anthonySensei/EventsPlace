@@ -2,10 +2,11 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 
-import {Subscription} from 'rxjs';
+import {Observable, Subject, Subscription} from 'rxjs';
 
 import {AuthService} from '../auth.service';
-import {CheckFormService} from '../check-form.service';
+import {ValidationService} from '../../validation.service';
+import {MaterialService} from '../../shared/material.service';
 
 @Component({
   selector: 'app-registration',
@@ -22,21 +23,29 @@ export class RegistrationComponent implements OnInit, OnDestroy {
 
   JSONSubscription: Subscription;
 
-  emailValidation = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/;
-  passwordValidation = /(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/;
+  emailValidation;
+  passwordValidation;
 
   hidePassword = true;
   hideRetypePassword = true;
 
   isPasswordError = false;
 
+  isDone = false;
 
-constructor(private checkFormService: CheckFormService,
+  discard = false;
+  discardChanged = new Subject<boolean>();
+
+
+constructor(private validationService: ValidationService,
             private authService: AuthService,
+            private materialService: MaterialService,
             private router: Router) {
   }
 
   ngOnInit() {
+    this.emailValidation = this.validationService.getEmailValidation();
+    this.passwordValidation = this.validationService.getPasswordValidation();
     this.regForm = new FormGroup({
       email: new FormControl(
         null,
@@ -94,16 +103,8 @@ constructor(private checkFormService: CheckFormService,
     const password = this.regForm.value.password;
     const password2 = this.regForm.value.password2;
 
-    if (email === '' || password === '' || password2 === '') {
-      return false;
-    }
-
-    if (!this.emailValidation.test(email)) {
-      return false;
-    }
-
-    if (!this.passwordValidation.test(password) || !this.passwordValidation.test(password2)) {
-      return false;
+    if (this.regForm.invalid) {
+      return;
     }
 
     const user = {
@@ -111,7 +112,9 @@ constructor(private checkFormService: CheckFormService,
       password
     };
 
-    if (!this.checkFormService.comparePasswords(password, password2)) {
+    console.log(user);
+
+    if (!this.validationService.comparePasswords(password, password2)) {
       this.isPasswordError = true;
       this.error = 'Passwords are different';
       this.regForm.patchValue({
@@ -126,6 +129,7 @@ constructor(private checkFormService: CheckFormService,
       .registerUser(user)
       .subscribe(() => {
         if (this.created === false) {
+          this.isDone = true;
           this.isPasswordError = false;
           this.regForm.patchValue({
             password: '',
@@ -135,9 +139,19 @@ constructor(private checkFormService: CheckFormService,
           this.error = this.message;
           console.log(this.error);
         } else {
-          this.router.navigate(['login']);
+          this.isDone = false;
+          this.router.navigate(['/login']);
         }
       });
+  }
+
+  canDeactivate(): Observable<boolean> | Promise<boolean> | boolean {
+    if (this.regForm.touched && !this.isDone) {
+      this.materialService.openDiscardChangesDialog(this.discard, this.discardChanged);
+      return this.discardChanged;
+    } else {
+      return true;
+    }
   }
 
   ngOnDestroy(): void {

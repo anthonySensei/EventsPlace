@@ -1,7 +1,6 @@
 <div class="wrapper">
   <div class="form-content">
     <!--    -->
-    <div class="profile-container">
       <span class="page-title">Profile</span>
       <hr style="background-color: #0d0d0d">
       <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
@@ -10,24 +9,27 @@
           class="profile-image"
           src="{{user.profileImage}}"
           alt="Avatar"
-          style="width:200px"
         >
         <form
           (ngSubmit)="onChangeUserData()"
-          [formGroup]="profileForm">
-          <a
+          [formGroup]="profileForm"
+        >
+          <button
+            type="button"
             mat-raised-button
             style="margin-right: 5px;"
             (click)="openChangeProfileImageDialog()"
           >
             Change image
-          </a>
-          <a
+          </button>
+          <button
+            type="button"
             mat-raised-button
             (click)="openChangePasswordDialog()"
           >
             Change password
-          </a>
+          </button>
+          <br>
           <mat-form-field
             class="form-input">
             <mat-label>Full name</mat-label>
@@ -39,7 +41,8 @@
             >
           </mat-form-field>
           <mat-form-field
-            class="form-input">
+            class="form-input"
+          >
             <mat-label>Email</mat-label>
             <input
               matInput
@@ -69,7 +72,6 @@
             Save
           </button>
         </form>
-      </div>
     </div>
   </div>
 </div>

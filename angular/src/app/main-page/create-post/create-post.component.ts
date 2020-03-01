@@ -1,23 +1,22 @@
-import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {ActivatedRoute, Params, Router} from '@angular/router';
-
-import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {MatDialog} from '@angular/material/dialog';
 
 import {PostService} from '../post.service';
 import {AuthService} from '../../auth/auth.service';
+import {MaterialService} from '../../shared/material.service';
+import {CanComponentDeactivate} from '../../shared/can-deactivate-guard.service';
 
 import {User} from '../../user/user.model';
 import {Hashtag} from '../hashtag.model';
-
-import {Observable, Subscription} from 'rxjs';
-
-import {ImageCroppedEvent} from 'ngx-image-cropper';
-
-import {CanComponentDeactivate} from '../../shared/can-deactivate-guard.service';
-
 import {Post} from '../post.model';
+
+import {Observable, Subject, Subscription} from 'rxjs';
+
+import {SnackBarClassesEnum} from '../../shared/snackBarClasses.enum';
+
+import {ModalPostCreateDialogComponent} from './choose-post-image-modal/choose-post-image-modal.component';
 
 export interface DialogData {
   imageBase64: string;
@@ -47,13 +46,20 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
 
   editMode = false;
   postId: number;
+
   isUpdated: boolean;
   isLoading = false;
+  isDone = false;
+
+  discard = false;
+  discardChanged = new Subject<boolean>();
 
   post: Post;
 
   snackbarDuration = 5000;
   snackBarMessage = 'Post was created successfully';
+
+  choosePostImageWidth = '70%';
 
   imageToUploadBase64: string = null;
 
@@ -65,9 +71,9 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
 
   constructor(private postService: PostService,
               private authService: AuthService,
+              public materialService: MaterialService,
               private router: Router,
               private route: ActivatedRoute,
-              public snackBar: MatSnackBar,
               public dialog: MatDialog) {
   }
 
@@ -135,9 +141,9 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
     return this.createPostForm.controls[controlName].hasError(errorName);
   }
 
-  openDialog(): void {
+  openChoosePostImageDialog(): void {
     const dialogRef = this.dialog.open(ModalPostCreateDialogComponent, {
-      width: '70%',
+      width: this.choosePostImageWidth,
       data: {
         imageBase64: ''
       }
@@ -155,8 +161,7 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
     const eventTime = this.createPostForm.value.time;
     const user = this.user;
     const hashtag = this.createPostForm.value.hashtag;
-    if (!description || !eventName || !eventLocation || !user || !hashtag || !eventTime) {
-        this.error = 'Fields are required';
+    if (this.createPostForm.invalid) {
         return;
     }
     const post = {
@@ -168,7 +173,7 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
       hashtag
     };
     if (!this.imageToUploadBase64) {
-      this.openSnackBar('Image was not selected', 'warn-snackbar');
+      this.openSnackBar('Image was not selected', SnackBarClassesEnum.Warn, this.snackbarDuration);
       return false;
     }
     if (this.editMode) {
@@ -177,11 +182,13 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
         .subscribe( () => {
           if (this.isUpdated) {
             console.log('Updated');
+            this.isDone = true;
             this.message = this.response.data.message;
             this.router.navigate(['/posts']);
             this.snackBarMessage = 'Post was updated successfully';
-            this.openSnackBar(this.snackBarMessage, 'success-snackbar');
+            this.openSnackBar(this.snackBarMessage, SnackBarClassesEnum.Success, this.snackbarDuration);
           } else {
+            this.isDone = false;
             this.error = this.response.data.message;
             return false;
           }
@@ -191,10 +198,12 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
         .createPost(post, this.imageToUploadBase64)
         .subscribe( () => {
           if (this.isCreated) {
+            this.isDone = true;
             this.message = this.response.data.message;
             this.router.navigate(['/posts']);
-            this.openSnackBar(this.snackBarMessage, 'success-snackbar');
+            this.openSnackBar(this.snackBarMessage, SnackBarClassesEnum.Success, this.snackbarDuration);
           } else {
+            this.isDone = false;
             this.error = this.response.data.message;
             return false;
           }
@@ -202,18 +211,14 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
     }
   }
 
-
-  openSnackBar(message: string, style) {
-    const config = new MatSnackBarConfig();
-    config.panelClass = [style];
-    config.duration = this.snackbarDuration;
-    this.snackBar.open(message, null, config);
+  openSnackBar(message: string, style: string, duration: number) {
+    this.materialService.openSnackBar(message, style, duration);
   }
 
   canDeactivate(): Observable<boolean> | Promise<boolean> | boolean {
-    if (this.createPostForm.touched) {
-      console.log('Can deactivate');
-      return confirm('Do you want to discard the changes?');
+    if (this.createPostForm.touched && !this.isDone) {
+      this.materialService.openDiscardChangesDialog(this.discard, this.discardChanged);
+      return this.discardChanged;
     } else {
       return true;
     }
@@ -230,44 +235,4 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
     //   this.userSubscription.unsubscribe();
     // }
   }
-}
-
-@Component({
-  selector: 'app-dialog',
-  templateUrl: './choose-image-modal.component.html',
-  styleUrls: ['../../auth/login/auth.component.css']
-})
-export class ModalPostCreateDialogComponent {
-  imageChangedEvent: any = '';
-  croppedImage: any = '';
-
-
-  constructor(
-    public dialogRef: MatDialogRef<ModalPostCreateDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData) {
-    dialogRef.disableClose = true;
-  }
-
-  fileChangeEvent(event: any): void {
-    this.imageChangedEvent = event;
-  }
-  imageCropped(event: ImageCroppedEvent) {
-    this.croppedImage = event.base64;
-    this.data.imageBase64 = this.croppedImage;
-  }
-  imageLoaded() {
-    // show cropper
-  }
-  cropperReady() {
-    // cropper ready
-  }
-  loadImageFailed() {
-    // show message
-  }
-
-  onNoClick(): void {
-    this.dialogRef.close();
-  }
-
-
 }
