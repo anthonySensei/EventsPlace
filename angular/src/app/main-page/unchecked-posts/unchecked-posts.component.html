@@ -1,5 +1,5 @@
 <div class="header">
-  <h1>Unverified posts</h1>
+  <h1>Posts</h1>
 </div>
 <mat-divider style="margin: 1% auto 1% auto; width: 80%"></mat-divider>
 <div class="posts-select-filter-container">
@@ -7,9 +7,9 @@
   <mat-label>Select an option</mat-label>
   <mat-select [(value)]="selected">
     <mat-option value="all">All</mat-option>
-    <mat-option value="approved">Approved</mat-option>
-    <mat-option value="unconfirmed">Unconfirmed</mat-option>
-    <mat-option value="rejected">Rejected</mat-option>
+    <mat-option value="approved" style="color: rgb(10, 172, 0)">Approved</mat-option>
+    <mat-option value="unconfirmed" style="color: rgb(241, 128, 0)">Unconfirmed</mat-option>
+    <mat-option value="rejected" style="color: rgb(195, 4, 21)">Rejected</mat-option>
   </mat-select>
 </mat-form-field>
   <button
@@ -50,35 +50,36 @@
       </div>
     </div>
   </div>
-  <section class="pagination">
+  <section class="pagination" *ngIf="!isLoading">
     <a
       *ngIf="hasPreviousPage"
-      (click)="paginate(previousPage)"
+      (click)="paginate(previousPage, selected)"
     >
       Previous page
     </a>
     <a
       *ngIf="currentPage !== 1"
-      (click)="paginate(1)"
+      (click)="paginate(1, selected)"
     >
       1
     </a>
     <span *ngIf="currentPage !== 1 && previousPage !== 1">...</span>
     <a *ngIf="currentPage > 1"
-       (click)="paginate(currentPage)"
-       class="pagination-active">
+       (click)="paginate(currentPage, selected)"
+       class="pagination-active"
+    >
       {{currentPage}}
     </a>
     <span *ngIf="lastPage !== currentPage && nextPage !== lastPage">...</span>
     <a
       *ngIf="lastPage !== currentPage"
-      (click)="paginate(lastPage)"
+      (click)="paginate(lastPage, selected)"
     >
       {{lastPage}}
     </a>
     <a
       *ngIf="hasNextPage"
-      (click)="paginate(nextPage)"
+      (click)="paginate(nextPage, selected)"
     >
       Next page
     </a>

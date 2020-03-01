@@ -15,7 +15,7 @@ import {SnackBarClassesEnum} from '../../shared/snackBarClasses.enum';
 @Component({
   selector: 'app-auth',
   templateUrl: './auth.component.html',
-  styleUrls: ['./auth.component.css']
+  styleUrls: ['./auth.component.sass']
 })
 export class AuthComponent implements OnInit, OnDestroy {
   loginForm: FormGroup;

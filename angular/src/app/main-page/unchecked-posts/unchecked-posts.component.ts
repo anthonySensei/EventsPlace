@@ -5,12 +5,13 @@ import {Subscription} from 'rxjs';
 import {StorageService} from '../../storage.service';
 
 import {Post} from '../post.model';
+import {ActivatedRoute, Params, Router} from '@angular/router';
 
 
 @Component({
   selector: 'app-unchecked-posts',
   templateUrl: './unchecked-posts.component.html',
-  styleUrls: ['./unchecked-posts.component.css']
+  styleUrls: ['../main-page.component.sass']
 })
 export class UncheckedPostsComponent implements OnInit, OnDestroy {
   posts: Post[];
@@ -21,6 +22,7 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
   response;
 
   responseSubscription: Subscription;
+  paramsSubscription: Subscription;
 
   selected = 'unconfirmed';
 
@@ -32,12 +34,22 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
   previousPage;
   lastPage;
 
-  constructor(private storageService: StorageService) {
+  queries = {};
+
+  constructor(private storageService: StorageService,
+              private router: Router,
+              private route: ActivatedRoute) {
   }
 
   ngOnInit() {
     this.isLoading = true;
-    this.postsFetchSubscription = this.storageService.fetchAllPosts('unconfirmed', this.currentPage).subscribe();
+    this.paramsSubscription = this.route.queryParams
+      .subscribe((params: Params) => {
+        this.currentPage = +params.page || 1;
+        this.selected = params.status || 'unconfirmed';
+        this.paginate(this.currentPage, this.selected);
+      });
+    this.postsFetchSubscription = this.storageService.fetchAllPosts(this.selected, this.currentPage).subscribe();
     this.postsChangedSubscription = this.storageService.postsChanged
       .subscribe((posts: Post[]) => {
         this.posts = posts;
@@ -54,6 +66,9 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
           this.hasNextPage = this.response.data.paginationData.hasNextPage;
           this.hasPreviousPage = this.response.data.paginationData.hasPreviousPage;
           this.lastPage = this.response.data.paginationData.lastPage;
+          if (this.response.data.status) {
+            this.selected = this.response.data.status;
+          }
         }
       });
   }
@@ -65,6 +80,7 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
       this.storageService.fetchAllPosts('approved', this.currentPage)
         .subscribe(() => {
           this.isLoading = false;
+          this.paginate(this.currentPage, this.selected);
         });
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'unconfirmed') {
@@ -72,6 +88,7 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
       this.storageService.fetchAllPosts('unconfirmed', this.currentPage)
         .subscribe(() => {
           this.isLoading = false;
+          this.paginate(this.currentPage, this.selected);
         });
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'rejected') {
@@ -79,6 +96,7 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
       this.storageService.fetchAllPosts('rejected', this.currentPage)
         .subscribe(() => {
           this.isLoading = false;
+          this.paginate(this.currentPage, this.selected);
         });
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'all') {
@@ -86,20 +104,35 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
       this.storageService.fetchAllPosts('all', this.currentPage)
         .subscribe(() => {
           this.isLoading = false;
+          this.paginate(this.currentPage, this.selected);
         });
       this.posts = this.storageService.getPosts();
     }
   }
 
-  paginate(page: number) {
+
+  paginate(page: number, status: string) {
     this.isLoading = true;
     this.currentPage = page;
     this.storageService.fetchAllPosts(this.selected, this.currentPage)
       .subscribe(() => {
         this.isLoading = false;
+        if (status) {
+          this.queries = {page, status};
+        } else {
+          this.queries = {page};
+        }
+        if (page <= this.lastPage) {
+          this.router.navigate(['/post-managing'], {queryParams: this.queries});
+        } else {
+          if (status) {
+            this.queries = {page: 1, status};
+          } else {
+            this.router.navigate(['/post-managing'], {queryParams: this.queries});
+          }
+        }
       });
     this.posts = this.storageService.getPosts();
-    console.log(page);
   }
 
   ngOnDestroy(): void {

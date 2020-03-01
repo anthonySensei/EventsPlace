@@ -24,7 +24,7 @@ export interface DialogData {
 @Component({
   selector: 'app-create-post',
   templateUrl: './create-post.component.html',
-  styleUrls: ['../../auth/login/auth.component.css']
+  styleUrls: ['../../auth/login/auth.component.sass']
 })
 export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeactivate {
   createPostForm: FormGroup;

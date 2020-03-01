@@ -25,7 +25,7 @@
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
-              "src/styles.css"
+              "src/styles.sass"
             ],
             "scripts": []
           },
@@ -124,5 +124,10 @@
       }
     }
   },
-  "defaultProject": "angular"
+  "defaultProject": "angular",
+  "schematics": {
+    "@schematics/angular:component": {
+      "styleext": "sass"
+    }
+  }
 }

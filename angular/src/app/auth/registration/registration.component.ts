@@ -11,7 +11,7 @@ import {MaterialService} from '../../shared/material.service';
 @Component({
   selector: 'app-registration',
   templateUrl: './registration.component.html',
-  styleUrls: ['../login/auth.component.css']
+  styleUrls: ['../login/auth.component.sass']
 })
 export class RegistrationComponent implements OnInit, OnDestroy {
   regForm: FormGroup;

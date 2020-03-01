@@ -22,7 +22,7 @@ import {ChangeProfileImageModalComponent} from './change-profile-image/change-pr
 @Component({
   selector: 'app-user',
   templateUrl: './user.component.html',
-  styleUrls: ['./user.component.css']
+  styleUrls: ['./user.component.sass']
 })
 export class UserComponent implements OnInit, OnDestroy {
   profileForm: FormGroup;

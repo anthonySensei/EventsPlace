@@ -6,7 +6,7 @@ import {Subscription} from 'rxjs';
 @Component({
   selector: 'app-activation-page',
   templateUrl: './activation-page.component.html',
-  styleUrls: ['./activation-page.component.css']
+  styleUrls: ['./activation-page.component.sass']
 })
 export class ActivationPageComponent implements OnInit, OnDestroy {
   registrationToken: string = null;

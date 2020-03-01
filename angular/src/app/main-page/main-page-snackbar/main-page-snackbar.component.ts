@@ -4,7 +4,7 @@ import {MAT_SNACK_BAR_DATA, MatSnackBarRef} from '@angular/material';
 @Component({
   selector: 'app-snackbar',
   templateUrl: './main-page-snackbar.component.html',
-  styleUrls: ['../main-page.component.css']
+  styleUrls: ['../main-page.component.sass']
 })
 export class MainPageSnackbarComponent {
   constructor(

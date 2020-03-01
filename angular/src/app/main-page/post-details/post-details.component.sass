@@ -1,0 +1,104 @@
+@import 'src/styles'
+
+.form-content
+  margin-top: 3%
+  width: 50%
+
+.post-description
+  padding-right: 10px
+  max-width: 100%
+  max-height: 200px
+  overflow: auto
+
+.post-detail-image
+  margin: 10px
+  width: 350px
+  height: 450px
+
+.row
+  padding: 10px
+  text-align: left
+
+.post-description
+  max-height: 150px
+  overflow: auto
+
+.event-location
+  display: inline-block
+  color: rgba(0,0,0,0.4)
+
+.post-hashtag
+  display: inline-block
+  float: right
+  color: $color-main
+
+.btn
+  margin-right: 5px
+  background-color: $color-white
+  outline: none
+  cursor: pointer
+
+.btn:hover
+  color: $color-white
+
+.btn.active
+  color: $color-white
+
+.btn-green
+  color: $color-success
+  border: 1px solid  $color-success
+
+.btn-green:hover
+  background-color:  $color-success
+
+.btn-green.active
+  background-color:  $color-success
+
+.btn-yellow
+  color: $color-warn
+  border: 1px solid $color-warn
+
+.btn-yellow:hover
+  background-color: $color-warn
+
+.btn-yellow.active
+  background-color: $color-warn
+
+.btn-red
+  color: $color-danger
+  border: 1px solid $color-danger
+
+.btn-red:hover
+  background-color: $color-danger
+
+
+.btn-red.active
+  background-color: $color-danger
+
+
+@media screen and (max-width: 576px)
+  .form-content
+    width: 90%
+
+  .post-detail-image
+    width: 200px
+    height: 260px
+
+@media screen and (max-width: 768px) and (min-width: 577px)
+  .form-content
+    width: 80%
+
+  .post-detail-image
+    width: 300px
+    height: 385px
+
+@media screen and (max-width: 992px) and (min-width: 769px)
+  .post-detail-image
+    width: 300px
+    height: 385px
+
+@media screen and (max-width: 1200px) and (min-width: 993px)
+  .form-content
+    width: 50%
+
+

@@ -21,7 +21,7 @@ import {SnackBarClassesEnum} from '../../shared/snackBarClasses.enum';
 @Component({
   selector: 'app-post-details',
   templateUrl: './post-details.component.html',
-  styleUrls: ['./post-details.component.css']
+  styleUrls: ['./post-details.component.sass']
 })
 export class PostDetailsComponent implements OnInit, OnDestroy {
   post: Post;

@@ -14,6 +14,7 @@ export class StorageService {
   response;
   postsChanged = new Subject<Post[]>();
   posts: Post[] = [];
+
   GET_ALL_POSTS_URL = 'http://localhost:3000/posts-managing';
   GET_APPROVED_POSTS_URL = 'http://localhost:3000/posts';
   SET_STATUS_URL = 'http://localhost:3000/set-status';

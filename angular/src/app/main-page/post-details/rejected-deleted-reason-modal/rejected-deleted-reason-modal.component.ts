@@ -7,7 +7,7 @@ import {RejectedDeletedReasonDialogDataModel} from './rejected-deleted-reason-di
 @Component({
   selector: 'app-rejected-dialog-reason-dialog',
   templateUrl: './rejected-deleted-reason-modal.html',
-  styleUrls: ['../post-details.component.css']
+  styleUrls: ['../post-details.component.sass']
 })
 export class RejectedDeletedReasonModalComponent {
 

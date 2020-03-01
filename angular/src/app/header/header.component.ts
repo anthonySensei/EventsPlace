@@ -13,7 +13,7 @@ import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css']
+  styleUrls: ['./header.component.sass']
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   isLoggedIn = false;

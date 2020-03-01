@@ -6,7 +6,7 @@ import {UserService} from '../user.service';
 @Component({
   selector: 'app-users',
   templateUrl: './users.component.html',
-  styleUrls: ['./users.component.css']
+  styleUrls: ['./users.component.sass']
 })
 export class UsersComponent implements OnInit, OnDestroy {
   isLoading = false;

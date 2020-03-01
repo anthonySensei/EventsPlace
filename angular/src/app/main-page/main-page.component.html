@@ -39,8 +39,7 @@
         <input
           matInput
           name="filter"
-          #filter='ngModel'
-          ngModel
+          [(ngModel)]="filterValue"
           [disabled]="selected === 'all'"
         >
       </mat-form-field>
@@ -72,11 +71,16 @@
         <mat-icon matSuffix>date_range</mat-icon>
         <owl-date-time #dtTo></owl-date-time>
       </mat-form-field>
-
       <button
         mat-button
         class="btn"
-        (click)="search(filter); drawer.toggle(); toggleFilterButton()">
+        (click)="clearInputs()">
+        Clear
+      </button>
+      <button
+        mat-button
+        class="btn"
+        (click)="search(); drawer.toggle(); toggleFilterButton()">
         <i class="material-icons">search</i>
       </button>
     </div>
@@ -150,32 +154,33 @@
     <section class="pagination" *ngIf="!isLoading">
       <a
         *ngIf="hasPreviousPage"
-        (click)="paginate(previousPage)"
+        (click)="paginate(previousPage, selected, filterValue)"
       >
         Previous page
       </a>
       <a
         *ngIf="currentPage !== 1"
-        (click)="paginate(1)"
+        (click)="paginate(1, selected, filterValue)"
       >
         1
       </a>
       <span *ngIf="currentPage !== 1 && previousPage !== 1">...</span>
       <a *ngIf="currentPage > 1"
-         (click)="paginate(currentPage)"
-         class="pagination-active">
+         (click)="paginate(currentPage, selected, filterValue)"
+         class="pagination-active"
+      >
         {{currentPage}}
       </a>
       <span *ngIf="lastPage !== currentPage && nextPage !== lastPage">...</span>
       <a
         *ngIf="lastPage !== currentPage"
-        (click)="paginate(lastPage)"
+        (click)="paginate(lastPage, selected, filterValue)"
       >
         {{lastPage}}
       </a>
       <a
         *ngIf="hasNextPage"
-        (click)="paginate(nextPage)"
+        (click)="paginate(nextPage, selected, filterValue)"
       >
         Next page
       </a>

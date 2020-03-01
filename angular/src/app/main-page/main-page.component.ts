@@ -11,12 +11,14 @@ import {Post} from './post.model';
 import {Subscription} from 'rxjs';
 
 import {MainPageSnackbarComponent} from './main-page-snackbar/main-page-snackbar.component';
+import {ActivatedRoute, Params, Router} from '@angular/router';
+import {query} from '@angular/animations';
 
 
 @Component({
   selector: 'app-main-page',
   templateUrl: './main-page.component.html',
-  styleUrls: ['./main-page.component.css']
+  styleUrls: ['./main-page.component.sass']
 })
 export class MainPageComponent implements OnInit, OnDestroy {
   snackBarConfig: MatSnackBarConfig = {
@@ -29,6 +31,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   response;
 
+  paramsSubscription: Subscription;
   postsSubscription: Subscription;
   loggedInSubscription: Subscription;
   responseSubscription: Subscription;
@@ -36,8 +39,9 @@ export class MainPageComponent implements OnInit, OnDestroy {
   isLoading = false;
   isLoggedIn;
   showFilterButton = true;
+
   selected = 'all';
-  filter: string;
+  filterValue = '';
 
   currentPage = 1;
 
@@ -49,35 +53,46 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   fromDate: Date;
   toDate: Date;
+  dateObj;
+
+  queries = {};
 
   constructor(private storageService: StorageService,
               private authService: AuthService,
-              public snackBar: MatSnackBar) {
+              public snackBar: MatSnackBar,
+              private route: ActivatedRoute,
+              private router: Router) {
   }
 
   ngOnInit() {
-    this.authService.autoLogin();
     this.isLoading = true;
+    this.paramsSubscription = this.route.queryParams
+      .subscribe((params: Params) => {
+        this.currentPage = +params.page || 1;
+        this.selected = params.filter || 'all';
+        this.filterValue = params.value || '';
+        if (params.fDate) {
+          this.fromDate = params.fDate;
+        }
+        if (params.tDate) {
+          this.toDate = params.tDate;
+        }
+        this.dateObj = {fromDate: this.fromDate, toDate: this.toDate};
+        this.paginate(this.currentPage, this.selected, this.filterValue);
+      });
+    this.storageService.fetchApprovedPosts(this.selected, this.filterValue, this.dateObj, this.currentPage).subscribe();
+    this.authService.autoLogin();
     this.postsSubscription = this.storageService.postsChanged
       .subscribe((posts: Post[]) => {
         this.posts = posts;
         this.isLoading = false;
-        console.log(this.posts);
       });
     this.loggedInSubscription = this.authService.loggedChange
       .subscribe(isLoggedIn => {
         this.isLoggedIn = isLoggedIn;
-    });
+      });
     this.isLoggedIn = this.authService.getIsLoggedIn();
-    this.storageService.fetchApprovedPosts('all', '', {}, this.currentPage).subscribe();
-    for (const post of this.posts) {
-      if (!post.postImage) {
-        post.postImage = 'https://images.pexels.com/photos/3558597/pexels-photo-3558597.jpeg';
-      } else {
-        post.postImage = 'localhost:3000/' + post.postImage;
-      }
-    }
-    this.posts =  this.storageService.getPosts();
+    this.posts = this.storageService.getPosts();
     this.responseSubscription = this.storageService.responseChanged
       .subscribe(response => {
         this.response = response;
@@ -88,8 +103,16 @@ export class MainPageComponent implements OnInit, OnDestroy {
           this.hasNextPage = this.response.data.paginationData.hasNextPage;
           this.hasPreviousPage = this.response.data.paginationData.hasPreviousPage;
           this.lastPage = this.response.data.paginationData.lastPage;
+          if (this.response.data.filterData) {
+            this.selected = this.response.data.filterData.filter;
+            this.filterValue = this.response.data.filterData.value;
+          }
+          if (this.response.data.date) {
+            this.fromDate = this.response.data.date.fromDate;
+            this.toDate = this.response.data.date.toDate;
+          }
         }
-    });
+      });
     this.response = this.storageService.getResponse();
   }
 
@@ -100,65 +123,191 @@ export class MainPageComponent implements OnInit, OnDestroy {
     });
   }
 
-  search(filter: NgModel) {
-    this.filter = filter.value;
-    this.currentPage = 1;
-    const dateObj = {
-      fromDate: this.fromDate ? this.fromDate.toISOString() : this.fromDate,
-      toDate: this.toDate ? this.toDate.toISOString() : this.toDate
-    };
-    console.log(this.toDate);
+  search() {
+    if (!this.isIsoDate(this.fromDate) && !this.isIsoDate(this.toDate)) {
+      this.dateObj = {
+        fromDate: this.fromDate ? this.fromDate.toISOString() : this.fromDate,
+        toDate: this.toDate ? this.toDate.toISOString() : this.toDate
+      };
+    } else if (!this.isIsoDate(this.fromDate)) {
+      this.dateObj = {
+        fromDate: this.fromDate ? this.fromDate.toISOString() : this.fromDate,
+        toDate: this.toDate ? this.toDate : this.toDate
+      };
+    } else if (!this.isIsoDate(this.toDate)) {
+      this.dateObj = {
+        fromDate: this.fromDate ? this.fromDate : this.fromDate,
+        toDate: this.toDate ? this.toDate.toISOString() : this.toDate
+      };
+    } else {
+      this.dateObj = {
+        fromDate: this.fromDate ? this.fromDate : this.fromDate,
+        toDate: this.toDate ? this.toDate : this.toDate
+      };
+    }
     if (this.selected === 'email') {
       this.isLoading = true;
-      this.storageService.fetchApprovedPosts('email', this.filter, dateObj, this.currentPage)
+      this.storageService.fetchApprovedPosts('email', this.filterValue, this.dateObj, this.currentPage)
         .subscribe(() => {
           this.isLoading = false;
-      });
+          this.paginate(1, this.selected, this.filterValue);
+        });
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'hashtag') {
       this.isLoading = true;
-      this.storageService.fetchApprovedPosts('hashtag', filter.value, dateObj, this.currentPage)
+      this.storageService.fetchApprovedPosts('hashtag', this.filterValue, this.dateObj, this.currentPage)
         .subscribe(() => {
           this.isLoading = false;
-      });
+          this.paginate(1, this.selected, this.filterValue);
+        });
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'location') {
       this.isLoading = true;
-      this.storageService.fetchApprovedPosts('location', filter.value, dateObj, this.currentPage)
+      this.storageService.fetchApprovedPosts('location', this.filterValue, this.dateObj, this.currentPage)
         .subscribe(() => {
           this.isLoading = false;
-      });
+          this.paginate(1, this.selected, this.filterValue);
+        });
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'username') {
       this.isLoading = true;
-      this.storageService.fetchApprovedPosts('username', filter.value, dateObj, this.currentPage)
+      this.storageService.fetchApprovedPosts('username', this.filterValue, this.dateObj, this.currentPage)
         .subscribe(() => {
           this.isLoading = false;
-      });
+          this.paginate(1, this.selected, this.filterValue);
+        });
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'all') {
       this.isLoading = true;
-      this.storageService.fetchApprovedPosts('all', '', dateObj, this.currentPage)
+      this.storageService.fetchApprovedPosts('all', '', this.dateObj, this.currentPage)
         .subscribe(() => {
           this.isLoading = false;
-      });
+          this.paginate(1, this.selected, this.filterValue);
+        });
       this.posts = this.storageService.getPosts();
     }
   }
 
-  paginate(page: number) {
+  paginate(page: number, filter?: string, filterValue?: string) {
     this.isLoading = true;
     this.currentPage = page;
-    this.storageService.fetchApprovedPosts(this.selected, this.filter, {}, this.currentPage)
+    this.dateObj = {fromDate: this.fromDate, toDate: this.toDate};
+
+    this.storageService.fetchApprovedPosts(this.selected, this.filterValue, this.dateObj, this.currentPage)
       .subscribe(() => {
         this.isLoading = false;
+        if (filter && filterValue) {
+          if (this.fromDate && this.toDate) {
+            this.queries = {
+              page,
+              filter,
+              value: filterValue,
+              fDate: this.fromDate,
+              tDate: this.toDate
+            };
+          } else if (this.fromDate) {
+            this.queries = {
+              page,
+              filter,
+              value: filterValue,
+              fDate: this.fromDate
+            };
+          } else if (this.toDate) {
+            this.queries = {
+              page,
+              filter,
+              value: filterValue,
+              tDate: this.toDate
+            };
+          } else {
+            this.queries = {
+              page,
+              filter,
+              value: filterValue
+            };
+          }
+        } else {
+          if (this.fromDate && this.toDate) {
+            this.queries = {
+              page,
+              fDate: this.fromDate,
+              tDate: this.toDate
+            };
+          } else if (this.fromDate) {
+            this.queries = {
+              page,
+              fDate: this.fromDate
+            };
+          } else if (this.toDate) {
+            this.queries = {
+              page,
+              tDate: this.toDate
+            };
+          } else {
+            this.queries = {
+              page
+            };
+          }
+        }
+        if (page <= this.lastPage) {
+          this.router.navigate(['/posts'], {queryParams: this.queries});
+        } else {
+          if (filterValue) {
+            if (this.fromDate && this.toDate) {
+              this.queries = {
+                page: 1,
+                filter,
+                value: filterValue,
+                fDate: this.fromDate,
+                tDate: this.toDate
+              };
+            } else if (this.fromDate) {
+              this.queries = {
+                page: 1,
+                filter,
+                value: filterValue,
+                fDate: this.fromDate
+              };
+            } else if (this.toDate) {
+              this.queries = {
+                page: 1,
+                filter,
+                value: filterValue,
+                tDate: this.toDate
+              };
+            } else {
+              this.queries = {
+                page: 1,
+                filter,
+                value: filterValue
+              };
+            }
+            this.queries = {page: 1, filter, value: filterValue};
+          } else {
+            this.router.navigate(['/posts'], {queryParams: this.queries});
+          }
+        }
       });
     this.posts = this.storageService.getPosts();
-    console.log(page);
   }
 
   toggleFilterButton() {
     this.showFilterButton = !this.showFilterButton;
+  }
+
+  isIsoDate(str) {
+    if (!/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/.test(str)) {
+      return false;
+    }
+    const d = new Date(str);
+    return d.toISOString() === str;
+  }
+
+  clearInputs() {
+    this.selected = 'all';
+    this.filterValue = '';
+    this.fromDate = null;
+    this.toDate = null;
   }
 
   ngOnDestroy(): void {

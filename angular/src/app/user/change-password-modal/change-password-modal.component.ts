@@ -9,7 +9,7 @@ import {ValidationService} from '../../validation.service';
 @Component({
   selector: 'app-dialog',
   templateUrl: './change-password-modal.html',
-  styleUrls: ['../user.component.css']
+  styleUrls: ['../user.component.sass']
 })
 export class ChangePasswordModalComponent implements OnInit {
   passwordsForm: FormGroup;
