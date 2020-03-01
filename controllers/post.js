@@ -28,6 +28,8 @@ exports.getAllPosts = (req, res) => {
     const status = req.query.status;
     const page = +req.query.page || 1;
 
+    let date = new Date();
+
     if (!status) {
         res.send({
             responseCode: 500,
@@ -38,11 +40,23 @@ exports.getAllPosts = (req, res) => {
         })
     }
 
-    let condition = {status: status};
+    let condition = {
+        status: status,
+        event_time: {
+            [Op.gte]: date
+        }
+    };
 
 
     if(status === 'all') {
-        condition = {};
+        condition = {
+                status: {
+                    [Op.ne]: 'deleted'
+                },
+                event_time: {
+                    [Op.gte]: date
+                }
+        };
     }
 
     let totalPosts;
@@ -70,7 +84,7 @@ exports.getAllPosts = (req, res) => {
             limit: ITEMS_PER_PAGE,
             offset: (page-1) * ITEMS_PER_PAGE,
             order: [
-                ['id', 'ASC']
+                ['event_time', 'ASC']
             ]
          })
         })
@@ -93,8 +107,6 @@ exports.getAllPosts = (req, res) => {
                     hashtag: post.dataValues.hashtag_.dataValues
                 });
             }
-
-            posts.sort(compareObjectsById);
             res.send({
                 responseCode: 500,
                 data: {
@@ -107,7 +119,8 @@ exports.getAllPosts = (req, res) => {
                         nextPage: page + 1,
                         previousPage: page - 1,
                         lastPage: Math.ceil(totalPosts / ITEMS_PER_PAGE)
-                    }
+                    },
+                    status: status
                 }
             })
         })
@@ -130,19 +143,37 @@ module.exports.getApprovedPosts = (req, res) => {
     const fromDate = req.query.fDate;
     const toDate = req.query.tDate;
 
-    let condition = {status: 'approved'};;
+    console.log(req.query);
+    // console.log(toDate);    
+
+    let date = new Date();
+
+    let condition = {
+        status: 'approved',
+        event_time: {
+            [Op.gte]: date
+        }
+    };
     let userCondition = {};
     let hashtagCondition = {};
 
     let totalPosts;
 
     if (filter === 'all') {
-        condition = {status: 'approved'};
+        condition = {
+            status: 'approved',
+            event_time: {
+                [Op.gte]: date
+            }
+        };
     } else if (filter === 'location'){
         condition = {
             status: 'approved',
             event_location: {
                 [Op.iLike]: `%${value}%`
+            },
+            event_time: {
+                [Op.gte]: date
             }
         };
     } else if (filter === 'username') {
@@ -200,13 +231,14 @@ module.exports.getApprovedPosts = (req, res) => {
                 where: userCondition
             },
             {
-                model: Hashtag
+                model: Hashtag,
+                where: hashtagCondition
             }],
             where: condition,
             limit: ITEMS_PER_PAGE,
             offset: (page - 1) * ITEMS_PER_PAGE,
             order: [
-                ['id', 'ASC']
+                ['event_time', 'ASC']
             ]
         })
       })
@@ -229,12 +261,19 @@ module.exports.getApprovedPosts = (req, res) => {
             });
         }
 
-        posts.sort(compareObjectsById);
         return res.send({
             responseCode: 500,
             data: {
                 posts: posts,
                 message: 'Posts was fetched successfully!',
+                filterData: {
+                    filter: filter,
+                    value: value
+                },  
+                date: {
+                    fromDate: fromDate,
+                    toDate: toDate
+                },
                 paginationData: {
                     currentPage: page,
                     hasNextPage: ITEMS_PER_PAGE * page < totalPosts,
@@ -567,15 +606,3 @@ exports.setPostStatus = (req, res) => {
      });
 }
 
-function compareObjectsById(a, b) {
-    const idA = a.postId;
-    const idB = b.postId;
-  
-    let comparison = 0;
-    if (idA > idB) {
-      comparison = 1;
-    } else if (idA < idB) {
-      comparison = -1;
-    }
-    return comparison;
-}
