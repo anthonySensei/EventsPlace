@@ -1,59 +1,57 @@
 <div class="login-body">
-<div class="wrapper fadeInDown">
-  <div class="form-content">
-    <span class="page-title">Login</span>
-    <hr style="background-color: #0d0d0d">
-    <form
-      (ngSubmit)="onLoginUser()"
-      [formGroup]="loginForm"
-    >
-      <div class="input-group form-group">
-        <mat-form-field
-          class="fadeIn second form-input">
-          <mat-label>Email</mat-label>
-          <input
-            matInput
-            name="email"
-            formControlName="email"
-            placeholder="Ex. #hello"
-          >
-          <mat-error *ngIf="hasError('email', 'required')">
-            Email is required
-          </mat-error>
-        </mat-form-field>
+  <div class="wrapper fadeInDown">
+    <div class="form-content">
+      <span class="page-title">Login</span>
+      <hr style="background-color: #0d0d0d">
+      <form
+        (ngSubmit)="onLoginUser()"
+        [formGroup]="loginForm"
+      >
+        <div class="input-group form-group">
+          <mat-form-field
+            class="fadeIn second form-input">
+            <mat-label>Email</mat-label>
+            <input
+              matInput
+              name="email"
+              formControlName="email"
+              placeholder="Ex. #hello"
+            >
+            <mat-error *ngIf="hasError('email', 'required')">
+              Email is required
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <div class="input-group form-group">
+          <mat-form-field
+            class="fadeIn third form-input">
+            <mat-label>Password</mat-label>
+            <input
+              matInput
+              type="password"
+              name="password"
+              formControlName="password"
+              placeholder="Ex. hello"
+            >
+            <mat-error *ngIf="hasError('password', 'required') && !error">
+              Password is required
+            </mat-error>
+            <mat-error *ngIf="error">
+              {{error}}
+            </mat-error>
+          </mat-form-field>
+        </div>
+        <button
+          type="submit"
+          class="fadeIn fourth form-button"
+        >Log In
+        </button>
+      </form>
+      <div class="form-footer">
+        <a class="underlineHover" routerLink="/registration">
+          Don't have account?
+        </a>
       </div>
-      <div class="input-group form-group">
-        <mat-form-field
-          class="fadeIn third form-input">
-          <mat-label>Password</mat-label>
-          <input
-            matInput
-            type="password"
-            name="password"
-            formControlName="password"
-            placeholder="Ex. hello"
-          >
-          <mat-error *ngIf="hasError('password', 'required') && !error">
-            Password is required
-          </mat-error>
-          <mat-error *ngIf="error">
-            {{error}}
-          </mat-error>
-        </mat-form-field>
-      </div>
-      <button
-        type="submit"
-        class="fadeIn fourth form-button"
-      >Log In</button>
-    </form>
-
-    <div class="form-footer">
-      <a class="underlineHover" routerLink="/password-recovery">
-        Forgot Password?
-      </a> / <a class="underlineHover" routerLink="/registration">
-         Don't have account?
-    </a>
     </div>
   </div>
-</div>
 </div>

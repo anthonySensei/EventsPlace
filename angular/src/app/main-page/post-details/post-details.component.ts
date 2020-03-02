@@ -48,14 +48,16 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
               private postService: PostService,
               private authService: AuthService,
               private materialService: MaterialService,
-              public dialog: MatDialog) { }
+              public dialog: MatDialog) {
+  }
 
   ngOnInit() {
+    this.authService.autoLogin();
     this.isLoading = true;
     this.paramsSubscription = this.route.params
       .subscribe((params: Params) => {
-          this.postId = +params.id;
-    });
+        this.postId = +params.id;
+      });
     this.user = this.authService.getUser();
     if (this.user) {
       this.userRole = this.user.role.role;
@@ -70,27 +72,27 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
           this.router.navigate(['/error-page']);
         }
         this.isLoading = false;
-    });
+      });
     this.post = this.postService.getPost();
     this.responseSubscription = this.storageService.responseChanged
       .subscribe(response => {
-         this.response = response;
-         this.isUpdatedPostStatus = this.response.data.postUpdated;
+        this.response = response;
+        this.isUpdatedPostStatus = this.response.data.postUpdated;
       });
   }
 
   onSetStatus(status: string, post: Post) {
-    post.postStatus = status;
     if (status === 'rejected' || status === 'deleted') {
       this.openRejectedDeletedReasonModal(status, post);
     } else {
+      post.postStatus = status;
       this.storageService.setPostStatus(post)
         .subscribe(() => {
           if (this.isUpdatedPostStatus) {
             this.message = this.response.data.message + ' to ' + '\'' + status.toUpperCase() + '\'';
             this.router.navigate(['/posts']);
             this.openSnackBar(this.message, SnackBarClassesEnum.Success, this.snackbarDuration);
-          } else  {
+          } else {
             this.error = this.response.data.message;
             return false;
           }
@@ -116,13 +118,14 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
       }
       this.reason = result;
       post.reason = this.reason;
+      post.postStatus = status;
       this.storageService.setPostStatus(post)
         .subscribe(() => {
           if (this.isUpdatedPostStatus) {
             this.message = this.response.data.message + ' to ' + '\'' + status.toUpperCase() + '\'';
             this.router.navigate(['/posts']);
             this.openSnackBar(this.message, SnackBarClassesEnum.Success, this.snackbarDuration);
-          } else  {
+          } else {
             this.error = this.response.data.message;
             return false;
           }

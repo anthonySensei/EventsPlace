@@ -20,9 +20,8 @@
     ></image-cropper>
 
     <button
-      style="width: 10%; display: inline-block; margin-right: 10px"
       mat-raised-button
-      class="form-input"
+      class="no-button"
       (click)="onNoClick()">
       Cancel
     </button>
@@ -33,7 +32,9 @@
       type="submit"
       [disabled]="imageForm.invalid"
       [mat-dialog-close]="data.imageBase64"
-    >Confirm</button>
+    >
+      Confirm
+    </button>
   </form>
 </div>
 

@@ -78,6 +78,7 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
   }
 
   ngOnInit() {
+    this.authService.autoLogin();
     this.createPostForm = new FormGroup({
         name: new FormControl(null, [Validators.required]),
         description: new FormControl(null, [Validators.required]),
@@ -103,12 +104,12 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
         .subscribe(post => {
           this.post = post;
           this.isLoading = false;
-          console.log(this.post.hashtag);
           this.createPostForm.patchValue({
               name: this.post.eventName,
               description: this.post.description,
               location: this.post.eventLocation,
-              hashtag: this.post.hashtag.name
+              hashtag: this.post.hashtag.name,
+              time: this.post.eventTime
           });
         });
       this.post = this.postService.getPost();
@@ -160,7 +161,8 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
     const eventLocation = this.createPostForm.value.location;
     const eventTime = this.createPostForm.value.time;
     const user = this.user;
-    const hashtag = this.createPostForm.value.hashtag;
+    const hashtagName = this.createPostForm.value.hashtag;
+    const hashtag = this.hashtags.filter(hs => hs.name === hashtagName);
     if (this.createPostForm.invalid) {
         return;
     }
@@ -172,7 +174,7 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
       user,
       hashtag
     };
-    if (!this.imageToUploadBase64) {
+    if (!this.imageToUploadBase64 && !this.editMode) {
       this.openSnackBar('Image was not selected', SnackBarClassesEnum.Warn, this.snackbarDuration);
       return false;
     }

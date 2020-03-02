@@ -2,7 +2,9 @@
   mat-fab
   class="filter-button"
   (click)="drawer.toggle(); toggleFilterButton()"
-  [style.display]="showFilterButton ? 'block' : 'none'">
+  [style.display]="showFilterButton ? 'block' : 'none'"
+  matTooltip="Open filter panel"
+>
   <i class="material-icons">arrow_forward_ios</i>
 </button>
 <mat-drawer-container
@@ -137,6 +139,9 @@
         </div>
         <div class="card-container">
           <span class="card-details">
+            <span class="characteristic-name">Title</span>: {{card.eventName}}
+          </span>
+          <span class="card-details">
             <span class="characteristic-name">Location</span>: {{card.eventLocation}}
           </span>
           <span class="card-details">
@@ -159,7 +164,7 @@
         Previous page
       </a>
       <a
-        *ngIf="currentPage !== 1"
+        *ngIf="hasNextPage || hasPreviousPage"
         (click)="paginate(1, selected, filterValue)"
       >
         1

@@ -25,7 +25,8 @@ export class PostService {
   hashtagsChanged = new Subject<Hashtag[]>();
   hashtags: Hashtag[];
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+  }
 
   setPost(post: Post) {
     this.post = post;
@@ -91,7 +92,9 @@ export class PostService {
       ...post
     };
     headers.append('Content-Type', 'multipart/form-data');
-    formData.append('base64', imageToUploadBase64);
+    if (imageToUploadBase64) {
+      formData.append('base64', imageToUploadBase64);
+    }
     formData.append('post_data', JSON.stringify(postData));
     return this
       .http

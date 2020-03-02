@@ -1,5 +1,5 @@
 <div mat-dialog-content>
-  <p>Would you like to change password?</p>
+  <p>Image is required</p>
   <form class="modal-form" #imageForm='ngForm'>
     <input type="file" (change)="fileChangeEvent($event)" />
 
@@ -19,10 +19,12 @@
     ></image-cropper>
 
     <button
-      style="width: 10%; display: inline-block; margin-right: 10px"
+      style="margin-right: 10px"
+      type="button"
+      class="no-button"
       mat-raised-button
-      class="form-input"
-      (click)="onNoClick()">
+      (click)="onNoClick()"
+    >
       Cancel
     </button>
     <button

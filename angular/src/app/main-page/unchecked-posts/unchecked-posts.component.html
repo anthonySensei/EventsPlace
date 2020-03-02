@@ -3,15 +3,15 @@
 </div>
 <mat-divider style="margin: 1% auto 1% auto; width: 80%"></mat-divider>
 <div class="posts-select-filter-container">
-<mat-form-field class="posts-select-filter">
-  <mat-label>Select an option</mat-label>
-  <mat-select [(value)]="selected">
-    <mat-option value="all">All</mat-option>
-    <mat-option value="approved" style="color: rgb(10, 172, 0)">Approved</mat-option>
-    <mat-option value="unconfirmed" style="color: rgb(241, 128, 0)">Unconfirmed</mat-option>
-    <mat-option value="rejected" style="color: rgb(195, 4, 21)">Rejected</mat-option>
-  </mat-select>
-</mat-form-field>
+  <mat-form-field class="posts-select-filter">
+    <mat-label>Select an option</mat-label>
+    <mat-select [(value)]="selected">
+      <mat-option value="all">All</mat-option>
+      <mat-option value="approved" style="color: rgb(10, 172, 0)">Approved</mat-option>
+      <mat-option value="unconfirmed" style="color: rgb(241, 128, 0)">Unconfirmed</mat-option>
+      <mat-option value="rejected" style="color: rgb(195, 4, 21)">Rejected</mat-option>
+    </mat-select>
+  </mat-form-field>
   <button
     mat-button
     type="button"
@@ -33,7 +33,7 @@
         class="image-container status-tape"
         [ngClass]="{'unconfirmed': card.postStatus === 'unconfirmed', 'deleted': card.postStatus === 'deleted',
                     'rejected': card.postStatus === 'rejected', 'approved': card.postStatus === 'approved'}"
-        >
+      >
         <img
           src="{{card.postImage}}"
           alt="post"
@@ -43,10 +43,11 @@
         </div>
       </div>
       <div class="card-container">
-        <span style="display: block">Location: {{card.eventLocation}}</span>
-        <span style="display: block">Time: {{card.eventTime | date:'short'}}</span>
-        <span style="display: block; overflow: hidden">Email address: {{card.user.email}}</span>
-        <span style="display: block"><i style="color: #02a9ff">#{{card.hashtag.name}}</i></span>
+        <span class="d-block">Title: {{card.eventName}}</span>
+        <span class="d-block">Location: {{card.eventLocation}}</span>
+        <span class="d-block">Time: {{card.eventTime | date:'short'}}</span>
+        <span class="d-block">Email address: {{card.user.email}}</span>
+        <span class="d-block"><i style="color: #02a9ff">#{{card.hashtag.name}}</i></span>
       </div>
     </div>
   </div>
@@ -58,7 +59,7 @@
       Previous page
     </a>
     <a
-      *ngIf="currentPage !== 1"
+      *ngIf="hasNextPage || hasPreviousPage"
       (click)="paginate(1, selected)"
     >
       1

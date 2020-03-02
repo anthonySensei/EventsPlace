@@ -19,17 +19,18 @@ module.exports = (passport, user) => {
             passReqToCallback: true 
         },
         (req, email, password, done) => {
+
             let User = user;
-            const isValidPassword = (userpass, password) => {
-                return bCrypt.compareSync(password, userpass);
+            const isValidPassword = (userPass, password) => {
+                return bCrypt.compareSync(password, userPass);
             }
-            console.log("logged to", email);
+
             User.findOne({
                 where: {
                     email: email,
                     status: status.ACTIVATED
                 }
-            }).then( (user)  => {
+            }).then(user  => {
                 if (!user) {
                     return done(null, false, {
                         message: 'Email does not exist'
@@ -41,12 +42,12 @@ module.exports = (passport, user) => {
                         message: 'Incorrect password.'
                     });
                 }
-                let userinfo = user.get();
-                return done(null, userinfo);
-            }).catch((err) => {
-                console.log("Error:", err);
+                let userInfo = user.get();
+                return done(null, userInfo);
+
+            }).catch(err => {
                 return done(null, false, {
-                    message: 'Something went wrong with your Signin'
+                    message: 'Something went wrong with your Sign in'
                 });
             });
         }

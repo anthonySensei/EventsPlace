@@ -189,6 +189,7 @@ export class AuthService {
       return;
     }
 
+
     const loadedUser = new User(userData.id, null, userData.email, userData.profileImage, null, null, userData.role);
 
     const userRole = loadedUser.role.role;
@@ -206,9 +207,11 @@ export class AuthService {
     if (tokenData.token) {
       this.userChanged.next(loadedUser);
       this.setUser(loadedUser);
+      this.userChanged.next(loadedUser);
       this.setJwtToken(tokenData.token);
       const expirationDuration = new Date(tokenData.expirationDate).getTime() - new Date().getTime();
       this.setIsLoggedIn(true);
+      this.loggedChange.next(true);
       this.autoLogout(expirationDuration);
     }
   }

@@ -6,6 +6,7 @@ import {StorageService} from '../../storage.service';
 
 import {Post} from '../post.model';
 import {ActivatedRoute, Params, Router} from '@angular/router';
+import {AuthService} from '../../auth/auth.service';
 
 
 @Component({
@@ -38,10 +39,12 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
 
   constructor(private storageService: StorageService,
               private router: Router,
-              private route: ActivatedRoute) {
+              private route: ActivatedRoute,
+              private authService: AuthService) {
   }
 
   ngOnInit() {
+    this.authService.autoLogin();
     this.isLoading = true;
     this.paramsSubscription = this.route.queryParams
       .subscribe((params: Params) => {

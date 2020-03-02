@@ -1,5 +1,4 @@
-import { Component } from '@angular/core';
-import { OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 
 import {AuthService} from './auth/auth.service';
 
@@ -14,7 +13,6 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     this.authService.autoLogin();
-    this.authService.loggedChange.subscribe();
   }
 
 }

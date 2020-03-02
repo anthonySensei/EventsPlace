@@ -37,7 +37,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
   responseSubscription: Subscription;
 
   isLoading = false;
-  isLoggedIn;
+  isLoggedIn = false;
   showFilterButton = true;
 
   selected = 'all';
@@ -65,6 +65,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.authService.autoLogin();
     this.isLoading = true;
     this.paramsSubscription = this.route.queryParams
       .subscribe((params: Params) => {
@@ -81,7 +82,6 @@ export class MainPageComponent implements OnInit, OnDestroy {
         this.paginate(this.currentPage, this.selected, this.filterValue);
       });
     this.storageService.fetchApprovedPosts(this.selected, this.filterValue, this.dateObj, this.currentPage).subscribe();
-    this.authService.autoLogin();
     this.postsSubscription = this.storageService.postsChanged
       .subscribe((posts: Post[]) => {
         this.posts = posts;

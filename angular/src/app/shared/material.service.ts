@@ -6,6 +6,7 @@ import {MatDialog} from '@angular/material/dialog';
 import {Subject} from 'rxjs';
 
 import {DiscardChangesModalComponent} from './discard-changes-modal/discard-changes-modal.component';
+import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,25 @@ export class MaterialService {
   changeDiscardModalWidth = '50%';
 
   constructor(private snackBar: MatSnackBar,
-              public dialog: MatDialog) { }
+              public dialog: MatDialog,
+              private breakpointObserver: BreakpointObserver) {
+    breakpointObserver.observe([
+      Breakpoints.Small,
+      Breakpoints.XSmall
+    ]).subscribe(result => {
+      if (result.matches) {
+        this.changeDiscardModalWidth = '95%';
+      }
+    });
+    breakpointObserver.observe([
+      Breakpoints.Medium,
+      Breakpoints.Tablet
+    ]).subscribe(result => {
+      if (result.matches) {
+        this.changeDiscardModalWidth = '85%';
+      }
+    });
+  }
 
   public openSnackBar(message: string, snackBarClass: string, duration: number) {
     const config = new MatSnackBarConfig();

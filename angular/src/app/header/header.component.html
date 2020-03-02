@@ -13,9 +13,6 @@
       <li *ngIf="role === 'admin'" class="main-header-item" routerLinkActive="active">
         <a [routerLink]="'/create-user'" class="navbar-link">Add user</a>
       </li>
-      <li *ngIf="role === 'admin'" class="main-header-item" routerLinkActive="active">
-        <a [routerLink]="'/users'" class="navbar-link">Users</a>
-      </li>
     </ul>
   </div>
 
@@ -62,15 +59,6 @@
             class="mat-menu-item"
           >
             Add user
-          </a>
-          <a
-            routerLinkActive="menu-active"
-            [routerLink]="'/users'"
-            *ngIf="role === 'admin'"
-            mat-menu-item
-            class="mat-menu-item"
-          >
-            Users
           </a>
         </div>
         <button

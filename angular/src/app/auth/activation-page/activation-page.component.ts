@@ -1,7 +1,9 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {ActivatedRoute} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {AuthService} from '../auth.service';
 import {Subscription} from 'rxjs';
+import {MaterialService} from '../../shared/material.service';
+import {SnackBarClassesEnum} from '../../shared/snackBarClasses.enum';
 
 @Component({
   selector: 'app-activation-page',
@@ -22,7 +24,9 @@ export class ActivationPageComponent implements OnInit, OnDestroy {
 
 
   constructor(private route: ActivatedRoute,
-              private authService: AuthService) {
+              private authService: AuthService,
+              private router: Router,
+              private materialService: MaterialService) {
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
       this.registrationToken = params.rtoken;
     });
@@ -36,10 +40,17 @@ export class ActivationPageComponent implements OnInit, OnDestroy {
         this.isActivated = this.response.data.isActivated;
         if (this.isActivated) {
           this.message = this.response.data.message;
+          this.openSnackBar(this.response.data.message, SnackBarClassesEnum.Success, 5000);
+          this.router.navigate(['/login']);
         } else {
           this.error = this.response.data.message;
+          this.openSnackBar(this.response.data.message, SnackBarClassesEnum.Danger, 5000);
         }
       });
+  }
+
+  openSnackBar(message: string, style: string, duration: number) {
+    this.materialService.openSnackBar(message, style, duration);
   }
 
   ngOnDestroy(): void {

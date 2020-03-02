@@ -94,6 +94,7 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.authService.autoLogin();
     this.emailValidation = this.validationService.getEmailValidation();
     this.authService.autoLogin();
     this.profileForm = new FormGroup({

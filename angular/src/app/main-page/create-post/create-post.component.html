@@ -91,7 +91,7 @@
             name="hashtag"
             formControlName="hashtag"
           >
-            <mat-option *ngFor="let hashtag of hashtags" [value]="hashtag">
+            <mat-option *ngFor="let hashtag of hashtags" [value]="hashtag.name">
               {{hashtag.name | lowercase }}
             </mat-option>
             <mat-divider></mat-divider>
@@ -110,7 +110,7 @@
         class="form-button"
         [disabled]="createPostForm.invalid"
       >
-        Create
+        {{editMode ? 'Update' : 'Create'}}
       </button>
     </form>
   </div>

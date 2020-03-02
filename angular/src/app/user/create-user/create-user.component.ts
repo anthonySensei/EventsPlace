@@ -37,6 +37,7 @@ export class CreateUserComponent implements OnInit, OnDestroy {
               private validationService: ValidationService) { }
 
   ngOnInit() {
+    this.authService.autoLogin();
     this.emailValidation = this.validationService.getEmailValidation();
     this.createUserForm = new FormGroup({
       email: new FormControl(
@@ -83,7 +84,7 @@ export class CreateUserComponent implements OnInit, OnDestroy {
           this.createUserForm.controls.email.setErrors({incorrect: true});
         } else {
           this.isDone = true;
-          this.router.navigate(['/users']);
+          this.router.navigate(['/posts']);
           this.openSnackBar(this.message, SnackBarClassesEnum.Success, this.snackbarDuration);
         }
       });

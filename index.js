@@ -9,7 +9,6 @@ admin_password='Admin123_';
 const path = require('path');
 
 const express = require('express');
-const session = require('express-session');
 
 const sequelize = require('./config/database');
 
@@ -20,9 +19,9 @@ const passport = require('passport');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
 
-
 const postRoutes = require('./routes/post');
 const userRoutes = require('./routes/user');
+const authRoutes = require('./routes/auth');
 
 const User = require('./models/user');
 const Post = require('./models/post');
@@ -75,7 +74,6 @@ app.use('images', express.static(path.join(__dirname, 'images')));
 
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', process.env.ANGULAR);
-
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     res.header('Access-Control-Allow-Methods', 'GET, PATCH, PUT, POST, DELETE, OPTIONS');
     next();
@@ -83,6 +81,7 @@ app.use((req, res, next) => {
 
 app.use(postRoutes);
 app.use(userRoutes);
+app.use(authRoutes);
 
 Post.belongsTo(User, {constraints: true, onDelete: 'CASCADE'});
 User.hasMany(Post);
@@ -94,7 +93,6 @@ Role.belongsTo(User, { foreignKey: 'id' })
 sequelize   
     .sync()
     .then(result => {
-        console.log('Database connected!');
         return User.findOne({ where: {name: 'admin'}});
     })
     .then(user => {
@@ -117,18 +115,12 @@ sequelize
                             id: user.dataValues.id,
                             role: roles.ADMIN
                           })
-                          .then(result => {
-                              console.log('Admin was successfully created!');
-                          })
-                          .catch(err => {
-                              console.log(err.errors[0].message);
-                          });
-                    }).catch(err => {
-                        console.log(err);
-                    });
+                          .then()
+                          .catch();
+                    }).catch();
                 });
             });
         }
         app.listen(port);
     })
-    .catch(err => console.log(err));
+    .catch();
