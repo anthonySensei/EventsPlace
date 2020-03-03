@@ -8,7 +8,7 @@ import {Observable, Subject, Subscription} from 'rxjs';
 
 import {UserService} from './user.service';
 import {AuthService} from '../auth/auth.service';
-import {ValidationService} from '../validation.service';
+import {ValidationService} from '../shared/validation.service';
 import {MaterialService} from '../shared/material.service';
 
 import {User} from './user.model';
@@ -28,13 +28,20 @@ export class UserComponent implements OnInit, OnDestroy {
   profileForm: FormGroup;
 
   isLoading: boolean;
+  isDone = false;
+  discard = false;
+  discardChanged = new Subject<boolean>();
+
   user: User;
+
   userSubscription: Subscription;
+  updateProfileImage: Subscription;
+  updateUserDataSubscription: Subscription;
   getUserSubscription: Subscription;
   responseSubscription: Subscription;
+
   error: string;
-  response;
-  message;
+  message: string;
 
   oldPassword: string;
   newPassword: string;
@@ -42,6 +49,8 @@ export class UserComponent implements OnInit, OnDestroy {
 
   oldName: string;
   oldEmail: string;
+
+  response;
 
   profileImageBase64;
 
@@ -51,11 +60,6 @@ export class UserComponent implements OnInit, OnDestroy {
 
   changePasswordModalWidth = '35%';
   changePictureModal = '70%';
-
-  isDone = false;
-
-  discard = false;
-  discardChanged = new Subject<boolean>();
 
 
   constructor(private authService: AuthService,
@@ -165,7 +169,6 @@ export class UserComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      console.log(result);
       if (result === 'nothing') {
         this.openSnackBar('Nothing changed', SnackBarClassesEnum.Warn, this.snackbarDuration);
         return;
@@ -198,11 +201,12 @@ export class UserComponent implements OnInit, OnDestroy {
 
     this.user.email = email;
     this.user.name = name;
-    this.userService.updateUserData(this.user, 'info')
+    this.updateUserDataSubscription = this.userService.updateUserData(this.user, 'info')
       .subscribe(() => {
         if (this.response.data.changedUserInfo) {
           this.isDone = true;
           this.message = this.response.data.message;
+          localStorage.setItem('userData', JSON.stringify(this.user));
           this.openSnackBar(this.message, SnackBarClassesEnum.Success, this.snackbarDuration);
         } else {
           this.isDone = false;
@@ -229,7 +233,7 @@ export class UserComponent implements OnInit, OnDestroy {
       newPassword,
       retypeNewPassword
     };
-    this.userService.updateUserData(this.user, 'password', passwordsObject)
+    this.updateUserDataSubscription = this.userService.updateUserData(this.user, 'password', passwordsObject)
       .subscribe(() => {
         if (this.response.data.passwordChanged) {
           this.message = this.response.data.message;
@@ -243,10 +247,11 @@ export class UserComponent implements OnInit, OnDestroy {
 
   onChangeProfileImage(base64Image: string) {
     this.isLoading = true;
-    this.userService.updateProfileImage(base64Image, this.user)
+    this.updateProfileImage = this.userService.updateProfileImage(base64Image, this.user)
       .subscribe(() => {
         this.message = this.userService.getResponse().data.message;
-        this.user = this.authService.getUser();
+        this.user.profileImage = base64Image;
+        localStorage.setItem('userData', JSON.stringify(this.user));
         this.openSnackBar(this.message, SnackBarClassesEnum.Success, this.snackbarDuration);
         this.isLoading = false;
       });
@@ -258,5 +263,13 @@ export class UserComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.userSubscription.unsubscribe();
+    this.getUserSubscription.unsubscribe();
+    this.responseSubscription.unsubscribe();
+    if (this.updateProfileImage) {
+      this.updateProfileImage.unsubscribe();
+    }
+    if (this.updateUserDataSubscription) {
+      this.updateUserDataSubscription.unsubscribe();
+    }
   }
 }

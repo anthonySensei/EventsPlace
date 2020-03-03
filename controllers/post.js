@@ -119,6 +119,7 @@ exports.getAllPosts = (req, res) => {
             })
         })
         .catch(err => {
+            console.log(err);
             return responseErrorMessage(res, 500, 'Error. Cannot fetch posts!');
         });
 }
@@ -508,9 +509,10 @@ exports.setPostStatus = (req, res) => {
     const postId = req.body.postId;
     const newPostStatus = req.body.postStatus;
     const userEmail = req.body.user.email;
-    let reason = req.body.reason;
+    let reason = req.body.reason || 'Bad content';
 
     if (!postId || !newPostStatus || !userEmail || !reason) {
+        console.log(error);
         return responseErrorMessage(res, 400, 'Error occurred!');
     }
 

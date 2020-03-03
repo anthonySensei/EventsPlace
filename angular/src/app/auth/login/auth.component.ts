@@ -2,12 +2,10 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 
-import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
-
 import {Subscription} from 'rxjs';
 
 import {AuthService} from '../auth.service';
-import {ValidationService} from '../../validation.service';
+import {ValidationService} from '../../shared/validation.service';
 import {MaterialService} from '../../shared/material.service';
 
 import {SnackBarClassesEnum} from '../../shared/snackBarClasses.enum';
@@ -26,6 +24,7 @@ export class AuthComponent implements OnInit, OnDestroy {
   loggedIn = false;
 
   JSONSubscription: Subscription;
+  authSubscription: Subscription;
 
   snackbarDuration = 5000;
 
@@ -34,17 +33,18 @@ export class AuthComponent implements OnInit, OnDestroy {
   constructor(private validationService: ValidationService,
               private authService: AuthService,
               private materialService: MaterialService,
-              private router: Router) { }
+              private router: Router) {
+  }
 
   ngOnInit() {
     this.emailValidation = this.validationService.getEmailValidation();
     this.loginForm = new FormGroup({
-        email: new FormControl('', [
-          Validators.required,
-          Validators.email,
-          Validators.pattern(this.emailValidation)
-        ]),
-        password: new FormControl('', [Validators.required])
+      email: new FormControl('', [
+        Validators.required,
+        Validators.email,
+        Validators.pattern(this.emailValidation)
+      ]),
+      password: new FormControl('', [Validators.required])
     });
     this.JSONSubscription = this.authService.authJSONResponseChanged
       .subscribe(
@@ -75,7 +75,7 @@ export class AuthComponent implements OnInit, OnDestroy {
       email,
       password
     };
-    this.authService
+    this.authSubscription = this.authService
       .login(user)
       .subscribe(() => {
         if (!this.loggedIn) {
@@ -90,7 +90,7 @@ export class AuthComponent implements OnInit, OnDestroy {
           this.router.navigate(['posts']);
           this.loginForm.reset();
           this.message = 'You was logged in successfully';
-          this.openSnackBar(this.message,  SnackBarClassesEnum.Success, this.snackbarDuration);
+          this.openSnackBar(this.message, SnackBarClassesEnum.Success, this.snackbarDuration);
         }
       });
   }
@@ -101,6 +101,9 @@ export class AuthComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.JSONSubscription.unsubscribe();
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
   }
 
 }

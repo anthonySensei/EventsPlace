@@ -1,9 +1,8 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {NgModel} from '@angular/forms';
 
 import {MatSnackBar, MatSnackBarConfig} from '@angular/material';
 
-import {StorageService} from '../storage.service';
+import {PostsStorageService} from './postsStorage.service';
 import {AuthService} from '../auth/auth.service';
 
 import {Post} from './post.model';
@@ -12,7 +11,6 @@ import {Subscription} from 'rxjs';
 
 import {MainPageSnackbarComponent} from './main-page-snackbar/main-page-snackbar.component';
 import {ActivatedRoute, Params, Router} from '@angular/router';
-import {query} from '@angular/animations';
 
 
 @Component({
@@ -33,6 +31,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   paramsSubscription: Subscription;
   postsSubscription: Subscription;
+  fetchPostsSubscription: Subscription;
   loggedInSubscription: Subscription;
   responseSubscription: Subscription;
 
@@ -45,11 +44,11 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   currentPage = 1;
 
-  hasNextPage;
-  hasPreviousPage;
-  nextPage;
-  previousPage;
-  lastPage;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  nextPage: number;
+  previousPage: number;
+  lastPage: number;
 
   fromDate: Date;
   toDate: Date;
@@ -57,7 +56,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   queries = {};
 
-  constructor(private storageService: StorageService,
+  constructor(private storageService: PostsStorageService,
               private authService: AuthService,
               public snackBar: MatSnackBar,
               private route: ActivatedRoute,
@@ -79,9 +78,8 @@ export class MainPageComponent implements OnInit, OnDestroy {
           this.toDate = params.tDate;
         }
         this.dateObj = {fromDate: this.fromDate, toDate: this.toDate};
-        this.paginate(this.currentPage, this.selected, this.filterValue);
       });
-    this.storageService.fetchApprovedPosts(this.selected, this.filterValue, this.dateObj, this.currentPage).subscribe();
+    this.fetchPosts(this.selected, this.filterValue, this.dateObj, this.currentPage);
     this.postsSubscription = this.storageService.postsChanged
       .subscribe((posts: Post[]) => {
         this.posts = posts;
@@ -147,45 +145,33 @@ export class MainPageComponent implements OnInit, OnDestroy {
     }
     if (this.selected === 'email') {
       this.isLoading = true;
-      this.storageService.fetchApprovedPosts('email', this.filterValue, this.dateObj, this.currentPage)
-        .subscribe(() => {
-          this.isLoading = false;
-          this.paginate(1, this.selected, this.filterValue);
-        });
+      this.fetchPosts('email', this.filterValue, this.dateObj, this.currentPage);
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'hashtag') {
       this.isLoading = true;
-      this.storageService.fetchApprovedPosts('hashtag', this.filterValue, this.dateObj, this.currentPage)
-        .subscribe(() => {
-          this.isLoading = false;
-          this.paginate(1, this.selected, this.filterValue);
-        });
+      this.fetchPosts('hashtag', this.filterValue, this.dateObj, this.currentPage);
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'location') {
       this.isLoading = true;
-      this.storageService.fetchApprovedPosts('location', this.filterValue, this.dateObj, this.currentPage)
-        .subscribe(() => {
-          this.isLoading = false;
-          this.paginate(1, this.selected, this.filterValue);
-        });
+      this.fetchPosts('location', this.filterValue, this.dateObj, this.currentPage);
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'username') {
       this.isLoading = true;
-      this.storageService.fetchApprovedPosts('username', this.filterValue, this.dateObj, this.currentPage)
-        .subscribe(() => {
-          this.isLoading = false;
-          this.paginate(1, this.selected, this.filterValue);
-        });
+      this.fetchPosts('username', this.filterValue, this.dateObj, this.currentPage);
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'all') {
       this.isLoading = true;
-      this.storageService.fetchApprovedPosts('all', '', this.dateObj, this.currentPage)
-        .subscribe(() => {
-          this.isLoading = false;
-          this.paginate(1, this.selected, this.filterValue);
-        });
+      this.fetchPosts('all', '', this.dateObj, this.currentPage);
       this.posts = this.storageService.getPosts();
     }
+  }
+
+  fetchPosts(filter: string, value: string, obj, currentPage: number) {
+    this.fetchPostsSubscription = this.storageService.fetchApprovedPosts(filter, value, obj, currentPage)
+      .subscribe(() => {
+        this.paginate(this.currentPage, this.selected, this.filterValue);
+        this.isLoading = false;
+      });
   }
 
   paginate(page: number, filter?: string, filterValue?: string) {
@@ -311,7 +297,11 @@ export class MainPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.loggedInSubscription.unsubscribe();
+    this.responseSubscription.unsubscribe();
+    this.paramsSubscription.unsubscribe();
     this.postsSubscription.unsubscribe();
+    this.fetchPostsSubscription.unsubscribe();
   }
 
 }

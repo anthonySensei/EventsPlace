@@ -8,15 +8,11 @@
       [imageChangedEvent]="imageChangedEvent"
       [maintainAspectRatio]="true"
       [aspectRatio]="1"
-      [resizeToWidth]="0"
       [cropperMinWidth]="250"
       [cropperMinHeight]="250"
       [onlyScaleDown]="true"
       [roundCropper]="true"
       (imageCropped)="imageCropped($event)"
-      (imageLoaded)="imageLoaded()"
-      (cropperReady)="cropperReady()"
-      (loadImageFailed)="loadImageFailed()"
     ></image-cropper>
 
     <button

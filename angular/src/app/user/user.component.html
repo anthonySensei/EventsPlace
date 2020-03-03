@@ -7,7 +7,7 @@
       <div *ngIf="!isLoading">
         <img
           class="profile-image"
-          src="{{user.profileImage}}"
+          src="{{user.profileImage ? user.profileImage : 'https://www.w3schools.com/w3css/img_avatar3.png'}}"
           alt="Avatar"
         >
         <form

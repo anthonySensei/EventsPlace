@@ -2,7 +2,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 
 import {Subscription} from 'rxjs';
 
-import {StorageService} from '../../storage.service';
+import {PostsStorageService} from '../postsStorage.service';
 
 import {Post} from '../post.model';
 import {ActivatedRoute, Params, Router} from '@angular/router';
@@ -16,28 +16,29 @@ import {AuthService} from '../../auth/auth.service';
 })
 export class UncheckedPostsComponent implements OnInit, OnDestroy {
   posts: Post[];
+
   postsFetchSubscription: Subscription;
   postsChangedSubscription: Subscription;
+  responseSubscription: Subscription;
+  paramsSubscription: Subscription;
+
   isLoading: boolean;
 
   response;
-
-  responseSubscription: Subscription;
-  paramsSubscription: Subscription;
 
   selected = 'unconfirmed';
 
   currentPage = 1;
 
-  hasNextPage;
-  hasPreviousPage;
-  nextPage;
-  previousPage;
-  lastPage;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  nextPage: number;
+  previousPage: number;
+  lastPage: number;
 
   queries = {};
 
-  constructor(private storageService: StorageService,
+  constructor(private storageService: PostsStorageService,
               private router: Router,
               private route: ActivatedRoute,
               private authService: AuthService) {
@@ -50,9 +51,8 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
       .subscribe((params: Params) => {
         this.currentPage = +params.page || 1;
         this.selected = params.status || 'unconfirmed';
-        this.paginate(this.currentPage, this.selected);
       });
-    this.postsFetchSubscription = this.storageService.fetchAllPosts(this.selected, this.currentPage).subscribe();
+    this.fetchAllPosts(this.selected, this.currentPage);
     this.postsChangedSubscription = this.storageService.postsChanged
       .subscribe((posts: Post[]) => {
         this.posts = posts;
@@ -80,37 +80,29 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
     this.currentPage = 1;
     if (this.selected === 'approved') {
       this.isLoading = true;
-      this.storageService.fetchAllPosts('approved', this.currentPage)
-        .subscribe(() => {
-          this.isLoading = false;
-          this.paginate(this.currentPage, this.selected);
-        });
+      this.fetchAllPosts('approved', this.currentPage);
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'unconfirmed') {
       this.isLoading = true;
-      this.storageService.fetchAllPosts('unconfirmed', this.currentPage)
-        .subscribe(() => {
-          this.isLoading = false;
-          this.paginate(this.currentPage, this.selected);
-        });
+      this.fetchAllPosts('unconfirmed', this.currentPage);
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'rejected') {
       this.isLoading = true;
-      this.storageService.fetchAllPosts('rejected', this.currentPage)
-        .subscribe(() => {
-          this.isLoading = false;
-          this.paginate(this.currentPage, this.selected);
-        });
+      this.fetchAllPosts('rejected', this.currentPage);
       this.posts = this.storageService.getPosts();
     } else if (this.selected === 'all') {
       this.isLoading = true;
-      this.storageService.fetchAllPosts('all', this.currentPage)
-        .subscribe(() => {
-          this.isLoading = false;
-          this.paginate(this.currentPage, this.selected);
-        });
+      this.fetchAllPosts('all', this.currentPage);
       this.posts = this.storageService.getPosts();
     }
+  }
+
+  fetchAllPosts(status: string, currentPage: number) {
+    this.postsFetchSubscription = this.storageService.fetchAllPosts(status, currentPage)
+      .subscribe(() => {
+        this.paginate(this.currentPage, this.selected);
+        this.isLoading = false;
+      });
   }
 
 
@@ -141,5 +133,7 @@ export class UncheckedPostsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.postsFetchSubscription.unsubscribe();
     this.postsChangedSubscription.unsubscribe();
+    this.responseSubscription.unsubscribe();
+    this.paramsSubscription.unsubscribe();
   }
 }

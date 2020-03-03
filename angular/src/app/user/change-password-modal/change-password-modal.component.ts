@@ -4,7 +4,7 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
 
 import {ChangePasswordDialogData} from './change-password-dialog-data.model';
-import {ValidationService} from '../../validation.service';
+import {ValidationService} from '../../shared/validation.service';
 
 @Component({
   selector: 'app-dialog',

@@ -33,21 +33,4 @@ export class AuthGuard implements CanActivate {
       );
   }
 
-  canActivateAdmin(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ): Observable<boolean> | Promise<boolean> | boolean {
-    return this.authService.isAdmin()
-      .then(
-        (admin: boolean) => {
-          if (admin) {
-            return true;
-          } else {
-            this.router.navigate(['/posts']);
-            return false;
-          }
-        }
-      );
-  }
-
 }

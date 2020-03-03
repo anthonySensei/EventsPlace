@@ -23,18 +23,10 @@ export class ChangeProfileImageModalComponent {
   fileChangeEvent(event: any): void {
     this.imageChangedEvent = event;
   }
+
   imageCropped(event: ImageCroppedEvent) {
     this.croppedImage = event.base64;
     this.data.imageBase64 = this.croppedImage;
-  }
-  imageLoaded() {
-    // show cropper
-  }
-  cropperReady() {
-    // cropper ready
-  }
-  loadImageFailed() {
-    // show message
   }
 
   onNoClick(): void {

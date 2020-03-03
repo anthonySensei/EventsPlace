@@ -21,4 +21,5 @@ export class ValidationService {
   comparePasswords(password, passwordRetype) {
     return password === passwordRetype;
   }
+
 }

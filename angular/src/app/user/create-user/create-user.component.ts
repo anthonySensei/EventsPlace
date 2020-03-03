@@ -3,7 +3,7 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 
 import {AuthService} from '../../auth/auth.service';
-import {ValidationService} from '../../validation.service';
+import {ValidationService} from '../../shared/validation.service';
 import {MaterialService} from '../../shared/material.service';
 
 import {Observable, Subject, Subscription} from 'rxjs';
@@ -18,7 +18,12 @@ export class CreateUserComponent implements OnInit, OnDestroy {
   createUserForm: FormGroup;
 
   isCreated: boolean;
+  isDone = false;
+  discard = false;
+
   JSONSubscription: Subscription;
+  createUserSubscription: Subscription;
+
   error: string = null;
   message: string = null;
 
@@ -26,9 +31,6 @@ export class CreateUserComponent implements OnInit, OnDestroy {
 
   emailValidation;
 
-  isDone = false;
-
-  discard = false;
   discardChanged = new Subject<boolean>();
 
   constructor(private authService: AuthService,
@@ -75,8 +77,7 @@ export class CreateUserComponent implements OnInit, OnDestroy {
       return;
     }
     const user = {email, userRole};
-    console.log(user);
-    this.authService.registerUser(user)
+    this.createUserSubscription = this.authService.registerUser(user)
       .subscribe(() => {
         if (this.isCreated === false) {
           this.isDone = false;
@@ -109,5 +110,8 @@ export class CreateUserComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.JSONSubscription.unsubscribe();
+    if (this.createUserSubscription) {
+      this.createUserSubscription.unsubscribe();
+    }
   }
 }

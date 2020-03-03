@@ -1,5 +1,5 @@
 <div mat-dialog-content>
-  <p>Image is required</p>
+  <p>Please choose image</p>
   <form class="modal-form" #imageForm='ngForm'>
     <input type="file" (change)="fileChangeEvent($event)" />
 
@@ -7,15 +7,10 @@
       [imageChangedEvent]="imageChangedEvent"
       [maintainAspectRatio]="true"
       [aspectRatio]="3 / 4"
-      [resizeToWidth]="0"
-      [resizeToHeight]="0"
       [cropperMinWidth]="350"
       [cropperMinHeight]="450"
       [onlyScaleDown]="true"
       (imageCropped)="imageCropped($event)"
-      (imageLoaded)="imageLoaded()"
-      (cropperReady)="cropperReady()"
-      (loadImageFailed)="loadImageFailed()"
     ></image-cropper>
 
     <button
@@ -33,7 +28,9 @@
       type="submit"
       [disabled]="imageForm.invalid"
       [mat-dialog-close]="data.imageBase64"
-    >Confirm</button>
+    >
+      Confirm
+    </button>
   </form>
 </div>
 

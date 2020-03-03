@@ -3,13 +3,13 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 
 import {map} from 'rxjs/operators';
-import {Post} from './main-page/post.model';
+import {Post} from './post.model';
 import {Subject} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
-export class StorageService {
+export class PostsStorageService {
   responseChanged = new Subject();
   response;
   postsChanged = new Subject<Post[]>();

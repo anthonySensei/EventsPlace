@@ -5,7 +5,7 @@ import {Router} from '@angular/router';
 import {Observable, Subject, Subscription} from 'rxjs';
 
 import {AuthService} from '../auth.service';
-import {ValidationService} from '../../validation.service';
+import {ValidationService} from '../../shared/validation.service';
 import {MaterialService} from '../../shared/material.service';
 
 @Component({
@@ -22,6 +22,7 @@ export class RegistrationComponent implements OnInit, OnDestroy {
   created = false;
 
   JSONSubscription: Subscription;
+  authSubscription: Subscription;
 
   emailValidation;
   passwordValidation;
@@ -125,7 +126,7 @@ constructor(private validationService: ValidationService,
       return false;
     }
 
-    this.authService
+    this.authSubscription = this.authService
       .registerUser(user)
       .subscribe(() => {
         if (this.created === false) {
@@ -156,6 +157,7 @@ constructor(private validationService: ValidationService,
 
   ngOnDestroy(): void {
     this.JSONSubscription.unsubscribe();
+    this.authSubscription.unsubscribe();
   }
 
 }

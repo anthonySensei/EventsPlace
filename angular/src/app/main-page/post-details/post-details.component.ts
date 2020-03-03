@@ -10,7 +10,7 @@ import {User} from '../../user/user.model';
 
 import {PostService} from '../post.service';
 import {AuthService} from '../../auth/auth.service';
-import {StorageService} from '../../storage.service';
+import {PostsStorageService} from '../postsStorage.service';
 import {MaterialService} from '../../shared/material.service';
 
 import {RejectedDeletedReasonModalComponent} from './rejected-deleted-reason-modal/rejected-deleted-reason-modal.component';
@@ -25,26 +25,31 @@ import {SnackBarClassesEnum} from '../../shared/snackBarClasses.enum';
 })
 export class PostDetailsComponent implements OnInit, OnDestroy {
   post: Post;
+  user: User;
+
   postId: number;
+  snackbarDuration = 5000;
+
   isLoading = false;
+  isUpdatedPostStatus: boolean;
+
   paramsSubscription: Subscription;
   responseSubscription: Subscription;
   postSubscription: Subscription;
-  isUpdatedPostStatus: boolean;
+  getPostSubscription: Subscription;
+  setPostStatusSubscription: Subscription;
+
   message: string;
   error: string;
-  response;
-
-  user: User;
   userRole: string;
-
   reason: string;
 
-  snackbarDuration = 5000;
+  response;
+
 
   constructor(private route: ActivatedRoute,
               private router: Router,
-              private storageService: StorageService,
+              private storageService: PostsStorageService,
               private postService: PostService,
               private authService: AuthService,
               private materialService: MaterialService,
@@ -64,7 +69,7 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
     } else {
       this.userRole = '';
     }
-    this.postService.getPostHttp(this.postId, this.userRole).subscribe();
+    this.getPostSubscription = this.postService.getPostHttp(this.postId, this.userRole).subscribe();
     this.postSubscription = this.postService.postChanged
       .subscribe(post => {
         this.post = post;
@@ -86,17 +91,7 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
       this.openRejectedDeletedReasonModal(status, post);
     } else {
       post.postStatus = status;
-      this.storageService.setPostStatus(post)
-        .subscribe(() => {
-          if (this.isUpdatedPostStatus) {
-            this.message = this.response.data.message + ' to ' + '\'' + status.toUpperCase() + '\'';
-            this.router.navigate(['/posts']);
-            this.openSnackBar(this.message, SnackBarClassesEnum.Success, this.snackbarDuration);
-          } else {
-            this.error = this.response.data.message;
-            return false;
-          }
-        });
+      this.setStatus(status, post);
     }
   }
 
@@ -119,21 +114,32 @@ export class PostDetailsComponent implements OnInit, OnDestroy {
       this.reason = result;
       post.reason = this.reason;
       post.postStatus = status;
-      this.storageService.setPostStatus(post)
-        .subscribe(() => {
-          if (this.isUpdatedPostStatus) {
-            this.message = this.response.data.message + ' to ' + '\'' + status.toUpperCase() + '\'';
-            this.router.navigate(['/posts']);
-            this.openSnackBar(this.message, SnackBarClassesEnum.Success, this.snackbarDuration);
-          } else {
-            this.error = this.response.data.message;
-            return false;
-          }
-        });
+      this.setStatus(status, post);
     });
+  }
+
+
+  setStatus(status: string, post: Post) {
+    this.setPostStatusSubscription = this.storageService.setPostStatus(post)
+      .subscribe(() => {
+        if (this.isUpdatedPostStatus) {
+          this.message = this.response.data.message + ' to ' + '\'' + status.toUpperCase() + '\'';
+          this.router.navigate(['/posts']);
+          this.openSnackBar(this.message, SnackBarClassesEnum.Success, this.snackbarDuration);
+        } else {
+          this.error = this.response.data.message;
+          return false;
+        }
+      });
   }
 
   ngOnDestroy(): void {
     this.paramsSubscription.unsubscribe();
+    if (this.setPostStatusSubscription) {
+      this.setPostStatusSubscription.unsubscribe();
+    }
+    this.getPostSubscription.unsubscribe();
+    this.responseSubscription.unsubscribe();
+    this.postSubscription.unsubscribe();
   }
 }

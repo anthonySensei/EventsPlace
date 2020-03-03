@@ -59,3 +59,4 @@ insert into hashtag_s values(58, 'london', '2020-02-07 17:00:46.445+02', '2020-0
 insert into hashtag_s values(59, 'sea', '2020-02-07 17:00:46.445+02', '2020-02-07 17:00:46.445+02');
 insert into hashtag_s values(60, 'sea', '2020-02-07 17:00:46.445+02', '2020-02-07 17:00:46.445+02');
 insert into hashtag_s values(61, 'rome', '2020-02-07 17:00:46.445+02', '2020-02-07 17:00:46.445+02');
+insert into hashtag_s values(62, 'programing', '2020-02-07 17:00:46.445+02', '2020-02-07 17:00:46.445+02');

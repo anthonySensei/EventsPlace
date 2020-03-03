@@ -7,8 +7,7 @@ import {SnackBarClassesEnum} from '../../shared/snackBarClasses.enum';
 
 @Component({
   selector: 'app-activation-page',
-  templateUrl: './activation-page.component.html',
-  styleUrls: ['./activation-page.component.sass']
+  templateUrl: './activation-page.component.html'
 })
 export class ActivationPageComponent implements OnInit, OnDestroy {
   registrationToken: string = null;
@@ -30,7 +29,6 @@ export class ActivationPageComponent implements OnInit, OnDestroy {
     this.paramsSubscription = this.route.queryParams.subscribe(params => {
       this.registrationToken = params.rtoken;
     });
-    console.log(this.registrationToken);
   }
 
   ngOnInit() {

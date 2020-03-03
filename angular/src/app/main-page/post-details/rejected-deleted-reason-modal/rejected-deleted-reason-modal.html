@@ -23,6 +23,9 @@
   <button
     class="form-button modal-form-submit"
     type="submit"
+    style="background: #02a9ff"
+    [style.background]="data.reason ? '#02a9ff' : 'rgb(128, 128, 128)'"
+    [disabled]="!data.reason"
     [mat-dialog-close]="data.reason"
   >
     Save

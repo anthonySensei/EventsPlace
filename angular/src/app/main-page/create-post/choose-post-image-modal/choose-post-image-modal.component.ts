@@ -25,15 +25,6 @@ export class ModalPostCreateDialogComponent {
     this.croppedImage = event.base64;
     this.data.imageBase64 = this.croppedImage;
   }
-  imageLoaded() {
-    // show cropper
-  }
-  cropperReady() {
-    // cropper ready
-  }
-  loadImageFailed() {
-    // show message
-  }
 
   onNoClick(): void {
     this.dialogRef.close();

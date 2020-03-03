@@ -21,6 +21,7 @@ import {ModalPostCreateDialogComponent} from './choose-post-image-modal/choose-p
 export interface DialogData {
   imageBase64: string;
 }
+
 @Component({
   selector: 'app-create-post',
   templateUrl: './create-post.component.html',
@@ -80,11 +81,11 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
   ngOnInit() {
     this.authService.autoLogin();
     this.createPostForm = new FormGroup({
-        name: new FormControl(null, [Validators.required]),
-        description: new FormControl(null, [Validators.required]),
-        location: new FormControl(null, [Validators.required]),
-        time: new FormControl(null, [Validators.required]),
-        hashtag: new FormControl(null, [Validators.required])
+      name: new FormControl(null, [Validators.required]),
+      description: new FormControl(null, [Validators.required]),
+      location: new FormControl(null, [Validators.required]),
+      time: new FormControl(null, [Validators.required]),
+      hashtag: new FormControl(null, [Validators.required])
     });
     this.getHashtagsHttpSubscription = this.postService.getHashtagsHttp().subscribe();
     this.hashtagSubscription = this.postService.hashtagsChanged
@@ -96,7 +97,7 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
       .subscribe((queryParams: Params) => {
         this.postId = +queryParams.id;
         this.editMode = queryParams.id != null;
-    });
+      });
     if (this.editMode) {
       this.isLoading = true;
       this.getPostSubscription = this.postService.getPostHttp(this.postId).subscribe();
@@ -105,11 +106,11 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
           this.post = post;
           this.isLoading = false;
           this.createPostForm.patchValue({
-              name: this.post.eventName,
-              description: this.post.description,
-              location: this.post.eventLocation,
-              hashtag: this.post.hashtag.name,
-              time: this.post.eventTime
+            name: this.post.eventName,
+            description: this.post.description,
+            location: this.post.eventLocation,
+            hashtag: this.post.hashtag.name,
+            time: this.post.eventTime
           });
         });
       this.post = this.postService.getPost();
@@ -162,9 +163,9 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
     const eventTime = this.createPostForm.value.time;
     const user = this.user;
     const hashtagName = this.createPostForm.value.hashtag;
-    const hashtag = this.hashtags.filter(hs => hs.name === hashtagName);
+    const hashtag = this.hashtags.filter(hs => hs.name === hashtagName)[0];
     if (this.createPostForm.invalid) {
-        return;
+      return;
     }
     const post = {
       description,
@@ -181,7 +182,7 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
     if (this.editMode) {
       this.postService
         .updatePost(this.postId, post, this.imageToUploadBase64)
-        .subscribe( () => {
+        .subscribe(() => {
           if (this.isUpdated) {
             console.log('Updated');
             this.isDone = true;
@@ -198,7 +199,7 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
     } else {
       this.postService
         .createPost(post, this.imageToUploadBase64)
-        .subscribe( () => {
+        .subscribe(() => {
           if (this.isCreated) {
             this.isDone = true;
             this.message = this.response.data.message;
@@ -227,14 +228,8 @@ export class CreatePostComponent implements OnInit, OnDestroy, CanComponentDeact
   }
 
   ngOnDestroy(): void {
-    // this.paramsSubscription.unsubscribe();
-    // // this.postSubscription.unsubscribe();
-    // this.getPostSubscription.unsubscribe();
-    // if (this.responseSubscription) {
-    //   this.responseSubscription.unsubscribe();
-    // }
-    // if (this.userSubscription) {
-    //   this.userSubscription.unsubscribe();
-    // }
+    this.paramsSubscription.unsubscribe();
+    this.responseSubscription.unsubscribe();
+    this.userSubscription.unsubscribe();
   }
 }

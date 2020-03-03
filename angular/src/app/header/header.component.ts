@@ -1,4 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
+import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import {Router} from '@angular/router';
 
 import {Subscription} from 'rxjs';
@@ -7,7 +8,6 @@ import {AuthService} from '../auth/auth.service';
 import {UserService} from '../user/user.service';
 
 import {User} from '../user/user.model';
-import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 
 
 @Component({
@@ -17,11 +17,15 @@ import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   isLoggedIn = false;
-  subscription: Subscription;
-  userChangedSubscription: Subscription;
-  user: User;
-  role = 'user';
   isSmallScreen = false;
+
+  userChangedSubscription: Subscription;
+  breakpointSubscription: Subscription;
+  authServiceSubscription: Subscription;
+
+  user: User;
+
+  role = 'user';
 
 
 
@@ -29,7 +33,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
               private userService: UserService,
               private router: Router,
               private breakpointObserver: BreakpointObserver) {
-    breakpointObserver.observe([
+    this.breakpointSubscription = breakpointObserver.observe([
       Breakpoints.Small,
       Breakpoints.XSmall
     ]).subscribe(result => {
@@ -56,7 +60,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   onLogoutUser() {
-    this.authService
+    this.authServiceSubscription = this.authService
       .logout()
       .subscribe(() => {
         if (this.isLoggedIn) {
@@ -67,6 +71,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+    this.authServiceSubscription.unsubscribe();
+    this.breakpointSubscription.unsubscribe();
+    this.userChangedSubscription.unsubscribe();
   }
 }
