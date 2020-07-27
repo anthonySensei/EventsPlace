@@ -13,7 +13,7 @@ Single-page application for displaying information about future events There are
 
 **Project Team Size:** 1 team member.
 
-**Tools & Technologies:** Angular 8, Angular material, TypeScript, Node.js, Passport.js, Nodemailer, Multer, Express.js, Sequelize.
+**Tools & Technologies:** Angular 8, Angular material, TypeScript, Node.js, Passport.js, Nodemailer, Multer, Express.js, Sequelize, ngx-image-cropper.
 
 **Responsibilities:**
   * Designing, creating, working, modifying DB
